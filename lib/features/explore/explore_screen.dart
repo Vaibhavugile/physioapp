@@ -1,16 +1,46 @@
 import 'package:flutter/material.dart';
 
+import '../../models/user_location_model.dart';
+
 import 'widgets/explore_header.dart';
 import 'widgets/explore_search.dart';
 import 'widgets/popular_conditions.dart';
 import 'widgets/best_match_card.dart';
 import 'widgets/top_rated_physios.dart';
 import 'widgets/explore_trust_stats.dart';
+import 'widgets/location_selection_sheet.dart';
 
-class ExploreScreen extends StatelessWidget {
+class ExploreScreen extends StatefulWidget {
   const ExploreScreen({
     super.key,
   });
+
+  @override
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  // ==============================================================
+  // SELECTED LOCATION
+  // ==============================================================
+
+  UserLocationModel? _selectedLocation;
+
+  // ==============================================================
+  // SELECTED CONDITION
+  // ==============================================================
+
+  String? _selectedCondition;
+
+  // ==============================================================
+  // SEARCH QUERY
+  // ==============================================================
+
+  String _searchQuery = '';
+
+  // ==============================================================
+  // BUILD
+  // ==============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +51,7 @@ class ExploreScreen extends StatelessWidget {
         bottom: false,
 
         child: SingleChildScrollView(
-          physics:
-              const BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
 
           padding: const EdgeInsets.fromLTRB(
             22,
@@ -32,48 +61,71 @@ class ExploreScreen extends StatelessWidget {
           ),
 
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-
               // ==================================================
               // PREMIUM EXPLORE HEADER
               // ==================================================
 
               ExploreHeader(
                 onNotificationTap: () {
-                  // Notifications screen later.
+                  // TODO:
+                  // Navigate to notifications screen.
                 },
 
                 onProfileTap: () {
-                  // Profile screen later.
+                  // TODO:
+                  // Navigate to profile screen.
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
               // ==================================================
               // SEARCH + LOCATION
               // ==================================================
 
               ExploreSearch(
+                // ----------------------------------------------
+                // SELECTED LOCATION
+                // ----------------------------------------------
+
+                selectedLocation: _selectedLocation,
+
+                // ----------------------------------------------
+                // FILTER
+                // ----------------------------------------------
+
                 onFilterTap: () {
-                  // Filter screen later.
+                  _showFilterComingSoon();
                 },
+
+                // ----------------------------------------------
+                // SEARCH
+                // ----------------------------------------------
 
                 onSearchChanged: (value) {
+                  setState(() {
+                    _searchQuery = value.trim();
+                  });
+
                   debugPrint(
-                    'Explore search: $value',
+                    'Explore search: $_searchQuery',
                   );
+
+                  // Future:
+                  // Use _searchQuery to filter physiotherapists.
                 },
 
-                onLocationTap: () {
-                  // Location selection later.
-                },
+                // ----------------------------------------------
+                // LOCATION
+                // ----------------------------------------------
+
+                onLocationTap: _openLocationSelection,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 26),
 
               // ==================================================
               // POPULAR CONDITIONS
@@ -81,21 +133,28 @@ class ExploreScreen extends StatelessWidget {
 
               PopularConditions(
                 onSelected: (condition) {
+                  setState(() {
+                    _selectedCondition = condition;
+                  });
+
                   debugPrint(
-                    'Selected condition: $condition',
+                    'Selected condition: $_selectedCondition',
                   );
 
-                  // Later:
-                  // Filter physiotherapists
-                  // according to selected condition.
+                  // Future:
+                  //
+                  // Use _selectedCondition +
+                  // _selectedLocation
+                  //
+                  // to calculate the best physiotherapist match.
                 },
 
                 onSeeAll: () {
-                  // All conditions screen later.
+                  _showConditionsComingSoon();
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // ==================================================
               // RECOMMENDED FOR YOU
@@ -103,31 +162,27 @@ class ExploreScreen extends StatelessWidget {
 
               const Text(
                 'Recommended for you',
-
                 style: TextStyle(
-                  fontSize: 15,
-                  color:
-                      Color(0xFF111A3D),
-                  fontWeight:
-                      FontWeight.w900,
-                  letterSpacing: -.35,
+                  fontSize: 19,
+                  color: Color(0xFF111A3D),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.4,
                 ),
               ),
 
               const SizedBox(height: 5),
 
-              const Text(
-                'A physiotherapist picked for your needs',
-                style: TextStyle(
-                  fontSize: 8.5,
-                  color:
-                      Color(0xFF7B849C),
-                  fontWeight:
-                      FontWeight.w600,
+              Text(
+                _getRecommendationSubtitle(),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF7B849C),
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
                 ),
               ),
 
-              const SizedBox(height: 11),
+              const SizedBox(height: 14),
 
               // ==================================================
               // BEST MATCH
@@ -135,15 +190,17 @@ class ExploreScreen extends StatelessWidget {
 
               BestMatchCard(
                 onViewProfile: () {
-                  // Doctor profile later.
+                  // TODO:
+                  // Navigate to physiotherapist profile.
                 },
 
                 onBookSession: () {
-                  // Booking flow later.
+                  // TODO:
+                  // Open booking flow.
                 },
               ),
 
-              const SizedBox(height: 26),
+              const SizedBox(height: 30),
 
               // ==================================================
               // TOP RATED PHYSIOS
@@ -151,11 +208,12 @@ class ExploreScreen extends StatelessWidget {
 
               TopRatedPhysios(
                 onSeeAll: () {
-                  // All physiotherapists screen later.
+                  // TODO:
+                  // Navigate to all physiotherapists screen.
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // ==================================================
               // TRUST STATS
@@ -163,10 +221,174 @@ class ExploreScreen extends StatelessWidget {
 
               const ExploreTrustStats(),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 30),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ==============================================================
+  // OPEN LOCATION SELECTION
+  // ==============================================================
+
+  Future<void> _openLocationSelection() async {
+    final location =
+        await showModalBottomSheet<UserLocationModel>(
+      context: context,
+
+      isScrollControlled: true,
+
+      backgroundColor: Colors.transparent,
+
+      builder: (context) {
+        return LocationSelectionSheet(
+          selectedLocation: _selectedLocation,
+        );
+      },
+    );
+
+    // ------------------------------------------------------------
+    // USER CLOSED SHEET WITHOUT SELECTING
+    // ------------------------------------------------------------
+
+    if (location == null) {
+      return;
+    }
+
+    // ------------------------------------------------------------
+    // UPDATE LOCATION
+    // ------------------------------------------------------------
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _selectedLocation = location;
+    });
+
+    debugPrint(
+      'Selected location: ${location.toString()}',
+    );
+
+    // ------------------------------------------------------------
+    // FUTURE:
+    //
+    // Reload physiotherapists based on:
+    //
+    // location.latitude
+    // location.longitude
+    // location.city
+    //
+    // ------------------------------------------------------------
+
+    _showLocationUpdatedMessage(location);
+  }
+
+  // ==============================================================
+  // LOCATION UPDATED MESSAGE
+  // ==============================================================
+
+  void _showLocationUpdatedMessage(
+    UserLocationModel location,
+  ) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+
+        margin: const EdgeInsets.all(16),
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+
+        content: Row(
+          children: [
+            const Icon(
+              Icons.location_on_rounded,
+              color: Colors.white,
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Text(
+                'Location updated to ${location.shortDisplayName}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==============================================================
+  // RECOMMENDATION SUBTITLE
+  // ==============================================================
+
+  String _getRecommendationSubtitle() {
+    // ------------------------------------------------------------
+    // CONDITION + LOCATION
+    // ------------------------------------------------------------
+
+    if (_selectedCondition != null &&
+        _selectedLocation != null) {
+      return 'Best physiotherapists near you for $_selectedCondition';
+    }
+
+    // ------------------------------------------------------------
+    // CONDITION ONLY
+    // ------------------------------------------------------------
+
+    if (_selectedCondition != null) {
+      return 'Physiotherapists recommended for $_selectedCondition';
+    }
+
+    // ------------------------------------------------------------
+    // LOCATION ONLY
+    // ------------------------------------------------------------
+
+    if (_selectedLocation != null) {
+      return 'Top physiotherapists near ${_selectedLocation!.shortDisplayName}';
+    }
+
+    // ------------------------------------------------------------
+    // DEFAULT
+    // ------------------------------------------------------------
+
+    return 'Choose your location to find the best physiotherapists near you';
+  }
+
+  // ==============================================================
+  // FILTER
+  // ==============================================================
+
+  void _showFilterComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Advanced filters will be available soon.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // ==============================================================
+  // ALL CONDITIONS
+  // ==============================================================
+
+  void _showConditionsComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'All conditions will be available soon.',
+        ),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

@@ -1,47 +1,37 @@
 import 'package:flutter/material.dart';
 
+import '../../../models/recovery_program_model.dart';
+import '../../../services/recovery_program_service.dart';
+
 class RecommendedForYou extends StatelessWidget {
-  const RecommendedForYou({super.key});
+  final VoidCallback? onViewAll;
+  final void Function(RecoveryProgramModel program)? onProgramTap;
 
-  // ============================================================
-  // TEMPORARY HARDCODED RECOMMENDATIONS
-  // ============================================================
+  const RecommendedForYou({
+    super.key,
+    this.onViewAll,
+    this.onProgramTap,
+  });
 
-  static const List<_Recommendation> _items = [
-    _Recommendation(
-      title: 'Lower Back\nPain Relief',
-      programs: '12 Programs',
-      imagePath:
-          'assets/images/recommendations/lower_back_relief.png',
-    ),
-    _Recommendation(
-      title: 'Knee Care &\nStrengthening',
-      programs: '9 Programs',
-      imagePath:
-          'assets/images/recommendations/knee_strengthening.png',
-    ),
-    _Recommendation(
-      title: 'Posture\nCorrection',
-      programs: '8 Programs',
-      imagePath:
-          'assets/images/recommendations/posture_correction.png',
-    ),
-    _Recommendation(
-      title: 'Neck Pain\nRelief',
-      programs: '7 Programs',
-      imagePath:
-          'assets/images/recommendations/neck_pain_relief.png',
-    ),
-  ];
+  // ==============================================================
+  // SERVICE
+  // ==============================================================
+
+  static final RecoveryProgramService _programService =
+      RecoveryProgramService();
+
+  // ==============================================================
+  // BUILD
+  // ==============================================================
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ========================================================
+        // ==========================================================
         // SECTION HEADER
-        // ========================================================
+        // ==========================================================
 
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -66,31 +56,36 @@ class RecommendedForYou extends StatelessWidget {
                 child: InkWell(
                   borderRadius:
                       BorderRadius.circular(20),
-                  onTap: () {
-                    // TODO:
-                    // Open all recommendations.
-                  },
+
+                  onTap: onViewAll,
+
                   child: const Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 4,
                       vertical: 6,
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize:
+                          MainAxisSize.min,
                       children: [
                         Text(
                           'View all',
                           style: TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF5146D9),
-                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                            color:
+                                Color(0xFF5146D9),
+                            fontWeight:
+                                FontWeight.w800,
                           ),
                         ),
+
                         SizedBox(width: 2),
+
                         Icon(
                           Icons.chevron_right_rounded,
                           size: 19,
-                          color: Color(0xFF5146D9),
+                          color:
+                              Color(0xFF5146D9),
                         ),
                       ],
                     ),
@@ -103,79 +98,133 @@ class RecommendedForYou extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // ========================================================
-        // LARGE PREMIUM HORIZONTAL CARDS
-        // ========================================================
+        // ==========================================================
+        // FIREBASE PROGRAMS
+        // ==========================================================
 
-        SizedBox(
-          height: 148,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-
-            padding: const EdgeInsets.only(
-              right: 4,
-            ),
-
-            itemCount: _items.length,
-
-            separatorBuilder: (_, __) {
-              return const SizedBox(width: 12);
-            },
-
-            itemBuilder: (context, index) {
-              final item = _items[index];
-
-              return _RecommendationCard(
-                item: item,
-                onTap: () {
-                  // TODO:
-                  // Open recommendation details.
-                },
-              );
-            },
+        StreamBuilder<List<RecoveryProgramModel>>(
+          stream: _programService.streamFeaturedPrograms(
+            limit: 10,
           ),
+
+          builder: (
+            context,
+            snapshot,
+          ) {
+            // ======================================================
+            // LOADING
+            // ======================================================
+
+            if (snapshot.connectionState ==
+                    ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const _ProgramsLoading();
+            }
+
+            // ======================================================
+            // ERROR
+            // ======================================================
+
+            if (snapshot.hasError) {
+              debugPrint(
+                'Recommended programs error: '
+                '${snapshot.error}',
+              );
+
+              return _ProgramsError(
+                onRetry: () {},
+              );
+            }
+
+            final programs =
+                snapshot.data ?? [];
+
+            // ======================================================
+            // EMPTY STATE
+            // ======================================================
+
+            if (programs.isEmpty) {
+              return const _ProgramsEmpty();
+            }
+
+            // ======================================================
+            // PROGRAM LIST
+            // ======================================================
+
+            return SizedBox(
+              height: 148,
+
+              child: ListView.separated(
+                scrollDirection:
+                    Axis.horizontal,
+
+                physics:
+                    const BouncingScrollPhysics(),
+
+                padding:
+                    const EdgeInsets.only(
+                  right: 4,
+                ),
+
+                itemCount:
+                    programs.length,
+
+                separatorBuilder:
+                    (_, __) {
+                  return const SizedBox(
+                    width: 12,
+                  );
+                },
+
+                itemBuilder:
+                    (context, index) {
+                  final program =
+                      programs[index];
+
+                  return _RecommendationCard(
+                    program: program,
+
+                    onTap: () {
+                      if (onProgramTap !=
+                          null) {
+                        onProgramTap!(
+                          program,
+                        );
+                      } else {
+                        debugPrint(
+                          'Selected recovery program: '
+                          '${program.title}',
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            );
+          },
         ),
       ],
     );
   }
 }
 
-
 // ================================================================
-// MODEL
-// ================================================================
-
-class _Recommendation {
-  final String title;
-  final String programs;
-  final String imagePath;
-
-  const _Recommendation({
-    required this.title,
-    required this.programs,
-    required this.imagePath,
-  });
-}
-
-
-// ================================================================
-// PREMIUM RECOMMENDATION CARD
+// RECOMMENDATION CARD
 // ================================================================
 
 class _RecommendationCard extends StatelessWidget {
-  final _Recommendation item;
+  final RecoveryProgramModel program;
   final VoidCallback onTap;
 
   const _RecommendationCard({
-    required this.item,
+    required this.program,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 285,
+      width: 230,
 
       child: Material(
         color: Colors.transparent,
@@ -184,30 +233,29 @@ class _RecommendationCard extends StatelessWidget {
           onTap: onTap,
 
           borderRadius:
-              BorderRadius.circular(24),
+              BorderRadius.circular(20),
 
           child: Ink(
             decoration: BoxDecoration(
               color: Colors.white,
 
               borderRadius:
-                  BorderRadius.circular(24),
+                  BorderRadius.circular(20),
 
               border: Border.all(
-                color: const Color(0xFFE7EAF3),
-                width: 1,
+                color:
+                    const Color(0xFFE7EAF2),
               ),
 
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF26345C)
-                      .withOpacity(.065),
+                      .withOpacity(.055),
 
-                  blurRadius: 22,
+                  blurRadius: 16,
 
-                  spreadRadius: 0,
-
-                  offset: const Offset(0, 8),
+                  offset:
+                      const Offset(0, 6),
                 ),
               ],
             ),
@@ -215,80 +263,23 @@ class _RecommendationCard extends StatelessWidget {
             child: Row(
               children: [
                 // ==================================================
-                // LARGE IMAGE
+                // PROGRAM IMAGE
                 // ==================================================
 
                 Padding(
-                  padding: const EdgeInsets.all(6),
+                  padding:
+                      const EdgeInsets.all(6),
+
                   child: ClipRRect(
                     borderRadius:
-                        BorderRadius.circular(19),
+                        BorderRadius.circular(15),
 
                     child: SizedBox(
-                      width: 112,
-                      height: 136,
+                      width: 82,
+                      height: 94,
 
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(
-                            item.imagePath,
-
-                            fit: BoxFit.cover,
-
-                            errorBuilder: (
-                              context,
-                              error,
-                              stackTrace,
-                            ) {
-                              return Container(
-                                color:
-                                    const Color(0xFFF0F3FF),
-
-                                child: const Icon(
-                                  Icons
-                                      .medical_services_outlined,
-
-                                  color:
-                                      Color(0xFF6571D0),
-
-                                  size: 34,
-                                ),
-                              );
-                            },
-                          ),
-
-                          // ------------------------------------------------
-                          // PREMIUM IMAGE OVERLAY
-                          // ------------------------------------------------
-
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            height: 45,
-
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient:
-                                    LinearGradient(
-                                  begin:
-                                      Alignment.topCenter,
-
-                                  end:
-                                      Alignment.bottomCenter,
-
-                                  colors: [
-                                    Colors.transparent,
-
-                                    Colors.black
-                                        .withOpacity(.20),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: _ProgramImage(
+                        program: program,
                       ),
                     ),
                   ),
@@ -300,58 +291,51 @@ class _RecommendationCard extends StatelessWidget {
 
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      7,
-                      13,
-                      12,
-                      12,
+                    padding:
+                        const EdgeInsets.fromLTRB(
+                      3,
+                      8,
+                      9,
+                      8,
                     ),
 
                     child: Column(
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
 
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+
                       children: [
-                        // ------------------------------------------------
-                        // SMALL CATEGORY LABEL
-                        // ------------------------------------------------
+                        // CATEGORY
 
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 4,
-                          ),
+                        Text(
+                          program.displayCategory,
 
-                          decoration: BoxDecoration(
+                          maxLines: 1,
+
+                          overflow:
+                              TextOverflow.ellipsis,
+
+                          style: const TextStyle(
+                            fontSize: 9.5,
+
                             color:
-                                const Color(0xFFF1F0FF),
+                                Color(0xFF756BE7),
 
-                            borderRadius:
-                                BorderRadius.circular(8),
-                          ),
+                            fontWeight:
+                                FontWeight.w800,
 
-                          child: const Text(
-                            'PHYSIO PROGRAM',
-                            style: TextStyle(
-                              fontSize: 7,
-                              color:
-                                  Color(0xFF5B50D6),
-                              fontWeight:
-                                  FontWeight.w800,
-                              letterSpacing: .45,
-                            ),
+                            letterSpacing: .6,
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
 
-                        // ------------------------------------------------
                         // TITLE
-                        // ------------------------------------------------
 
                         Text(
-                          item.title,
+                          program.title,
 
                           maxLines: 2,
 
@@ -359,109 +343,396 @@ class _RecommendationCard extends StatelessWidget {
                               TextOverflow.ellipsis,
 
                           style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.18,
+                            fontSize: 13,
+
+                            height: 1.2,
 
                             color:
-                                Color(0xFF111936),
+                                Color(0xFF121A3A),
 
                             fontWeight:
                                 FontWeight.w800,
 
-                            letterSpacing: -.3,
+                            letterSpacing: -.25,
                           ),
                         ),
 
                         const SizedBox(height: 7),
 
-                        // ------------------------------------------------
                         // PROGRAM COUNT
-                        // ------------------------------------------------
 
                         Row(
                           children: [
                             const Icon(
-                              Icons.play_circle_outline_rounded,
-                              size: 14,
+                              Icons.auto_awesome_outlined,
+
+                              size: 13,
+
                               color:
-                                  Color(0xFF7A82A0),
+                                  Color(0xFF6571D0),
                             ),
 
-                            const SizedBox(width: 5),
+                            const SizedBox(
+                              width: 4,
+                            ),
 
-                            Text(
-                              item.programs,
+                            Expanded(
+                              child: Text(
+                                program
+                                    .displayProgramCount,
 
-                              style:
-                                  const TextStyle(
-                                fontSize: 10,
-                                color:
-                                    Color(0xFF737C99),
-                                fontWeight:
-                                    FontWeight.w600,
+                                maxLines: 1,
+
+                                overflow:
+                                    TextOverflow
+                                        .ellipsis,
+
+                                style:
+                                    const TextStyle(
+                                  fontSize: 10.5,
+
+                                  color:
+                                      Color(0xFF68708A),
+
+                                  fontWeight:
+                                      FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
 
-                        const Spacer(),
+                        // DIFFICULTY
 
-                        // ------------------------------------------------
-                        // ARROW
-                        // ------------------------------------------------
+                        if (program
+                            .difficultyLevel
+                            .trim()
+                            .isNotEmpty) ...[
+                          const SizedBox(
+                            height: 6,
+                          ),
 
-                        Align(
-                          alignment:
-                              Alignment.bottomRight,
-
-                          child: Container(
-                            width: 34,
-                            height: 34,
+                          Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
 
                             decoration:
                                 BoxDecoration(
-                              shape:
-                                  BoxShape.circle,
-
-                              gradient:
-                                  const LinearGradient(
-                                begin:
-                                    Alignment.topLeft,
-
-                                end:
-                                    Alignment.bottomRight,
-
-                                colors: [
-                                  Color(0xFF6256E8),
-                                  Color(0xFF4338CA),
-                                ],
+                              color:
+                                  const Color(
+                                0xFFF1F0FF,
                               ),
 
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      const Color(
-                                    0xFF5146D9,
-                                  ).withOpacity(.20),
-
-                                  blurRadius: 10,
-
-                                  offset:
-                                      const Offset(
-                                    0,
-                                    4,
-                                  ),
-                                ),
-                              ],
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(8),
                             ),
 
-                            child: const Icon(
-                              Icons
-                                  .arrow_forward_rounded,
+                            child: Text(
+                              program
+                                  .displayDifficulty,
 
-                              size: 17,
+                              maxLines: 1,
 
-                              color: Colors.white,
+                              overflow:
+                                  TextOverflow
+                                      .ellipsis,
+
+                              style:
+                                  const TextStyle(
+                                fontSize: 8.5,
+
+                                color:
+                                    Color(0xFF5146D9),
+
+                                fontWeight:
+                                    FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ================================================================
+// PROGRAM IMAGE
+// ================================================================
+
+class _ProgramImage extends StatelessWidget {
+  final RecoveryProgramModel program;
+
+  const _ProgramImage({
+    required this.program,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // ==============================================================
+    // NETWORK IMAGE
+    // ==============================================================
+
+    if (program.hasNetworkImage) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            program.imageUrl,
+
+            fit: BoxFit.cover,
+
+            loadingBuilder: (
+              context,
+              child,
+              loadingProgress,
+            ) {
+              if (loadingProgress == null) {
+                return child;
+              }
+
+              return _imagePlaceholder();
+            },
+
+            errorBuilder: (
+              context,
+              error,
+              stackTrace,
+            ) {
+              // If network image fails,
+              // try local asset.
+
+              if (program.hasAssetImage) {
+                return _assetImage();
+              }
+
+              return _imagePlaceholder();
+            },
+          ),
+
+          _imageGradient(),
+        ],
+      );
+    }
+
+    // ==============================================================
+    // LOCAL ASSET IMAGE
+    // ==============================================================
+
+    if (program.hasAssetImage) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          _assetImage(),
+
+          _imageGradient(),
+        ],
+      );
+    }
+
+    // ==============================================================
+    // NO IMAGE
+    // ==============================================================
+
+    return _imagePlaceholder();
+  }
+
+  Widget _assetImage() {
+    return Image.asset(
+      program.imagePath,
+
+      fit: BoxFit.cover,
+
+      errorBuilder: (
+        context,
+        error,
+        stackTrace,
+      ) {
+        return _imagePlaceholder();
+      },
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      color: const Color(0xFFF0F3FF),
+
+      child: const Center(
+        child: Icon(
+          Icons.medical_services_outlined,
+
+          color:
+              Color(0xFF6571D0),
+
+          size: 30,
+        ),
+      ),
+    );
+  }
+
+  Widget _imageGradient() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+
+              end: Alignment.bottomCenter,
+
+              colors: [
+                Colors.transparent,
+
+                Colors.black.withOpacity(.15),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ================================================================
+// LOADING STATE
+// ================================================================
+
+class _ProgramsLoading extends StatelessWidget {
+  const _ProgramsLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 148,
+
+      child: ListView.separated(
+        scrollDirection:
+            Axis.horizontal,
+
+        physics:
+            const NeverScrollableScrollPhysics(),
+
+        itemCount: 3,
+
+        separatorBuilder:
+            (_, __) =>
+                const SizedBox(width: 12),
+
+        itemBuilder:
+            (_, __) {
+          return Container(
+            width: 230,
+
+            decoration: BoxDecoration(
+              color: Colors.white,
+
+              borderRadius:
+                  BorderRadius.circular(20),
+
+              border: Border.all(
+                color:
+                    const Color(0xFFE7EAF2),
+              ),
+            ),
+
+            child: Row(
+              children: [
+                Container(
+                  width: 82,
+                  height: 94,
+
+                  margin:
+                      const EdgeInsets.all(6),
+
+                  decoration: BoxDecoration(
+                    color:
+                        const Color(0xFFF0F2F8),
+
+                    borderRadius:
+                        BorderRadius.circular(15),
+                  ),
+                ),
+
+                Expanded(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.all(12),
+
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+
+                      children: [
+                        Container(
+                          width: 55,
+                          height: 9,
+
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(
+                              0xFFF0F2F8,
+                            ),
+
+                            borderRadius:
+                                BorderRadius.circular(
+                              10,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 9,
+                        ),
+
+                        Container(
+                          width: double.infinity,
+                          height: 13,
+
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(
+                              0xFFF0F2F8,
+                            ),
+
+                            borderRadius:
+                                BorderRadius.circular(
+                              10,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 7,
+                        ),
+
+                        Container(
+                          width: 80,
+                          height: 11,
+
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(
+                              0xFFF0F2F8,
+                            ),
+
+                            borderRadius:
+                                BorderRadius.circular(
+                              10,
                             ),
                           ),
                         ),
@@ -471,8 +742,179 @@ class _RecommendationCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ================================================================
+// EMPTY STATE
+// ================================================================
+
+class _ProgramsEmpty extends StatelessWidget {
+  const _ProgramsEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+
+      height: 125,
+
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 18,
+      ),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius:
+            BorderRadius.circular(20),
+
+        border: Border.all(
+          color:
+              const Color(0xFFE7EAF2),
         ),
+      ),
+
+      child: const Row(
+        children: [
+          Icon(
+            Icons.self_improvement_outlined,
+
+            size: 34,
+
+            color:
+                Color(0xFF6571D0),
+          ),
+
+          SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  'Recovery programs coming soon',
+                  style: TextStyle(
+                    fontSize: 14,
+
+                    color:
+                        Color(0xFF121A3A),
+
+                    fontWeight:
+                        FontWeight.w800,
+                  ),
+                ),
+
+                SizedBox(height: 4),
+
+                Text(
+                  'Personalized programs will appear here.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+
+                    color:
+                        Color(0xFF7B8297),
+
+                    fontWeight:
+                        FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ================================================================
+// ERROR STATE
+// ================================================================
+
+class _ProgramsError extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _ProgramsError({
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 16,
+      ),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius:
+            BorderRadius.circular(20),
+
+        border: Border.all(
+          color:
+              const Color(0xFFFFE2E2),
+        ),
+      ),
+
+      child: Row(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+
+            color:
+                Color(0xFFE26D6D),
+
+            size: 28,
+          ),
+
+          const SizedBox(width: 12),
+
+          const Expanded(
+            child: Text(
+              'Unable to load recommendations',
+              style: TextStyle(
+                fontSize: 12.5,
+
+                color:
+                    Color(0xFF5B6070),
+
+                fontWeight:
+                    FontWeight.w600,
+              ),
+            ),
+          ),
+
+          TextButton(
+            onPressed: onRetry,
+
+            child: const Text(
+              'Retry',
+              style: TextStyle(
+                color:
+                    Color(0xFF5146D9),
+
+                fontWeight:
+                    FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

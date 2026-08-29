@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
+
 import 'widgets/home_header.dart';
 import 'widgets/hero_banner.dart';
 import 'widgets/home_search.dart';
@@ -9,15 +12,95 @@ import 'widgets/recommended_for_you.dart';
 import 'widgets/home_offer.dart';
 import 'widgets/why_choose_us.dart';
 import 'widgets/need_help.dart';
-import 'widgets/home_bottom_nav.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // ============================================================
+  // SERVICES
+  // ============================================================
+
+  final AuthService _authService = AuthService();
+
+  // ============================================================
+  // USER DATA
+  // ============================================================
+
+  UserModel? _user;
+
+  bool _isLoading = true;
+
+  String? _error;
+
+  // ============================================================
+  // INIT STATE
+  // ============================================================
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadHomeData();
+  }
+
+  // ============================================================
+  // LOAD HOME DATA
+  // ============================================================
+
+  Future<void> _loadHomeData() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final user =
+          await _authService.getCurrentUserProfile();
+
+      if (!mounted) return;
+
+      setState(() {
+        _user = user;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint(
+        'Home user loading error: $e',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  // ============================================================
+  // REFRESH HOME
+  // ============================================================
+
+  Future<void> _refreshHome() async {
+    await _loadHomeData();
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FC),
+      backgroundColor:
+          const Color(0xFFF5F7FC),
 
       // ==========================================================
       // HOME CONTENT
@@ -25,171 +108,283 @@ class HomeScreen extends StatelessWidget {
 
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
-          physics:
-              const BouncingScrollPhysics(),
 
-          padding: const EdgeInsets.fromLTRB(
-            22,
-            18,
-            22,
-            28,
-          ),
+        child: RefreshIndicator(
+          onRefresh: _refreshHome,
 
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+          child: SingleChildScrollView(
+            physics:
+                const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
 
-            children: [
-              // ==================================================
-              // HOME HEADER
-              // ==================================================
+            padding:
+                const EdgeInsets.fromLTRB(
+              22,
+              18,
+              22,
+              28,
+            ),
 
-              HomeHeader(
-                userName: null,
-                profileImageUrl: null,
-                unreadNotificationCount: 0,
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
 
-                onMenuTap: () {
-                  // Menu screen later.
-                },
+              children: [
+                // ==================================================
+                // HOME HEADER
+                // ==================================================
 
-                onNotificationTap: () {
-                  // Notifications screen later.
-                },
+                HomeHeader(
+                  userName: _user?.name,
 
-                onMessagesTap: () {
-                  // Messages screen later.
-                },
+                  profileImageUrl:
+                      _user?.profileImageUrl,
 
-                onProfileTap: () {
-                  // Profile screen later.
-                },
-              ),
+                  // Notifications will be connected
+                  // with Firestore later.
+                  unreadNotificationCount: 0,
 
-              const SizedBox(height: 18),
+                  onMenuTap: () {
+                    debugPrint(
+                      'Menu tapped',
+                    );
+                  },
 
-              // ==================================================
-              // SEARCH
-              // ==================================================
+                  onNotificationTap: () {
+                    debugPrint(
+                      'Notifications tapped',
+                    );
+                  },
 
-              HomeSearch(
-                onFilterTap: () {
-                  // Filter screen later.
-                },
-              ),
+                  onMessagesTap: () {
+                    debugPrint(
+                      'Messages tapped',
+                    );
+                  },
 
-              const SizedBox(height: 16),
+                  onProfileTap: () {
+                    debugPrint(
+                      'Profile tapped',
+                    );
+                  },
+                ),
 
-              // ==================================================
-              // HERO BANNER
-              // ==================================================
+                // ==================================================
+                // LOADING INDICATOR
+                // ==================================================
 
-              HeroBanner(
-                onBookNow: () {
-                  // Booking flow later.
-                },
-              ),
+                if (_isLoading) ...[
+                  const SizedBox(height: 8),
 
-              const SizedBox(height: 24),
+                  const LinearProgressIndicator(
+                    minHeight: 2,
+                    backgroundColor:
+                        Colors.transparent,
+                  ),
+                ],
 
-              // ==================================================
-              // WHAT'S BOTHERING YOU
-              // ==================================================
+                // ==================================================
+                // ERROR STATE
+                // ==================================================
 
-              WhatsBotheringYou(
-                onAreaSelected: (areaId) {
-                  debugPrint(
-                    'Selected pain area: $areaId',
-                  );
+                if (_error != null &&
+                    !_isLoading) ...[
+                  const SizedBox(height: 10),
 
-                  // Later:
-                  // Open relevant physiotherapists
-                  // or start booking flow.
-                },
+                  GestureDetector(
+                    onTap: _loadHomeData,
 
-                onAssessmentTap: () {
-                  // Assessment screen later.
-                },
-              ),
+                    child: Container(
+                      width: double.infinity,
 
-              const SizedBox(height: 20),
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
 
-              // ==================================================
-              // UPCOMING APPOINTMENT
-              // ==================================================
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFFFFF1F1),
 
-              const UpcomingAppointment(),
+                        borderRadius:
+                            BorderRadius.circular(14),
 
-              const SizedBox(height: 20),
+                        border: Border.all(
+                          color:
+                              const Color(0xFFFFD5D5),
+                        ),
+                      ),
 
-              // ==================================================
-              // RECOMMENDED FOR YOU
-              // ==================================================
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.cloud_off_rounded,
+                            size: 18,
+                            color:
+                                Color(0xFFE05252),
+                          ),
 
-              const RecommendedForYou(),
+                          const SizedBox(width: 9),
 
-              const SizedBox(height: 18),
+                          const Expanded(
+                            child: Text(
+                              'Unable to refresh your profile. Tap to try again.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    Color(0xFF9B3D3D),
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ),
 
-              // ==================================================
-              // FIRST SESSION OFFER
-              // ==================================================
+                          const Icon(
+                            Icons.refresh_rounded,
+                            size: 18,
+                            color:
+                                Color(0xFFE05252),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
 
-              HomeOffer(
-                onBookNow: () {
-                  // Booking flow later.
-                },
-              ),
+                const SizedBox(height: 18),
 
-              const SizedBox(height: 20),
+                // ==================================================
+                // SEARCH
+                // ==================================================
 
-              // ==================================================
-              // WHY CHOOSE US
-              // ==================================================
+                HomeSearch(
+                  onFilterTap: () {
+                    debugPrint(
+                      'Filter tapped',
+                    );
+                  },
+                ),
 
-              const WhyChooseUs(),
+                const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
+                // ==================================================
+                // HERO BANNER
+                // ==================================================
 
-              // ==================================================
-              // NEED HELP
-              // ==================================================
+                HeroBanner(
+                  onBookNow: () {
+                    debugPrint(
+                      'Book now tapped',
+                    );
 
-              NeedHelp(
-                onChatTap: () {
-                  // Support/chat screen later.
-                },
-              ),
+                    // Booking flow later.
+                  },
+                ),
 
-              // Bottom spacing so content doesn't
-              // touch the navigation bar.
-              const SizedBox(height: 18),
-            ],
+                const SizedBox(height: 24),
+
+                // ==================================================
+                // WHAT'S BOTHERING YOU
+                // ==================================================
+
+                WhatsBotheringYou(
+                  onAreaSelected: (areaId) {
+                    debugPrint(
+                      'Selected pain area: $areaId',
+                    );
+
+                    // Later:
+                    // Navigate to filtered physiotherapists.
+                  },
+
+                  onAssessmentTap: () {
+                    debugPrint(
+                      'Assessment tapped',
+                    );
+
+                    // Assessment screen later.
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // UPCOMING APPOINTMENT
+                // ==================================================
+
+                UpcomingAppointment(
+  onTap: () {
+    // Open appointment details later.
+  },
+),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // RECOMMENDED FOR YOU
+                // ==================================================
+                RecommendedForYou(
+  onViewAll: () {
+    // Recovery programs screen later.
+  },
+  onProgramTap: (program) {
+    debugPrint(
+      'Selected program: ${program.title}',
+    );
+
+    // Program details screen later.
+  },
+),
+
+
+                const SizedBox(height: 18),
+
+                // ==================================================
+                // FIRST SESSION OFFER
+                // ==================================================
+
+                HomeOffer(
+                  onBookNow: () {
+                    debugPrint(
+                      'First session offer tapped',
+                    );
+
+                    // Booking flow later.
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // WHY CHOOSE US
+                // ==================================================
+
+                const WhyChooseUs(),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // NEED HELP
+                // ==================================================
+
+                NeedHelp(
+                  onChatTap: () {
+                    debugPrint(
+                      'Support chat tapped',
+                    );
+
+                    // Support/chat later.
+                  },
+                ),
+
+                const SizedBox(height: 18),
+              ],
+            ),
           ),
         ),
       ),
-
-      // ==========================================================
-      // BOTTOM NAVIGATION
-      // ==========================================================
-
-      // bottomNavigationBar: HomeBottomNav(
-      //   currentIndex: 0,
-
-      //   onChanged: (index) {
-      //     debugPrint(
-      //       'Selected navigation index: $index',
-      //     );
-
-      //     // Navigation will be connected later.
-      //     //
-      //     // 0 = Home
-      //     // 1 = Explore
-      //     // 2 = Bookings
-      //     // 3 = Recovery
-      //     // 4 = Profile
-      //   },
-      // ),
     );
   }
 }

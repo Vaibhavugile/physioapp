@@ -1,16 +1,53 @@
 import 'package:flutter/material.dart';
 
+import '../../../models/user_location_model.dart';
+
 class ExploreSearch extends StatelessWidget {
   final VoidCallback? onFilterTap;
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onLocationTap;
+
+  // =============================================================
+  // SELECTED LOCATION
+  // =============================================================
+
+  final UserLocationModel? selectedLocation;
 
   const ExploreSearch({
     super.key,
     this.onFilterTap,
     this.onSearchChanged,
     this.onLocationTap,
+    this.selectedLocation,
   });
+
+  // =============================================================
+  // LOCATION DISPLAY HELPERS
+  // =============================================================
+
+  String get _locationTitle {
+    if (selectedLocation == null) {
+      return 'Select your location';
+    }
+
+    if (selectedLocation!.isCurrentLocation) {
+      return 'Current location';
+    }
+
+    return selectedLocation!.shortDisplayName;
+  }
+
+  String get _locationSubtitle {
+    if (selectedLocation == null) {
+      return 'Choose an area to find physiotherapists near you';
+    }
+
+    if (selectedLocation!.isCurrentLocation) {
+      return selectedLocation!.displayName;
+    }
+
+    return selectedLocation!.displayName;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +64,7 @@ class ExploreSearch extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
 
-            borderRadius:
-                BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
 
             border: Border.all(
               color: const Color(0xFFE4E7F0),
@@ -49,7 +85,7 @@ class ExploreSearch extends StatelessWidget {
               const SizedBox(width: 12),
 
               // ===================================================
-              // SEARCH ICON CONTAINER
+              // SEARCH ICON
               // ===================================================
 
               Container(
@@ -57,8 +93,7 @@ class ExploreSearch extends StatelessWidget {
                 height: 38,
 
                 decoration: BoxDecoration(
-                  gradient:
-                      const LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
@@ -67,8 +102,7 @@ class ExploreSearch extends StatelessWidget {
                     ],
                   ),
 
-                  borderRadius:
-                      BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
 
                 child: const Icon(
@@ -81,55 +115,45 @@ class ExploreSearch extends StatelessWidget {
               const SizedBox(width: 10),
 
               // ===================================================
-              // TEXT FIELD
+              // SEARCH FIELD
               // ===================================================
 
               Expanded(
                 child: TextField(
                   onChanged: onSearchChanged,
 
-                  textInputAction:
-                      TextInputAction.search,
+                  textInputAction: TextInputAction.search,
 
                   textCapitalization:
                       TextCapitalization.sentences,
 
-                  cursorColor:
-                      const Color(0xFF5146D9),
+                  cursorColor: const Color(0xFF5146D9),
 
-                  decoration:
-                      const InputDecoration(
+                  decoration: const InputDecoration(
                     border: InputBorder.none,
 
-                    enabledBorder:
-                        InputBorder.none,
+                    enabledBorder: InputBorder.none,
 
-                    focusedBorder:
-                        InputBorder.none,
+                    focusedBorder: InputBorder.none,
 
                     isDense: true,
 
-                    contentPadding:
-                        EdgeInsets.zero,
+                    contentPadding: EdgeInsets.zero,
 
                     hintText:
                         'Search physios, conditions...',
 
                     hintStyle: TextStyle(
                       fontSize: 11.5,
-                      color:
-                          Color(0xFF9299AE),
-                      fontWeight:
-                          FontWeight.w500,
+                      color: Color(0xFF9299AE),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
 
                   style: const TextStyle(
                     fontSize: 11.5,
-                    color:
-                        Color(0xFF151D3D),
-                    fontWeight:
-                        FontWeight.w700,
+                    color: Color(0xFF151D3D),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -141,9 +165,7 @@ class ExploreSearch extends StatelessWidget {
               Container(
                 width: 1,
                 height: 28,
-
-                color:
-                    const Color(0xFFE8EAF1),
+                color: const Color(0xFFE8EAF1),
               ),
 
               const SizedBox(width: 7),
@@ -155,45 +177,34 @@ class ExploreSearch extends StatelessWidget {
               GestureDetector(
                 onTap: onFilterTap,
 
-                behavior:
-                    HitTestBehavior.opaque,
+                behavior: HitTestBehavior.opaque,
 
                 child: Container(
                   width: 44,
                   height: 44,
 
-                  margin:
-                      const EdgeInsets.only(
+                  margin: const EdgeInsets.only(
                     right: 6,
                   ),
 
                   decoration: BoxDecoration(
-                    gradient:
-                        const LinearGradient(
-                      begin:
-                          Alignment.topLeft,
-                      end:
-                          Alignment.bottomRight,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                       colors: [
                         Color(0xFF6D58EA),
                         Color(0xFF5146D9),
                       ],
                     ),
 
-                    borderRadius:
-                        BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14),
 
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            const Color(
-                          0xFF5146D9,
-                        ).withOpacity(.22),
-
+                        color: const Color(0xFF5146D9)
+                            .withOpacity(.22),
                         blurRadius: 12,
-
-                        offset:
-                            const Offset(0, 5),
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -218,14 +229,12 @@ class ExploreSearch extends StatelessWidget {
         GestureDetector(
           onTap: onLocationTap,
 
-          behavior:
-              HitTestBehavior.opaque,
+          behavior: HitTestBehavior.opaque,
 
           child: Container(
             width: double.infinity,
 
-            padding:
-                const EdgeInsets.fromLTRB(
+            padding: const EdgeInsets.fromLTRB(
               12,
               11,
               12,
@@ -235,24 +244,20 @@ class ExploreSearch extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
 
-              borderRadius:
-                  BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(18),
 
               border: Border.all(
-                color:
-                    const Color(0xFFE5E8F0),
+                color: selectedLocation == null
+                    ? const Color(0xFFE5E8F0)
+                    : const Color(0xFFDCD8FF),
               ),
 
               boxShadow: [
                 BoxShadow(
-                  color:
-                      const Color(0xFF202B50)
-                          .withOpacity(.04),
-
+                  color: const Color(0xFF202B50)
+                      .withOpacity(.04),
                   blurRadius: 17,
-
-                  offset:
-                      const Offset(0, 6),
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -264,125 +269,162 @@ class ExploreSearch extends StatelessWidget {
                 // =================================================
 
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 42,
+                  height: 42,
 
                   decoration: BoxDecoration(
-                    gradient:
-                        const LinearGradient(
-                      begin:
-                          Alignment.topLeft,
-                      end:
-                          Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFE6F9F4),
-                        Color(0xFFEAF5FF),
-                      ],
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: selectedLocation == null
+                          ? const [
+                              Color(0xFFF3F4F8),
+                              Color(0xFFE9ECF3),
+                            ]
+                          : const [
+                              Color(0xFFF0EDFF),
+                              Color(0xFFE6F0FF),
+                            ],
                     ),
 
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(13),
                   ),
 
-                  child: const Icon(
-                    Icons.location_on_rounded,
-                    size: 19,
-                    color:
-                        Color(0xFF079F87),
+                  child: Icon(
+                    selectedLocation?.isCurrentLocation == true
+                        ? Icons.my_location_rounded
+                        : Icons.location_on_rounded,
+
+                    size: 21,
+
+                    color: selectedLocation == null
+                        ? const Color(0xFF7E879C)
+                        : const Color(0xFF5146D9),
                   ),
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
 
                 // =================================================
-                // LOCATION DETAILS
+                // LOCATION TEXT
                 // =================================================
 
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
+
                     children: [
                       Row(
                         children: [
                           Text(
-                            'YOUR LOCATION',
-                            style: TextStyle(
-                              fontSize: 7,
-                              color:
-                                  Color(0xFF9299AE),
-                              fontWeight:
-                                  FontWeight.w800,
-                              letterSpacing: .6,
+                            selectedLocation?.isCurrentLocation ==
+                                    true
+                                ? 'YOUR CURRENT LOCATION'
+                                : selectedLocation == null
+                                    ? 'LOCATION'
+                                    : 'SELECTED LOCATION',
+
+                            style: const TextStyle(
+                              fontSize: 9.5,
+                              letterSpacing: .7,
+                              color: Color(0xFF9299AE),
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
 
-                          SizedBox(width: 5),
+                          if (selectedLocation
+                                  ?.isCurrentLocation ==
+                              true) ...[
+                            const SizedBox(width: 6),
 
-                          // LIVE DOT
-                          _LiveDot(),
+                            Container(
+                              width: 6,
+                              height: 6,
+
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1DBF73),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
 
-                      SizedBox(height: 3),
+                      const SizedBox(height: 3),
 
                       Text(
-                        'Pune, Maharashtra',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color:
-                              Color(0xFF151D3D),
-                          fontWeight:
-                              FontWeight.w800,
-                          letterSpacing: -.1,
+                        _locationTitle,
+
+                        maxLines: 1,
+
+                        overflow: TextOverflow.ellipsis,
+
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          color: Color(0xFF151D3D),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        _locationSubtitle,
+
+                        maxLines: 1,
+
+                        overflow: TextOverflow.ellipsis,
+
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: Color(0xFF7C8498),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
 
+                const SizedBox(width: 8),
+
                 // =================================================
                 // CHANGE BUTTON
                 // =================================================
 
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 10,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
                     vertical: 8,
                   ),
 
                   decoration: BoxDecoration(
-                    color:
-                        const Color(0xFFF3F1FF),
+                    color: const Color(0xFFF1EFFF),
 
-                    borderRadius:
-                        BorderRadius.circular(11),
+                    borderRadius: BorderRadius.circular(12),
                   ),
 
-                  child: const Row(
-                    mainAxisSize:
-                        MainAxisSize.min,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Change',
-                        style: TextStyle(
-                          fontSize: 8,
-                          color:
-                              Color(0xFF5146D9),
-                          fontWeight:
-                              FontWeight.w800,
+                        selectedLocation == null
+                            ? 'Choose'
+                            : 'Change',
+
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: Color(0xFF5146D9),
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
 
-                      SizedBox(width: 2),
+                      const SizedBox(width: 3),
 
-                      Icon(
-                        Icons
-                            .chevron_right_rounded,
-                        size: 15,
-                        color:
-                            Color(0xFF5146D9),
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 16,
+                        color: Color(0xFF5146D9),
                       ),
                     ],
                   ),
@@ -392,29 +434,6 @@ class ExploreSearch extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-
-// ===============================================================
-// LIVE LOCATION DOT
-// ===============================================================
-
-class _LiveDot extends StatelessWidget {
-  const _LiveDot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 5,
-      height: 5,
-
-      decoration:
-          const BoxDecoration(
-        color: Color(0xFF079F87),
-        shape: BoxShape.circle,
-      ),
     );
   }
 }
