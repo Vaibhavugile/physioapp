@@ -1,184 +1,49 @@
 import 'package:flutter/material.dart';
 
+import '../models/physio_match_model.dart';
 import '../physio_profile_screen.dart';
 
 class TopRatedPhysios extends StatelessWidget {
+  final List<PhysioMatchModel> matches;
+
+  final ValueChanged<PhysioMatchModel>? onPhysioTap;
+
   final VoidCallback? onSeeAll;
 
   const TopRatedPhysios({
     super.key,
+    required this.matches,
+    this.onPhysioTap,
     this.onSeeAll,
   });
 
-  // ===============================================================
-  // HARD-CODED PHYSIOTHERAPISTS
-  // ===============================================================
-
-  static const List<_Physio> _physios = [
-    _Physio(
-      id: 'arjun',
-      name: 'Dr. Arjun Mehta',
-      specialty: 'Pain Management',
-      distance: '2.4 km',
-      price: '₹549',
-      rating: '4.9',
-      reviews: '230',
-      image: 'assets/images/doctor_1.png',
-      experience: 8,
-    ),
-    _Physio(
-      id: 'priya',
-      name: 'Dr. Priya Kapoor',
-      specialty: 'Neuro Physiotherapy',
-      distance: '2.7 km',
-      price: '₹599',
-      rating: '4.8',
-      reviews: '184',
-      image: 'assets/images/doctor_1.png',
-      experience: 7,
-    ),
-    _Physio(
-      id: 'rohan',
-      name: 'Dr. Rohan Verma',
-      specialty: 'Sports Physiotherapy',
-      distance: '3.1 km',
-      price: '₹549',
-      rating: '4.8',
-      reviews: '156',
-      image: 'assets/images/doctor_1.png',
-      experience: 6,
-    ),
-    _Physio(
-      id: 'ananya',
-      name: 'Dr. Ananya Rao',
-      specialty: 'Orthopedic Physiotherapy',
-      distance: '3.6 km',
-      price: '₹599',
-      rating: '4.9',
-      reviews: '211',
-      image: 'assets/images/doctor_1.png',
-      experience: 9,
-    ),
-    _Physio(
-      id: 'karan',
-      name: 'Dr. Karan Shah',
-      specialty: 'Sports Rehabilitation',
-      distance: '4.1 km',
-      price: '₹549',
-      rating: '4.7',
-      reviews: '143',
-      image: 'assets/images/doctor_1.png',
-      experience: 6,
-    ),
-    _Physio(
-      id: 'meera',
-      name: 'Dr. Meera Joshi',
-      specialty: 'Women’s Physiotherapy',
-      distance: '4.5 km',
-      price: '₹649',
-      rating: '4.9',
-      reviews: '198',
-      image: 'assets/images/doctor_1.png',
-      experience: 10,
-    ),
-    _Physio(
-      id: 'aditya',
-      name: 'Dr. Aditya Nair',
-      specialty: 'Spine & Back Care',
-      distance: '4.8 km',
-      price: '₹599',
-      rating: '4.8',
-      reviews: '172',
-      image: 'assets/images/doctor_1.png',
-      experience: 8,
-    ),
-    _Physio(
-      id: 'isha',
-      name: 'Dr. Isha Malhotra',
-      specialty: 'Neuro Rehabilitation',
-      distance: '5.2 km',
-      price: '₹649',
-      rating: '4.9',
-      reviews: '205',
-      image: 'assets/images/doctor_1.png',
-      experience: 9,
-    ),
-    _Physio(
-      id: 'vivek',
-      name: 'Dr. Vivek Patil',
-      specialty: 'Joint & Mobility Care',
-      distance: '5.6 km',
-      price: '₹549',
-      rating: '4.7',
-      reviews: '129',
-      image: 'assets/images/doctor_1.png',
-      experience: 5,
-    ),
-    _Physio(
-      id: 'neha',
-      name: 'Dr. Neha Sharma',
-      specialty: 'Orthopedic & Sports',
-      distance: '6.1 km',
-      price: '₹599',
-      rating: '4.9',
-      reviews: '230',
-      image: 'assets/images/doctor_1.png',
-      experience: 8,
-    ),
-    _Physio(
-      id: 'rahul',
-      name: 'Dr. Rahul Desai',
-      specialty: 'Pain & Rehabilitation',
-      distance: '6.5 km',
-      price: '₹549',
-      rating: '4.8',
-      reviews: '167',
-      image: 'assets/images/doctor_1.png',
-      experience: 7,
-    ),
-    _Physio(
-      id: 'simran',
-      name: 'Dr. Simran Kaur',
-      specialty: 'Posture & Recovery',
-      distance: '7.1 km',
-      price: '₹599',
-      rating: '4.8',
-      reviews: '151',
-      image: 'assets/images/doctor_1.png',
-      experience: 6,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-      children: [
+    if (matches.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         // =========================================================
         // HEADER
         // =========================================================
 
         Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-
             const Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Top rated near you',
                     style: TextStyle(
                       fontSize: 17,
                       height: 1.1,
-                      color:
-                          Color(0xFF111A3D),
-                      fontWeight:
-                          FontWeight.w900,
+                      color: Color(0xFF111A3D),
+                      fontWeight: FontWeight.w900,
                       letterSpacing: -.5,
                     ),
                   ),
@@ -190,67 +55,58 @@ class TopRatedPhysios extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 9,
                       height: 1.1,
-                      color:
-                          Color(0xFF7B849C),
-                      fontWeight:
-                          FontWeight.w600,
+                      color: Color(0xFF7B849C),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
 
+            // =====================================================
+            // SEE ALL
+            // =====================================================
+
             GestureDetector(
               onTap: onSeeAll,
-              behavior:
-                  HitTestBehavior.opaque,
+              behavior: HitTestBehavior.opaque,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 11,
                   vertical: 8,
                 ),
-                decoration:
-                    BoxDecoration(
-                  gradient:
-                      const LinearGradient(
-                    begin:
-                        Alignment.topLeft,
-                    end:
-                        Alignment.bottomRight,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
                       Color(0xFFF3F1FF),
                       Color(0xFFEEF8F7),
                     ],
                   ),
-                  borderRadius:
-                      BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color:
-                        const Color(0xFFE1E0F4),
+                    color: const Color(0xFFE1E0F4),
                   ),
                 ),
                 child: const Row(
-                  mainAxisSize:
-                      MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'See all',
                       style: TextStyle(
                         fontSize: 9,
-                        color:
-                            Color(0xFF5146D9),
-                        fontWeight:
-                            FontWeight.w900,
+                        color: Color(0xFF5146D9),
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
+
                     SizedBox(width: 4),
+
                     Icon(
-                      Icons
-                          .arrow_forward_rounded,
+                      Icons.arrow_forward_rounded,
                       size: 13,
-                      color:
-                          Color(0xFF5146D9),
+                      color: Color(0xFF5146D9),
                     ),
                   ],
                 ),
@@ -262,15 +118,15 @@ class TopRatedPhysios extends StatelessWidget {
         const SizedBox(height: 15),
 
         // =========================================================
-        // 2 COLUMN DOCTOR GRID
+        // REAL FIREBASE PHYSIOTHERAPISTS
         // =========================================================
 
         GridView.builder(
           shrinkWrap: true,
-          physics:
-              const NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
-          itemCount: _physios.length,
+
+          itemCount: matches.length,
 
           gridDelegate:
               const SliverGridDelegateWithFixedCrossAxisCount(
@@ -281,37 +137,55 @@ class TopRatedPhysios extends StatelessWidget {
           ),
 
           itemBuilder: (context, index) {
-            final physio =
-                _physios[index];
+            final match = matches[index];
 
             return _PhysioCard(
-              physio: physio,
+              match: match,
 
               onTap: () {
+                // ------------------------------------------------
+                // CUSTOM CALLBACK
+                // ------------------------------------------------
+
+                if (onPhysioTap != null) {
+                  onPhysioTap!(match);
+                  return;
+                }
+
+                // ------------------------------------------------
+                // DEFAULT PROFILE NAVIGATION
+                // ------------------------------------------------
+
+                final physio = match.physiotherapist;
+
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        PhysioProfileScreen(
-                      doctorName:
-                          physio.name,
-                      doctorImage:
-                          physio.image,
-                      specialty:
-                          physio.specialty,
-                      rating:
-                          double.tryParse(
-                                physio.rating,
-                              ) ??
-                              4.8,
-                      reviews:
-                          int.tryParse(
-                                physio.reviews,
-                              ) ??
-                              0,
-                      experience:
-                          physio.experience,
-                      distance:
-                          physio.distance,
+                    builder: (_) => PhysioProfileScreen(
+                      doctorName: _doctorName(physio.fullName),
+
+                      doctorImage: _profileImage(
+                        physio,
+                      ),
+
+                      specialty: _specialty(
+                        physio,
+                      ),
+
+                      rating: _rating(
+                        physio.rating,
+                      ),
+
+                      reviews: _reviews(
+                        physio,
+                      ),
+
+                      experience: _experience(
+                        physio,
+                      ),
+
+                      distance: _distance(
+                        match,
+                      ),
                     ),
                   ),
                 );
@@ -322,80 +196,296 @@ class TopRatedPhysios extends StatelessWidget {
       ],
     );
   }
-}
 
+  // ===============================================================
+  // DOCTOR NAME
+  // ===============================================================
+
+  static String _doctorName(
+    String name,
+  ) {
+    final trimmed = name.trim();
+
+    if (trimmed.isEmpty) {
+      return 'Physiotherapist';
+    }
+
+    if (trimmed.toLowerCase().startsWith('dr.')) {
+      return trimmed;
+    }
+
+    return 'Dr. $trimmed';
+  }
+
+  // ===============================================================
+  // PROFILE IMAGE
+  // ===============================================================
+
+  static String _profileImage(
+    dynamic physio,
+  ) {
+    try {
+      final value =
+          physio.profileImageUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    try {
+      final value =
+          physio.profilePhotoUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    try {
+      final value =
+          physio.imageUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    return '';
+  }
+
+  // ===============================================================
+  // SPECIALTY
+  // ===============================================================
+
+  static String _specialty(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.specializations;
+
+      if (value is List && value.isNotEmpty) {
+        return value.first.toString();
+      }
+    } catch (_) {}
+
+    try {
+      final value = physio.specialization;
+
+      if (value != null &&
+          value.toString().trim().isNotEmpty) {
+        return value.toString();
+      }
+    } catch (_) {}
+
+    return 'Physiotherapy';
+  }
+
+  // ===============================================================
+  // RATING
+  // ===============================================================
+
+  static double _rating(
+    dynamic value,
+  ) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(
+          value?.toString() ?? '',
+        ) ??
+        0.0;
+  }
+
+  // ===============================================================
+  // REVIEWS
+  // ===============================================================
+
+  static int _reviews(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.reviewCount;
+
+      if (value is num) {
+        return value.toInt();
+      }
+
+      return int.tryParse(
+            value?.toString() ?? '',
+          ) ??
+          0;
+    } catch (_) {}
+
+    try {
+      final value = physio.reviews;
+
+      if (value is num) {
+        return value.toInt();
+      }
+
+      return int.tryParse(
+            value?.toString() ?? '',
+          ) ??
+          0;
+    } catch (_) {}
+
+    return 0;
+  }
+
+  // ===============================================================
+  // EXPERIENCE
+  // ===============================================================
+
+  static int _experience(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.experienceYears;
+
+      if (value is num) {
+        return value.toInt();
+      }
+
+      return int.tryParse(
+            value?.toString() ?? '',
+          ) ??
+          0;
+    } catch (_) {}
+
+    try {
+      final value = physio.experience;
+
+      if (value is num) {
+        return value.toInt();
+      }
+
+      return int.tryParse(
+            value?.toString() ?? '',
+          ) ??
+          0;
+    } catch (_) {}
+
+    return 0;
+  }
+
+  // ===============================================================
+  // DISTANCE
+  // ===============================================================
+
+  static String _distance(
+    PhysioMatchModel match,
+  ) {
+    try {
+      final value = match.distanceKm;
+
+      if (value < 1) {
+        return '${(value * 1000).round()} m away';
+      }
+
+      return '${value.toStringAsFixed(1)} km away';
+    } catch (_) {
+      return 'Nearby';
+    }
+  }
+}
 
 // ===================================================================
 // PHYSIO CARD
 // ===================================================================
 
-class _PhysioCard
-    extends StatelessWidget {
-  final _Physio physio;
+class _PhysioCard extends StatelessWidget {
+  final PhysioMatchModel match;
+
   final VoidCallback? onTap;
 
   const _PhysioCard({
-    required this.physio,
+    required this.match,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final physio = match.physiotherapist;
+
+    final name = _getDoctorName(
+      physio.fullName,
+    );
+
+    final specialty = _getSpecialty(
+      physio,
+    );
+
+    final rating = _getRating(
+      physio.rating,
+    );
+
+    final reviews = _getReviews(
+      physio,
+    );
+
+    final distance = _getDistance(
+      match,
+    );
+
+    final price = _getPrice(
+      physio,
+    );
+
+    final imageUrl = _getImageUrl(
+      physio,
+    );
+
     return Material(
       color: Colors.transparent,
-
       child: InkWell(
         onTap: onTap,
-        borderRadius:
-            BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22),
 
-        splashColor:
-            const Color(0xFF5146D9)
-                .withOpacity(.06),
+        splashColor: const Color(
+          0xFF5146D9,
+        ).withOpacity(.06),
 
-        highlightColor:
-            const Color(0xFF5146D9)
-                .withOpacity(.025),
+        highlightColor: const Color(
+          0xFF5146D9,
+        ).withOpacity(.025),
 
         child: Container(
           width: double.infinity,
 
-          decoration:
-              BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
 
-            borderRadius:
-                BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(22),
 
             border: Border.all(
-              color:
-                  const Color(0xFFE3E6EF),
+              color: const Color(0xFFE3E6EF),
               width: .9,
             ),
 
             boxShadow: [
               BoxShadow(
-                color:
-                    const Color(0xFF26345C)
-                        .withOpacity(.075),
+                color: const Color(
+                  0xFF26345C,
+                ).withOpacity(.075),
+
                 blurRadius: 22,
                 spreadRadius: -5,
-                offset:
-                    const Offset(0, 9),
+                offset: const Offset(0, 9),
               ),
             ],
           ),
 
-          clipBehavior:
-              Clip.antiAlias,
+          clipBehavior: Clip.antiAlias,
 
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.start,
-            children: [
 
+            children: [
               // =====================================================
-              // DOCTOR IMAGE
+              // IMAGE
               // =====================================================
 
               SizedBox(
@@ -405,16 +495,12 @@ class _PhysioCard
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-
                     Container(
                       decoration:
                           const BoxDecoration(
-                        gradient:
-                            LinearGradient(
-                          begin:
-                              Alignment.topLeft,
-                          end:
-                              Alignment.bottomRight,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                           colors: [
                             Color(0xFFF0F2FF),
                             Color(0xFFE8F9F5),
@@ -423,30 +509,9 @@ class _PhysioCard
                       ),
                     ),
 
-                    Image.asset(
-                      physio.image,
-                      fit: BoxFit.cover,
-                      alignment:
-                          Alignment.topCenter,
-
-                      errorBuilder: (
-                        context,
-                        error,
-                        stackTrace,
-                      ) {
-                        return const Center(
-                          child: Icon(
-                            Icons
-                                .person_rounded,
-                            size: 52,
-                            color:
-                                Color(0xFF5B64D9),
-                          ),
-                        );
-                      },
+                    _buildProfileImage(
+                      imageUrl,
                     ),
-
-                    // IMAGE FADE
 
                     Positioned(
                       left: 0,
@@ -454,16 +519,11 @@ class _PhysioCard
                       bottom: 0,
                       height: 45,
 
-                      child:
-                          DecoratedBox(
-                        decoration:
-                            BoxDecoration(
-                          gradient:
-                              LinearGradient(
-                            begin:
-                                Alignment.topCenter,
-                            end:
-                                Alignment.bottomCenter,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
                               Colors.black
@@ -482,27 +542,26 @@ class _PhysioCard
 
                       child: Container(
                         padding:
-                            const EdgeInsets
-                                .symmetric(
+                            const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 5,
                         ),
 
-                        decoration:
-                            BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Colors.white
                               .withOpacity(.97),
+
                           borderRadius:
-                              BorderRadius
-                                  .circular(9),
+                              BorderRadius.circular(9),
 
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black
                                   .withOpacity(.10),
+
                               blurRadius: 8,
-                              offset:
-                                  const Offset(
+
+                              offset: const Offset(
                                 0,
                                 3,
                               ),
@@ -513,24 +572,21 @@ class _PhysioCard
                         child: const Row(
                           mainAxisSize:
                               MainAxisSize.min,
+
                           children: [
                             Icon(
-                              Icons
-                                  .verified_rounded,
+                              Icons.verified_rounded,
                               size: 11,
-                              color:
-                                  Color(0xFF079F87),
+                              color: Color(0xFF079F87),
                             ),
+
                             SizedBox(width: 3),
+
                             Text(
                               'Verified',
-                              style:
-                                  TextStyle(
+                              style: TextStyle(
                                 fontSize: 7,
-                                color:
-                                    Color(
-                                  0xFF087F75,
-                                ),
+                                color: Color(0xFF087F75),
                                 fontWeight:
                                     FontWeight.w900,
                               ),
@@ -540,7 +596,7 @@ class _PhysioCard
                       ),
                     ),
 
-                    // FAVORITE
+                    // FAVORITE ICON
 
                     Positioned(
                       top: 9,
@@ -550,22 +606,21 @@ class _PhysioCard
                         width: 32,
                         height: 32,
 
-                        decoration:
-                            BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Colors.white
                               .withOpacity(.96),
-                          shape:
-                              BoxShape.circle,
+
+                          shape: BoxShape.circle,
 
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  const Color(
+                              color: const Color(
                                 0xFF26345C,
                               ).withOpacity(.13),
+
                               blurRadius: 9,
-                              offset:
-                                  const Offset(
+
+                              offset: const Offset(
                                 0,
                                 3,
                               ),
@@ -574,11 +629,9 @@ class _PhysioCard
                         ),
 
                         child: const Icon(
-                          Icons
-                              .favorite_border_rounded,
+                          Icons.favorite_border_rounded,
                           size: 17,
-                          color:
-                              Color(0xFF26345C),
+                          color: Color(0xFF26345C),
                         ),
                       ),
                     ),
@@ -605,62 +658,53 @@ class _PhysioCard
                         CrossAxisAlignment.start,
 
                     children: [
-
-                      // NAME
-
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              physio.name,
+                              name,
+
                               maxLines: 1,
+
                               overflow:
                                   TextOverflow.ellipsis,
 
-                              style:
-                                  const TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11.2,
                                 height: 1.1,
                                 color:
                                     Color(0xFF111A3D),
                                 fontWeight:
                                     FontWeight.w900,
-                                letterSpacing:
-                                    -.25,
+                                letterSpacing: -.25,
                               ),
                             ),
                           ),
 
-                          const SizedBox(
-                            width: 3,
-                          ),
+                          const SizedBox(width: 3),
 
                           const Icon(
-                            Icons
-                                .verified_rounded,
+                            Icons.verified_rounded,
                             size: 13,
-                            color:
-                                Color(0xFF079F87),
+                            color: Color(0xFF079F87),
                           ),
                         ],
                       ),
 
                       const SizedBox(height: 5),
 
-                      // SPECIALTY
-
                       Text(
-                        physio.specialty,
+                        specialty,
+
                         maxLines: 2,
+
                         overflow:
                             TextOverflow.ellipsis,
 
-                        style:
-                            const TextStyle(
+                        style: const TextStyle(
                           fontSize: 7.8,
                           height: 1.25,
-                          color:
-                              Color(0xFF68728B),
+                          color: Color(0xFF68728B),
                           fontWeight:
                               FontWeight.w600,
                         ),
@@ -675,42 +719,36 @@ class _PhysioCard
                           const Icon(
                             Icons.star_rounded,
                             size: 15,
-                            color:
-                                Color(0xFFFFB21A),
+                            color: Color(0xFFFFB21A),
                           ),
 
-                          const SizedBox(
-                            width: 3,
-                          ),
+                          const SizedBox(width: 3),
 
                           Text(
-                            physio.rating,
-                            style:
-                                const TextStyle(
+                            rating.toStringAsFixed(1),
+
+                            style: const TextStyle(
                               fontSize: 9,
-                              color:
-                                  Color(0xFF202744),
+                              color: Color(0xFF202744),
                               fontWeight:
                                   FontWeight.w900,
                             ),
                           ),
 
-                          const SizedBox(
-                            width: 3,
-                          ),
+                          const SizedBox(width: 3),
 
                           Flexible(
                             child: Text(
-                              '(${physio.reviews})',
+                              '($reviews)',
+
                               maxLines: 1,
+
                               overflow:
                                   TextOverflow.ellipsis,
 
-                              style:
-                                  const TextStyle(
+                              style: const TextStyle(
                                 fontSize: 7,
-                                color:
-                                    Color(0xFF8A92A8),
+                                color: Color(0xFF8A92A8),
                                 fontWeight:
                                     FontWeight.w600,
                               ),
@@ -721,34 +759,30 @@ class _PhysioCard
 
                       const SizedBox(height: 7),
 
-                      // LOCATION
+                      // DISTANCE
 
                       Row(
                         children: [
                           const Icon(
-                            Icons
-                                .location_on_rounded,
+                            Icons.location_on_rounded,
                             size: 14,
-                            color:
-                                Color(0xFF079F87),
+                            color: Color(0xFF079F87),
                           ),
 
-                          const SizedBox(
-                            width: 3,
-                          ),
+                          const SizedBox(width: 3),
 
                           Expanded(
                             child: Text(
-                              physio.distance,
+                              distance,
+
                               maxLines: 1,
+
                               overflow:
                                   TextOverflow.ellipsis,
 
-                              style:
-                                  const TextStyle(
+                              style: const TextStyle(
                                 fontSize: 7.5,
-                                color:
-                                    Color(0xFF69728D),
+                                color: Color(0xFF69728D),
                                 fontWeight:
                                     FontWeight.w700,
                               ),
@@ -760,13 +794,10 @@ class _PhysioCard
                       const Spacer(),
 
                       Container(
-                        width:
-                            double.infinity,
+                        width: double.infinity,
                         height: 1,
                         color:
-                            const Color(
-                          0xFFEDEFF4,
-                        ),
+                            const Color(0xFFEDEFF4),
                       ),
 
                       const SizedBox(height: 8),
@@ -776,62 +807,51 @@ class _PhysioCard
                       Row(
                         crossAxisAlignment:
                             CrossAxisAlignment.center,
-                        children: [
 
+                        children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start,
+                                  CrossAxisAlignment.start,
+
                               children: [
                                 const Text(
                                   'FROM',
-                                  style:
-                                      TextStyle(
+
+                                  style: TextStyle(
                                     fontSize: 6,
                                     color:
-                                        Color(
-                                      0xFF98A0B4,
-                                    ),
+                                        Color(0xFF98A0B4),
                                     fontWeight:
                                         FontWeight.w900,
-                                    letterSpacing:
-                                        .4,
+                                    letterSpacing: .4,
                                   ),
                                 ),
 
-                                const SizedBox(
-                                  height: 2,
-                                ),
+                                const SizedBox(height: 2),
 
                                 Text(
-                                  physio.price,
-                                  style:
-                                      const TextStyle(
+                                  price,
+
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     height: 1,
                                     color:
-                                        Color(
-                                      0xFF079F87,
-                                    ),
+                                        Color(0xFF079F87),
                                     fontWeight:
                                         FontWeight.w900,
                                   ),
                                 ),
 
-                                const SizedBox(
-                                  height: 2,
-                                ),
+                                const SizedBox(height: 2),
 
                                 const Text(
                                   'per session',
-                                  style:
-                                      TextStyle(
+
+                                  style: TextStyle(
                                     fontSize: 6.5,
                                     color:
-                                        Color(
-                                      0xFF8A92A8,
-                                    ),
+                                        Color(0xFF8A92A8),
                                     fontWeight:
                                         FontWeight.w600,
                                   ),
@@ -844,51 +864,39 @@ class _PhysioCard
                             width: 33,
                             height: 33,
 
-                            decoration:
-                                BoxDecoration(
+                            decoration: BoxDecoration(
                               gradient:
                                   const LinearGradient(
-                                begin:
-                                    Alignment.topLeft,
+                                begin: Alignment.topLeft,
                                 end:
                                     Alignment.bottomRight,
                                 colors: [
-                                  Color(
-                                    0xFF6C59EA,
-                                  ),
-                                  Color(
-                                    0xFF5146D9,
-                                  ),
+                                  Color(0xFF6C59EA),
+                                  Color(0xFF5146D9),
                                 ],
                               ),
 
                               borderRadius:
-                                  BorderRadius
-                                      .circular(11),
+                                  BorderRadius.circular(11),
 
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const Color(
+                                  color: const Color(
                                     0xFF5146D9,
                                   ).withOpacity(.20),
+
                                   blurRadius: 9,
+
                                   offset:
-                                      const Offset(
-                                    0,
-                                    4,
-                                  ),
+                                      const Offset(0, 4),
                                 ),
                               ],
                             ),
 
-                            child:
-                                const Icon(
-                              Icons
-                                  .arrow_forward_rounded,
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
                               size: 15,
-                              color:
-                                  Colors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ],
@@ -903,33 +911,217 @@ class _PhysioCard
       ),
     );
   }
-}
 
+  // ===============================================================
+  // IMAGE WIDGET
+  // ===============================================================
 
-// ===================================================================
-// MODEL
-// ===================================================================
+  Widget _buildProfileImage(
+    String imageUrl,
+  ) {
+    if (imageUrl.trim().isEmpty) {
+      return const Center(
+        child: Icon(
+          Icons.person_rounded,
+          size: 52,
+          color: Color(0xFF5B64D9),
+        ),
+      );
+    }
 
-class _Physio {
-  final String id;
-  final String name;
-  final String specialty;
-  final String distance;
-  final String price;
-  final String rating;
-  final String reviews;
-  final String image;
-  final int experience;
+    final isNetwork =
+        imageUrl.startsWith('http://') ||
+            imageUrl.startsWith('https://');
 
-  const _Physio({
-    required this.id,
-    required this.name,
-    required this.specialty,
-    required this.distance,
-    required this.price,
-    required this.rating,
-    required this.reviews,
-    required this.image,
-    required this.experience,
-  });
+    if (isNetwork) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+
+        errorBuilder: (
+          context,
+          error,
+          stackTrace,
+        ) {
+          return const Center(
+            child: Icon(
+              Icons.person_rounded,
+              size: 52,
+              color: Color(0xFF5B64D9),
+            ),
+          );
+        },
+      );
+    }
+
+    return Image.asset(
+      imageUrl,
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
+
+      errorBuilder: (
+        context,
+        error,
+        stackTrace,
+      ) {
+        return const Center(
+          child: Icon(
+            Icons.person_rounded,
+            size: 52,
+            color: Color(0xFF5B64D9),
+          ),
+        );
+      },
+    );
+  }
+
+  // ===============================================================
+  // HELPERS
+  // ===============================================================
+
+  String _getDoctorName(
+    String name,
+  ) {
+    final trimmed = name.trim();
+
+    if (trimmed.isEmpty) {
+      return 'Physiotherapist';
+    }
+
+    if (trimmed.toLowerCase().startsWith('dr.')) {
+      return trimmed;
+    }
+
+    return 'Dr. $trimmed';
+  }
+
+  String _getSpecialty(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.specializations;
+
+      if (value is List && value.isNotEmpty) {
+        return value.first.toString();
+      }
+    } catch (_) {}
+
+    try {
+      final value = physio.specialization;
+
+      if (value != null &&
+          value.toString().trim().isNotEmpty) {
+        return value.toString();
+      }
+    } catch (_) {}
+
+    return 'Physiotherapy';
+  }
+
+  double _getRating(
+    dynamic value,
+  ) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(
+          value?.toString() ?? '',
+        ) ??
+        0.0;
+  }
+
+  int _getReviews(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.reviewCount;
+
+      if (value is num) {
+        return value.toInt();
+      }
+    } catch (_) {}
+
+    try {
+      final value = physio.reviews;
+
+      if (value is num) {
+        return value.toInt();
+      }
+    } catch (_) {}
+
+    return 0;
+  }
+
+  String _getDistance(
+    PhysioMatchModel match,
+  ) {
+    try {
+      final distance = match.distanceKm;
+
+      if (distance < 1) {
+        return '${(distance * 1000).round()} m away';
+      }
+
+      return '${distance.toStringAsFixed(1)} km away';
+    } catch (_) {
+      return 'Nearby';
+    }
+  }
+
+  String _getPrice(
+    dynamic physio,
+  ) {
+    try {
+      final value = physio.sessionPrice;
+
+      if (value is num && value > 0) {
+        return '₹${value.toStringAsFixed(0)}';
+      }
+    } catch (_) {}
+
+    try {
+      final value = physio.consultationFee;
+
+      if (value is num && value > 0) {
+        return '₹${value.toStringAsFixed(0)}';
+      }
+    } catch (_) {}
+
+    return '₹--';
+  }
+
+  String _getImageUrl(
+    dynamic physio,
+  ) {
+    try {
+      final value =
+          physio.profileImageUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    try {
+      final value =
+          physio.profilePhotoUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    try {
+      final value =
+          physio.imageUrl?.toString().trim();
+
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {}
+
+    return '';
+  }
 }
