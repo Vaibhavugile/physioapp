@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/user_location_model.dart';
+import '../../models/physiotherapist_model.dart';
 
 import 'models/physio_match_model.dart';
 import 'services/explore_physio_service.dart';
@@ -58,9 +59,17 @@ class _ExploreScreenState
   // PHYSIOTHERAPIST DATA
   // ==============================================================
 
-  List<dynamic> _physiotherapists = [];
+  /// IMPORTANT:
+  /// This must NOT be List<dynamic>.
+  ///
+  /// PhysioMatchingService expects:
+  /// List<PhysiotherapistModel>
+  ///
+  List<PhysiotherapistModel> _physiotherapists =
+      <PhysiotherapistModel>[];
 
-  List<PhysioMatchModel> _matches = [];
+  List<PhysioMatchModel> _matches =
+      <PhysioMatchModel>[];
 
   // ==============================================================
   // UI STATES
@@ -94,7 +103,8 @@ class _ExploreScreenState
     }
 
     try {
-      final physiotherapists =
+      final List<PhysiotherapistModel>
+          physiotherapists =
           await _physioService
               .getAvailablePhysiotherapists();
 
@@ -145,21 +155,19 @@ class _ExploreScreenState
 
     if (_selectedLocation == null) {
       setState(() {
-        _matches = [];
+        _matches = <PhysioMatchModel>[];
       });
 
       return;
     }
 
     try {
-      final matches =
+      final List<PhysioMatchModel> matches =
           _matchingService.getMatches(
         physiotherapists: _physiotherapists,
         userLocation: _selectedLocation!,
-        selectedCondition:
-            _selectedCondition,
-        searchQuery:
-            _searchQuery,
+        selectedCondition: _selectedCondition,
+        searchQuery: _searchQuery,
       );
 
       if (!mounted) {
@@ -183,7 +191,7 @@ class _ExploreScreenState
       }
 
       setState(() {
-        _matches = [];
+        _matches = <PhysioMatchModel>[];
 
         _errorMessage =
             'Unable to find matching physiotherapists.';
@@ -206,14 +214,11 @@ class _ExploreScreenState
   void _handleSearchChanged(
     String value,
   ) {
-    final query = value.trim();
+    final String query = value.trim();
 
     setState(() {
       _searchQuery = query;
     });
-
-    // No Firebase request needed.
-    // Just recalculate cached physiotherapists.
 
     _calculateMatches();
   }
@@ -226,10 +231,6 @@ class _ExploreScreenState
     String condition,
   ) {
     setState(() {
-      // ----------------------------------------------------------
-      // TAP SAME CONDITION AGAIN = CLEAR CONDITION
-      // ----------------------------------------------------------
-
       if (_selectedCondition == condition) {
         _selectedCondition = null;
       } else {
@@ -276,9 +277,9 @@ class _ExploreScreenState
                   CrossAxisAlignment.start,
 
               children: [
-                // ================================================
+                // ==================================================
                 // HEADER
-                // ================================================
+                // ==================================================
 
                 ExploreHeader(
                   onNotificationTap: () {
@@ -296,9 +297,9 @@ class _ExploreScreenState
 
                 const SizedBox(height: 18),
 
-                // ================================================
+                // ==================================================
                 // SEARCH + LOCATION
-                // ================================================
+                // ==================================================
 
                 ExploreSearch(
                   selectedLocation:
@@ -316,9 +317,9 @@ class _ExploreScreenState
 
                 const SizedBox(height: 26),
 
-                // ================================================
+                // ==================================================
                 // POPULAR CONDITIONS
-                // ================================================
+                // ==================================================
 
                 PopularConditions(
                   onSelected:
@@ -330,9 +331,9 @@ class _ExploreScreenState
 
                 const SizedBox(height: 28),
 
-                // ================================================
+                // ==================================================
                 // RECOMMENDED TITLE
-                // ================================================
+                // ==================================================
 
                 const Text(
                   'Recommended for you',
@@ -362,17 +363,17 @@ class _ExploreScreenState
 
                 const SizedBox(height: 14),
 
-                // ================================================
+                // ==================================================
                 // PHYSIOTHERAPIST CONTENT
-                // ================================================
+                // ==================================================
 
                 _buildPhysioContent(),
 
                 const SizedBox(height: 28),
 
-                // ================================================
+                // ==================================================
                 // TRUST STATS
-                // ================================================
+                // ==================================================
 
                 const ExploreTrustStats(),
 
@@ -436,21 +437,22 @@ class _ExploreScreenState
     // BEST MATCH
     // ------------------------------------------------------------
 
-    final bestMatch =
+    final PhysioMatchModel bestMatch =
         _matches.first;
 
     // ------------------------------------------------------------
     // TOP RATED
     // ------------------------------------------------------------
 
-    final topRated =
+    final List<PhysioMatchModel> topRated =
         List<PhysioMatchModel>.from(
       _matches,
-    )
-          ..sort(
-            (a, b) =>
-                b.physiotherapist.rating
-                    .compareTo(
+    )..sort(
+            (
+              PhysioMatchModel a,
+              PhysioMatchModel b,
+            ) =>
+                b.physiotherapist.rating.compareTo(
               a.physiotherapist.rating,
             ),
           );
@@ -744,7 +746,7 @@ class _ExploreScreenState
 
   Future<void>
       _openLocationSelection() async {
-    final location =
+    final UserLocationModel? location =
         await showModalBottomSheet<
             UserLocationModel>(
       context: context,

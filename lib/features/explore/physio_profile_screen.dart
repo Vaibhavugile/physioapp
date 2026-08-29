@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../booking/booking_details_screen.dart';
-import '../models/physio_match_model.dart';
+import 'models/physio_match_model.dart';
 
 class PhysioProfileScreen extends StatefulWidget {
   final PhysioMatchModel match;

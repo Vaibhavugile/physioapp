@@ -9,11 +9,11 @@ import '../../../models/physiotherapist_model.dart';
 //
 // Fetches real physiotherapists from Firebase Firestore.
 //
-// Only returns physiotherapists that are:
+// Returns only physiotherapists that are:
 //
 // ✓ Active
 // ✓ Verified
-// ✓ Profile completed
+// ✓ Approved / Verified status
 //
 // ================================================================
 
@@ -24,15 +24,13 @@ class ExplorePhysioService {
   // COLLECTION
   // ==============================================================
 
-  static const String _collectionName =
-      'physiotherapists';
+  static const String _collectionName = 'physiotherapists';
 
   // ==============================================================
   // FIRESTORE INSTANCE
   // ==============================================================
 
-  FirebaseFirestore get _firestore =>
-      FirebaseFirestore.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   // ==============================================================
   // GET AVAILABLE PHYSIOTHERAPISTS
@@ -41,51 +39,23 @@ class ExplorePhysioService {
   Future<List<PhysiotherapistModel>>
       getAvailablePhysiotherapists() async {
     try {
-      final snapshot = await _firestore
-          .collection(_collectionName)
-          .get();
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await _firestore
+              .collection(_collectionName)
+              .get();
 
-      final physiotherapists =
+      final List<PhysiotherapistModel> physiotherapists =
           <PhysiotherapistModel>[];
 
-      for (final document in snapshot.docs) {
+      for (final QueryDocumentSnapshot<Map<String, dynamic>>
+          document in snapshot.docs) {
         try {
-          // ========================================================
-          // CREATE MODEL DIRECTLY FROM FIRESTORE DOCUMENT
-          // ========================================================
-
-          final physio =
+          final PhysiotherapistModel physio =
               PhysiotherapistModel.fromFirestore(
             document,
           );
 
-          // ========================================================
-          // ONLY ACTIVE PHYSIOS
-          // ========================================================
-
-          if (!physio.isActive) {
-            continue;
-          }
-
-          // ========================================================
-          // ONLY VERIFIED PHYSIOS
-          // ========================================================
-
-          if (!physio.isVerified) {
-            continue;
-          }
-
-          // ========================================================
-          // ONLY APPROVED PROFILES
-          // ========================================================
-
-          final verificationStatus =
-              physio.verificationStatus
-                  .trim()
-                  .toLowerCase();
-
-          if (verificationStatus != 'approved' &&
-              verificationStatus != 'verified') {
+          if (!_isAvailableForExplore(physio)) {
             continue;
           }
 
@@ -101,6 +71,42 @@ class ExplorePhysioService {
           );
         }
       }
+
+      // ============================================================
+      // SORT BEST FIRST
+      // ============================================================
+
+      physiotherapists.sort(
+        (a, b) {
+          // Verified first
+          if (a.isVerified != b.isVerified) {
+            return a.isVerified ? -1 : 1;
+          }
+
+          // Higher rating first
+          final ratingCompare =
+              b.rating.compareTo(a.rating);
+
+          if (ratingCompare != 0) {
+            return ratingCompare;
+          }
+
+          // More reviews first
+          final reviewsCompare =
+              b.totalReviews.compareTo(
+            a.totalReviews,
+          );
+
+          if (reviewsCompare != 0) {
+            return reviewsCompare;
+          }
+
+          // More experience first
+          return b.experienceYears.compareTo(
+            a.experienceYears,
+          );
+        },
+      );
 
       debugPrint(
         '✅ Available physiotherapists: '
@@ -125,7 +131,7 @@ class ExplorePhysioService {
   // STREAM AVAILABLE PHYSIOTHERAPISTS
   // ==============================================================
   //
-  // Automatically updates Explore screen when Firebase data changes.
+  // Automatically updates Explore screen when Firebase changes.
   //
   // ==============================================================
 
@@ -135,48 +141,21 @@ class ExplorePhysioService {
         .collection(_collectionName)
         .snapshots()
         .map(
-      (snapshot) {
-        final physiotherapists =
+      (
+        QuerySnapshot<Map<String, dynamic>> snapshot,
+      ) {
+        final List<PhysiotherapistModel> physiotherapists =
             <PhysiotherapistModel>[];
 
-        for (final document in snapshot.docs) {
+        for (final QueryDocumentSnapshot<Map<String, dynamic>>
+            document in snapshot.docs) {
           try {
-            // ======================================================
-            // FIRESTORE → MODEL
-            // ======================================================
-
-            final physio =
+            final PhysiotherapistModel physio =
                 PhysiotherapistModel.fromFirestore(
               document,
             );
 
-            // ======================================================
-            // ACTIVE CHECK
-            // ======================================================
-
-            if (!physio.isActive) {
-              continue;
-            }
-
-            // ======================================================
-            // VERIFIED CHECK
-            // ======================================================
-
-            if (!physio.isVerified) {
-              continue;
-            }
-
-            // ======================================================
-            // APPROVAL CHECK
-            // ======================================================
-
-            final verificationStatus =
-                physio.verificationStatus
-                    .trim()
-                    .toLowerCase();
-
-            if (verificationStatus != 'approved' &&
-                verificationStatus != 'verified') {
+            if (!_isAvailableForExplore(physio)) {
               continue;
             }
 
@@ -193,6 +172,38 @@ class ExplorePhysioService {
           }
         }
 
+        // ==========================================================
+        // SORT LIVE RESULTS
+        // ==========================================================
+
+        physiotherapists.sort(
+          (a, b) {
+            if (a.isVerified != b.isVerified) {
+              return a.isVerified ? -1 : 1;
+            }
+
+            final ratingCompare =
+                b.rating.compareTo(a.rating);
+
+            if (ratingCompare != 0) {
+              return ratingCompare;
+            }
+
+            final reviewsCompare =
+                b.totalReviews.compareTo(
+              a.totalReviews,
+            );
+
+            if (reviewsCompare != 0) {
+              return reviewsCompare;
+            }
+
+            return b.experienceYears.compareTo(
+              a.experienceYears,
+            );
+          },
+        );
+
         debugPrint(
           '🔄 Live available physiotherapists: '
           '${physiotherapists.length}',
@@ -204,6 +215,53 @@ class ExplorePhysioService {
   }
 
   // ==============================================================
+  // CHECK WHETHER PHYSIO SHOULD APPEAR IN EXPLORE
+  // ==============================================================
+
+  bool _isAvailableForExplore(
+    PhysiotherapistModel physio,
+  ) {
+    // ------------------------------------------------------------
+    // ACTIVE
+    // ------------------------------------------------------------
+
+    if (!physio.isActive) {
+      return false;
+    }
+
+    // ------------------------------------------------------------
+    // VERIFIED
+    // ------------------------------------------------------------
+
+    if (!physio.isVerified) {
+      return false;
+    }
+
+    // ------------------------------------------------------------
+    // VERIFICATION STATUS
+    // ------------------------------------------------------------
+
+    final String verificationStatus =
+        physio.verificationStatus
+            .trim()
+            .toLowerCase();
+
+    const List<String> allowedStatuses =
+        <String>[
+      'approved',
+      'verified',
+    ];
+
+    if (!allowedStatuses.contains(
+      verificationStatus,
+    )) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // ==============================================================
   // GET SINGLE PHYSIOTHERAPIST
   // ==============================================================
 
@@ -212,18 +270,22 @@ class ExplorePhysioService {
     String uid,
   ) async {
     try {
-      final document = await _firestore
-          .collection(_collectionName)
-          .doc(uid)
-          .get();
+      final DocumentSnapshot<Map<String, dynamic>>
+          document = await _firestore
+              .collection(_collectionName)
+              .doc(uid)
+              .get();
 
       if (!document.exists) {
         return null;
       }
 
-      return PhysiotherapistModel.fromFirestore(
+      final PhysiotherapistModel physio =
+          PhysiotherapistModel.fromFirestore(
         document,
       );
+
+      return physio;
     } catch (error, stackTrace) {
       debugPrint(
         '❌ Error fetching physiotherapist '

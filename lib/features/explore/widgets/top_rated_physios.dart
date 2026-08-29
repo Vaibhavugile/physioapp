@@ -143,53 +143,19 @@ class TopRatedPhysios extends StatelessWidget {
               match: match,
 
               onTap: () {
-                // ------------------------------------------------
-                // CUSTOM CALLBACK
-                // ------------------------------------------------
+  if (onPhysioTap != null) {
+    onPhysioTap!(match);
+    return;
+  }
 
-                if (onPhysioTap != null) {
-                  onPhysioTap!(match);
-                  return;
-                }
-
-                // ------------------------------------------------
-                // DEFAULT PROFILE NAVIGATION
-                // ------------------------------------------------
-
-                final physio = match.physiotherapist;
-
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PhysioProfileScreen(
-                      doctorName: _doctorName(physio.fullName),
-
-                      doctorImage: _profileImage(
-                        physio,
-                      ),
-
-                      specialty: _specialty(
-                        physio,
-                      ),
-
-                      rating: _rating(
-                        physio.rating,
-                      ),
-
-                      reviews: _reviews(
-                        physio,
-                      ),
-
-                      experience: _experience(
-                        physio,
-                      ),
-
-                      distance: _distance(
-                        match,
-                      ),
-                    ),
-                  ),
-                );
-              },
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => PhysioProfileScreen(
+        match: match,
+      ),
+    ),
+  );
+},
             );
           },
         ),
