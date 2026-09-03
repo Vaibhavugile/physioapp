@@ -1,46 +1,136 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
+
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
+
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+
+    // The Flutter Gradle Plugin must be applied after
+    // the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+////////////////////////////////////////////////////////////
+/// LOAD KEY.PROPERTIES
+////////////////////////////////////////////////////////////
+
+val keystoreProperties = Properties()
+
+val keystorePropertiesFile =
+    rootProject.file("key.properties")
+
+if (keystorePropertiesFile.exists()) {
+    FileInputStream(keystorePropertiesFile).use {
+        keystoreProperties.load(it)
+    }
+}
+
 android {
-    namespace = "com.example.physio_at_home"
+
+    ////////////////////////////////////////////////////////////
+    /// APP PACKAGE
+    ////////////////////////////////////////////////////////////
+
+    namespace = "com.physiohomey.app"
+
     compileSdk = flutter.compileSdkVersion
+
     ndkVersion = flutter.ndkVersion
+
+    ////////////////////////////////////////////////////////////
+    /// JAVA CONFIGURATION
+    ////////////////////////////////////////////////////////////
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    ////////////////////////////////////////////////////////////
+    /// KOTLIN CONFIGURATION
+    ////////////////////////////////////////////////////////////
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    ////////////////////////////////////////////////////////////
+    /// DEFAULT CONFIG
+    ////////////////////////////////////////////////////////////
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.physio_at_home"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+
+        applicationId = "com.physiohomey.app"
+
         minSdk = flutter.minSdkVersion
+
         targetSdk = flutter.targetSdkVersion
+
         versionCode = flutter.versionCode
+
         versionName = flutter.versionName
     }
 
+    ////////////////////////////////////////////////////////////
+    /// RELEASE SIGNING CONFIGURATION
+    ////////////////////////////////////////////////////////////
+
+    signingConfigs {
+
+        create("release") {
+
+            if (keystorePropertiesFile.exists()) {
+
+                keyAlias =
+                    keystoreProperties["keyAlias"] as String?
+
+                keyPassword =
+                    keystoreProperties["keyPassword"] as String?
+
+                storeFile =
+                    keystoreProperties["storeFile"]
+                        ?.let { file(it as String) }
+
+                storePassword =
+                    keystoreProperties["storePassword"] as String?
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// BUILD TYPES
+    ////////////////////////////////////////////////////////////
+
     buildTypes {
+
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+
+            //////////////////////////////////////////////////////
+            /// USE YOUR RELEASE KEYSTORE
+            //////////////////////////////////////////////////////
+
+            signingConfig =
+                signingConfigs.getByName("release")
+
+            //////////////////////////////////////////////////////
+            /// RELEASE SETTINGS
+            //////////////////////////////////////////////////////
+
+            isMinifyEnabled = false
+
+            isShrinkResources = false
         }
     }
 }
+
+////////////////////////////////////////////////////////////
+/// FLUTTER
+////////////////////////////////////////////////////////////
 
 flutter {
     source = "../.."

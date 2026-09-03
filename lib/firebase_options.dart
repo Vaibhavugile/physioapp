@@ -58,18 +58,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA84k8eKz_bZQRgaat8fc2T3KDTZ477L5E',
-    appId: '1:870422620022:android:1aeb317947b638e8067c57',
+    appId: '1:870422620022:android:9488fe987e018469067c57',
     messagingSenderId: '870422620022',
     projectId: 'physio-at-home-5118e',
     storageBucket: 'physio-at-home-5118e.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBOF7qh_aywKZH7d29pOmGiDn94js3TPMo',
-    appId: '1:870422620022:ios:1b08dede86d5af3b067c57',
+    appId: '1:870422620022:ios:dafd3807fd4701d2067c57',
     messagingSenderId: '870422620022',
     projectId: 'physio-at-home-5118e',
     storageBucket: 'physio-at-home-5118e.firebasestorage.app',
-    iosBundleId: 'com.example.physioAtHome',
+    iosBundleId: 'com.physiohomey.app',
   );
 }

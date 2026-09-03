@@ -1,4 +1,4 @@
-package com.example.physio_at_home
+package com.physiohomey.app
 
 import io.flutter.embedding.android.FlutterActivity
 
