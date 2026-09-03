@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'models/booking_model.dart';
+import 'services/booking_service.dart';
 
 import 'widgets/booking_header.dart';
 import 'widgets/recovery_package_card.dart';
@@ -7,20 +11,57 @@ import 'widgets/appointment_time_selector.dart';
 import 'widgets/patient_details_card.dart';
 import 'widgets/booking_summary_card.dart';
 
+// ================================================================
+// BOOKING DETAILS SCREEN
+// ================================================================
+
 class BookingDetailsScreen extends StatefulWidget {
+  // ==============================================================
+  // PHYSIOTHERAPIST DATA
+  // ==============================================================
+
+  final String physiotherapistId;
+
   final String doctorName;
   final String doctorImage;
   final String specialty;
   final double rating;
 
+  final String? physiotherapistPhone;
+
+  // ==============================================================
+  // PRICING
+  // ==============================================================
+
+  final double baseSessionPrice;
+
+  // ==============================================================
+  // OPTIONAL PRESELECTED VALUES
+  // ==============================================================
+
+  final String initialCareMode;
+  final String? initialTime;
+
   const BookingDetailsScreen({
     super.key,
-    this.doctorName = 'Dr. Neha Sharma',
-    this.doctorImage =
-        'assets/images/doctors/doctor_1.png',
-    this.specialty =
-        'Orthopedic & Sports Physiotherapist',
-    this.rating = 4.9,
+
+    required this.physiotherapistId,
+
+    required this.doctorName,
+
+    this.doctorImage = '',
+
+    required this.specialty,
+
+    this.rating = 0,
+
+    this.physiotherapistPhone,
+
+    required this.baseSessionPrice,
+
+    this.initialCareMode = 'home',
+
+    this.initialTime,
   });
 
   @override
@@ -28,8 +69,13 @@ class BookingDetailsScreen extends StatefulWidget {
       _BookingDetailsScreenState();
 }
 
+// ================================================================
+// BOOKING DETAILS STATE
+// ================================================================
+
 class _BookingDetailsScreenState
     extends State<BookingDetailsScreen> {
+
   // ===============================================================
   // CONTROLLERS
   // ===============================================================
@@ -42,6 +88,19 @@ class _BookingDetailsScreenState
 
   final TextEditingController _addressController =
       TextEditingController();
+
+  // ===============================================================
+  // SERVICES
+  // ===============================================================
+
+  final BookingService _bookingService =
+      const BookingService();
+
+  // ===============================================================
+  // LOADING STATE
+  // ===============================================================
+
+  bool _isCreatingBooking = false;
 
   // ===============================================================
   // BOOKING STATE
@@ -66,35 +125,71 @@ class _BookingDetailsScreenState
   // ===============================================================
   // PACKAGE DATA
   // ===============================================================
+  //
+  // Dynamic pricing based on the physiotherapist's base price.
+  //
+  // 1 Session → Full price
+  // 3 Sessions → 10% discount
+  // 5 Sessions → 15% discount
+  //
+  // ===============================================================
 
-  final List<_PackageOption> _packages = const [
-    _PackageOption(
-      visits: 1,
-      title: 'Single Session',
-      description:
-          'One-time physiotherapy session',
-      price: 599,
-      savings: 0,
-    ),
-    _PackageOption(
-      visits: 3,
-      title: '3 Visit Recovery Pack',
-      description:
-          'Build consistency in your recovery',
-      price: 1599,
-      savings: 198,
-      popular: true,
-    ),
-    _PackageOption(
-      visits: 5,
-      title: '5 Visit Recovery Pack',
-      description:
-          'For ongoing rehabilitation',
-      price: 2499,
-      savings: 496,
-      bestValue: true,
-    ),
-  ];
+  List<_PackageOption> get _packages {
+    final basePrice =
+        widget.baseSessionPrice > 0
+            ? widget.baseSessionPrice
+            : 599;
+
+    final singlePrice =
+        basePrice;
+
+    final threeOriginal =
+        basePrice * 3;
+
+    final threePrice =
+        threeOriginal * 0.90;
+
+    final fiveOriginal =
+        basePrice * 5;
+
+    final fivePrice =
+        fiveOriginal * 0.85;
+
+    return [
+      _PackageOption(
+        visits: 1,
+        title: 'Single Session',
+        description:
+            'One-time physiotherapy session',
+        price: singlePrice.round(),
+        savings: 0,
+      ),
+
+      _PackageOption(
+        visits: 3,
+        title: '3 Visit Recovery Pack',
+        description:
+            'Build consistency in your recovery',
+        price: threePrice.round(),
+        savings:
+            (threeOriginal - threePrice)
+                .round(),
+        popular: true,
+      ),
+
+      _PackageOption(
+        visits: 5,
+        title: '5 Visit Recovery Pack',
+        description:
+            'For ongoing rehabilitation',
+        price: fivePrice.round(),
+        savings:
+            (fiveOriginal - fivePrice)
+                .round(),
+        bestValue: true,
+      ),
+    ];
+  }
 
   // ===============================================================
   // INIT
@@ -111,6 +206,29 @@ class _BookingDetailsScreenState
       now.month,
       now.day,
     );
+
+    // -------------------------------------------------------------
+    // INITIAL CARE MODE
+    // -------------------------------------------------------------
+
+    final mode =
+        widget.initialCareMode
+            .trim()
+            .toLowerCase();
+
+    _homeVisit =
+        mode != 'clinic' &&
+        mode != 'clinicvisit';
+
+    // -------------------------------------------------------------
+    // INITIAL TIME
+    // -------------------------------------------------------------
+
+    if (widget.initialTime != null &&
+        widget.initialTime!.trim().isNotEmpty) {
+      _selectedTime =
+          widget.initialTime!.trim();
+    }
   }
 
   // ===============================================================
@@ -133,7 +251,8 @@ class _BookingDetailsScreenState
   _PackageOption get selectedPackage {
     return _packages.firstWhere(
       (package) =>
-          package.visits == _selectedPackage,
+          package.visits ==
+          _selectedPackage,
     );
   }
 
@@ -206,10 +325,6 @@ class _BookingDetailsScreenState
 
         child: Column(
           children: [
-            // =======================================================
-            // TOP AREA
-            // =======================================================
-
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(
@@ -218,21 +333,33 @@ class _BookingDetailsScreenState
                 18,
                 0,
               ),
+
               child: Column(
                 children: [
                   BookingHeader(
-                    title: 'Book appointment',
+                    title:
+                        'Book appointment',
+
                     subtitle:
                         'Your care, your way',
-                    onBackTap: _handleBack,
-                    onHelpTap: _showHelp,
+
+                    onBackTap:
+                        _handleBack,
+
+                    onHelpTap:
+                        _showHelp,
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(
+                    height: 18,
+                  ),
 
                   _PremiumStepIndicator(
-                    currentStep: _currentStep,
-                    totalSteps: _totalSteps,
+                    currentStep:
+                        _currentStep,
+
+                    totalSteps:
+                        _totalSteps,
                   ),
                 ],
               ),
@@ -240,12 +367,9 @@ class _BookingDetailsScreenState
 
             const SizedBox(height: 16),
 
-            // =======================================================
-            // CONTENT
-            // =======================================================
-
             Expanded(
-              child: SingleChildScrollView(
+              child:
+                  SingleChildScrollView(
                 physics:
                     const BouncingScrollPhysics(),
 
@@ -260,42 +384,45 @@ class _BookingDetailsScreenState
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
-                  children: [
-                    // ------------------------------------------------
-                    // STEP HEADING
-                    // ------------------------------------------------
 
+                  children: [
                     _StepHeading(
                       step:
                           _currentStep + 1,
+
                       title:
                           _stepTitle,
+
                       subtitle:
                           _stepSubtitle,
                     ),
 
-                    const SizedBox(height: 18),
-
-                    // ------------------------------------------------
-                    // ANIMATED STEP
-                    // ------------------------------------------------
+                    const SizedBox(
+                      height: 18,
+                    ),
 
                     AnimatedSwitcher(
                       duration:
                           const Duration(
                         milliseconds: 280,
                       ),
+
                       reverseDuration:
                           const Duration(
                         milliseconds: 220,
                       ),
+
                       switchInCurve:
                           Curves.easeOutCubic,
+
                       switchOutCurve:
                           Curves.easeInCubic,
 
                       transitionBuilder:
-                          (child, animation) {
+                          (
+                        child,
+                        animation,
+                      ) {
                         final offsetAnimation =
                             Tween<Offset>(
                           begin:
@@ -303,21 +430,30 @@ class _BookingDetailsScreenState
                             .08,
                             0,
                           ),
-                          end: Offset.zero,
+
+                          end:
+                              Offset.zero,
                         ).animate(
                           CurvedAnimation(
-                            parent: animation,
+                            parent:
+                                animation,
+
                             curve:
                                 Curves.easeOutCubic,
                           ),
                         );
 
                         return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
+                          opacity:
+                              animation,
+
+                          child:
+                              SlideTransition(
                             position:
                                 offsetAnimation,
-                            child: child,
+
+                            child:
+                                child,
                           ),
                         );
                       },
@@ -330,16 +466,23 @@ class _BookingDetailsScreenState
               ),
             ),
 
-            // =======================================================
-            // BOTTOM NAVIGATION
-            // =======================================================
-
             _PremiumBottomBar(
-              currentStep: _currentStep,
-              totalSteps: _totalSteps,
-              package: package,
-              onBack: _handleBack,
-              onNext: _handleNext,
+              currentStep:
+                  _currentStep,
+
+              totalSteps:
+                  _totalSteps,
+
+              package:
+                  package,
+
+              onBack:
+                  _handleBack,
+
+              onNext:
+                  _isCreatingBooking
+                      ? () {}
+                      : _handleNext,
             ),
           ],
         ),
@@ -355,32 +498,40 @@ class _BookingDetailsScreenState
     switch (_currentStep) {
       case 0:
         return _buildCareStep(
-          key: const ValueKey('care'),
+          key:
+              const ValueKey('care'),
         );
 
       case 1:
         return _buildPackageStep(
-          key: const ValueKey('package'),
+          key:
+              const ValueKey('package'),
         );
 
       case 2:
         return _buildDateTimeStep(
-          key: const ValueKey('datetime'),
+          key:
+              const ValueKey('datetime'),
         );
 
       case 3:
         return _buildPatientStep(
-          key: const ValueKey('patient'),
+          key:
+              const ValueKey('patient'),
         );
 
       case 4:
         return _buildSummaryStep(
-          key: const ValueKey('summary'),
+          key:
+              const ValueKey('summary'),
         );
 
       default:
         return _buildCareStep(
-          key: const ValueKey('care-default'),
+          key:
+              const ValueKey(
+            'care-default',
+          ),
         );
     }
   }
@@ -394,33 +545,31 @@ class _BookingDetailsScreenState
   }) {
     return Column(
       key: key,
+
       crossAxisAlignment:
           CrossAxisAlignment.start,
-      children: [
-        // -----------------------------------------------------------
-        // DOCTOR CARD
-        // -----------------------------------------------------------
 
+      children: [
         _DoctorMiniCard(
           doctorName:
               widget.doctorName,
+
           doctorImage:
               widget.doctorImage,
+
           specialty:
               widget.specialty,
+
           rating:
               widget.rating,
         ),
 
         const SizedBox(height: 20),
 
-        // -----------------------------------------------------------
-        // CARE SELECTOR
-        // -----------------------------------------------------------
-
         _CareTypeSelector(
           homeVisit:
               _homeVisit,
+
           onChanged: (value) {
             setState(() {
               _homeVisit = value;
@@ -430,17 +579,15 @@ class _BookingDetailsScreenState
 
         const SizedBox(height: 18),
 
-        // -----------------------------------------------------------
-        // INFO CARD
-        // -----------------------------------------------------------
-
         _PremiumInfoCard(
           icon: _homeVisit
               ? Icons.home_rounded
               : Icons.local_hospital_rounded,
+
           title: _homeVisit
               ? 'Care at your doorstep'
               : 'Visit a trusted clinic',
+
           description: _homeVisit
               ? 'A verified physiotherapist will visit you at your preferred address.'
               : 'Choose a convenient clinic and meet your physiotherapist there.',
@@ -458,40 +605,47 @@ class _BookingDetailsScreenState
   }) {
     return Column(
       key: key,
-      children: [
-        // -----------------------------------------------------------
-        // PACKAGE CARDS
-        // -----------------------------------------------------------
 
+      children: [
         Column(
-          children: _packages.map(
+          children:
+              _packages.map(
             (item) {
               return Padding(
                 padding:
                     const EdgeInsets.only(
                   bottom: 13,
                 ),
+
                 child:
                     RecoveryPackageCard(
                   visits:
                       item.visits,
+
                   title:
                       item.title,
+
                   description:
                       item.description,
+
                   price:
                       item.price,
+
                   savings:
                       item.savings > 0
                           ? item.savings
                           : null,
+
                   popular:
                       item.popular,
+
                   bestValue:
                       item.bestValue,
+
                   selected:
                       _selectedPackage ==
                           item.visits,
+
                   onTap: () {
                     setState(() {
                       _selectedPackage =
@@ -505,10 +659,6 @@ class _BookingDetailsScreenState
         ),
 
         const SizedBox(height: 5),
-
-        // -----------------------------------------------------------
-        // SAVINGS INFO
-        // -----------------------------------------------------------
 
         _PremiumSavingsCard(
           package:
@@ -527,16 +677,15 @@ class _BookingDetailsScreenState
   }) {
     return Column(
       key: key,
+
       crossAxisAlignment:
           CrossAxisAlignment.start,
-      children: [
-        // -----------------------------------------------------------
-        // DATE
-        // -----------------------------------------------------------
 
+      children: [
         AppointmentDateSelector(
           selectedDate:
               _selectedDate,
+
           onDateSelected: (date) {
             setState(() {
               _selectedDate = date;
@@ -546,18 +695,16 @@ class _BookingDetailsScreenState
 
         const SizedBox(height: 22),
 
-        // -----------------------------------------------------------
-        // TIME
-        // -----------------------------------------------------------
-
         AppointmentTimeSelector(
           selectedTime:
               _selectedTime,
+
           unavailableSlots:
               const [
             '01:00 PM',
             '04:30 PM',
           ],
+
           onTimeSelected: (time) {
             setState(() {
               _selectedTime = time;
@@ -567,14 +714,13 @@ class _BookingDetailsScreenState
 
         const SizedBox(height: 18),
 
-        // -----------------------------------------------------------
-        // SELECTED SLOT
-        // -----------------------------------------------------------
-
         if (_selectedTime != null)
           _SelectedAppointmentCard(
             date:
-                _formatDate(_selectedDate),
+                _formatDate(
+              _selectedDate,
+            ),
+
             time:
                 _selectedTime!,
           ),
@@ -591,37 +737,37 @@ class _BookingDetailsScreenState
   }) {
     return Column(
       key: key,
+
       crossAxisAlignment:
           CrossAxisAlignment.start,
-      children: [
-        // -----------------------------------------------------------
-        // PATIENT DETAILS
-        // -----------------------------------------------------------
 
+      children: [
         PatientDetailsCard(
           nameController:
               _nameController,
+
           phoneController:
               _phoneController,
+
           addressController:
               _addressController,
+
           isHomeVisit:
               _homeVisit,
         ),
 
         const SizedBox(height: 18),
 
-        // -----------------------------------------------------------
-        // PRIVACY MESSAGE
-        // -----------------------------------------------------------
-
         _PremiumInfoCard(
           icon:
               Icons.lock_outline_rounded,
+
           title:
               'Your information is secure',
+
           description:
               'Your personal details are only used to manage your appointment.',
+
           compact: true,
         ),
       ],
@@ -637,52 +783,59 @@ class _BookingDetailsScreenState
   }) {
     return Column(
       key: key,
+
       crossAxisAlignment:
           CrossAxisAlignment.start,
-      children: [
-        // -----------------------------------------------------------
-        // SUMMARY
-        // -----------------------------------------------------------
 
+      children: [
         BookingSummaryCard(
           doctorName:
               widget.doctorName,
+
           specialty:
               widget.specialty,
+
           doctorImage:
               widget.doctorImage,
+
           visitType:
               _homeVisit
                   ? 'Home Visit'
                   : 'Clinic Visit',
+
           date:
               _formatDate(
             _selectedDate,
           ),
+
           time:
               _selectedTime ??
                   'Not selected',
+
           packageTitle:
               selectedPackage.title,
+
           visits:
               selectedPackage.visits,
+
           price:
               selectedPackage.price,
         ),
 
         const SizedBox(height: 18),
 
-        // -----------------------------------------------------------
-        // CONFIRMATION INFO
-        // -----------------------------------------------------------
-
         _FinalConfirmationCard(
           package:
               selectedPackage,
+
           homeVisit:
               _homeVisit,
+
           date:
-              _formatDate(_selectedDate),
+              _formatDate(
+            _selectedDate,
+          ),
+
           time:
               _selectedTime ??
                   'Not selected',
@@ -696,6 +849,10 @@ class _BookingDetailsScreenState
   // ===============================================================
 
   void _handleNext() {
+    if (_isCreatingBooking) {
+      return;
+    }
+
     if (!_validateCurrentStep()) {
       return;
     }
@@ -717,6 +874,10 @@ class _BookingDetailsScreenState
   // ===============================================================
 
   void _handleBack() {
+    if (_isCreatingBooking) {
+      return;
+    }
+
     if (_currentStep > 0) {
       setState(() {
         _currentStep--;
@@ -725,7 +886,7 @@ class _BookingDetailsScreenState
       return;
     }
 
-    Navigator.of(context).pop();
+    Navigator.pop(context);
   }
 
   // ===============================================================
@@ -741,42 +902,50 @@ class _BookingDetailsScreenState
         return true;
 
       case 2:
-        if (_selectedTime == null) {
+        if (_selectedTime == null ||
+            _selectedTime!.trim().isEmpty) {
           _showMessage(
             'Please select an appointment time.',
           );
+
           return false;
         }
 
         return true;
 
       case 3:
-        if (_nameController.text
-            .trim()
-            .isEmpty) {
+        final name =
+            _nameController.text.trim();
+
+        final phone =
+            _phoneController.text.trim();
+
+        final address =
+            _addressController.text.trim();
+
+        if (name.isEmpty) {
           _showMessage(
             'Please enter the patient name.',
           );
+
           return false;
         }
 
-        if (_phoneController.text
-                .trim()
-                .length <
-            10) {
+        if (phone.isEmpty ||
+            phone.length < 10) {
           _showMessage(
-            'Please enter a valid mobile number.',
+            'Please enter a valid phone number.',
           );
+
           return false;
         }
 
         if (_homeVisit &&
-            _addressController.text
-                .trim()
-                .isEmpty) {
+            address.isEmpty) {
           _showMessage(
             'Please enter your home address.',
           );
+
           return false;
         }
 
@@ -791,101 +960,561 @@ class _BookingDetailsScreenState
   }
 
   // ===============================================================
-  // CONTINUE TO PAYMENT
+  // CREATE BOOKING
   // ===============================================================
 
-  void _continueToPayment() {
-    if (_selectedTime == null) {
-      _showMessage(
-        'Please select an appointment time.',
-      );
+  Future<void> _continueToPayment() async {
+    if (_isCreatingBooking) {
       return;
     }
 
-    if (_nameController.text
+    // -------------------------------------------------------------
+    // VALIDATE
+    // -------------------------------------------------------------
+
+    if (!_validateAllBookingData()) {
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // AUTH USER
+    // -------------------------------------------------------------
+
+    final user =
+        FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      _showMessage(
+        'Please login to continue.',
+      );
+
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // PACKAGE
+    // -------------------------------------------------------------
+
+    final package =
+        selectedPackage;
+
+    final basePrice =
+        widget.baseSessionPrice > 0
+            ? widget.baseSessionPrice
+            : package.price.toDouble();
+
+    final totalSessions =
+        package.visits;
+
+    final subtotal =
+        basePrice *
+            totalSessions;
+
+    final discountAmount =
+        (subtotal -
+                package.price)
+            .clamp(
+              0,
+              double.infinity,
+            )
+            .toDouble();
+
+    final discountPercent =
+        subtotal > 0
+            ? (discountAmount /
+                    subtotal) *
+                100
+            : 0.0;
+
+    // -------------------------------------------------------------
+    // SERVICE TYPE
+    // -------------------------------------------------------------
+
+    final serviceType =
+        _homeVisit
+            ? 'homeVisit'
+            : 'clinicVisit';
+
+    // -------------------------------------------------------------
+    // BOOKING TYPE
+    // -------------------------------------------------------------
+
+    final bookingType =
+        totalSessions > 1
+            ? 'package'
+            : 'singleSession';
+
+    // -------------------------------------------------------------
+    // PACKAGE EXPIRY
+    // -------------------------------------------------------------
+
+    DateTime? packageExpiryDate;
+
+    if (totalSessions > 1) {
+      packageExpiryDate =
+          _selectedDate.add(
+        const Duration(days: 90),
+      );
+    }
+
+    // -------------------------------------------------------------
+    // TIME
+    // -------------------------------------------------------------
+
+    final appointmentTime =
+        _selectedTime!.trim();
+
+    final appointmentTimeMinutes =
+        _parseTimeToMinutes(
+      appointmentTime,
+    );
+
+    // -------------------------------------------------------------
+    // TOTAL
+    // -------------------------------------------------------------
+
+    final travelCharge = 0.0;
+    final platformFee = 0.0;
+    final taxAmount = 0.0;
+
+    final totalAmount =
+        subtotal -
+            discountAmount +
+            travelCharge +
+            platformFee +
+            taxAmount;
+
+    // -------------------------------------------------------------
+    // CREATE BOOKING
+    // -------------------------------------------------------------
+
+    final now =
+        DateTime.now();
+
+    final booking =
+        BookingModel(
+      // Identifiers
+      id: '',
+
+      userId:
+          user.uid,
+
+      physiotherapistId:
+          widget.physiotherapistId,
+
+      // Physiotherapist snapshot
+      physiotherapistName:
+          widget.doctorName,
+
+      physiotherapistPhotoUrl:
+          widget.doctorImage
+                  .trim()
+                  .isEmpty
+              ? null
+              : widget.doctorImage,
+
+      physiotherapistPhone:
+          widget.physiotherapistPhone,
+
+      // Patient snapshot
+      patientName:
+          _nameController.text.trim(),
+
+      patientPhone:
+          _phoneController.text.trim(),
+
+      patientEmail:
+          user.email,
+
+      // Booking type
+      bookingType:
+          bookingType,
+
+      serviceType:
+          serviceType,
+
+      // Package
+      packageId:
+          totalSessions > 1
+              ? 'package_$totalSessions'
+              : null,
+
+      packageName:
+          package.title,
+
+      totalSessions:
+          totalSessions,
+
+      completedSessions:
+          0,
+
+      remainingSessions:
+          totalSessions,
+
+      packageExpiryDate:
+          packageExpiryDate,
+
+      // Appointment
+      appointmentDate:
+          _selectedDate,
+
+      appointmentTime:
+          appointmentTime,
+
+      appointmentTimeMinutes:
+          appointmentTimeMinutes,
+
+      // Address
+      address:
+          _homeVisit
+              ? _addressController.text.trim()
+              : '',
+
+      // Distance
+      distanceKm:
+          null,
+
+      // Pricing
+      baseSessionPrice:
+          basePrice,
+
+      subtotal:
+          subtotal,
+
+      discountAmount:
+          discountAmount,
+
+      discountPercent:
+          discountPercent,
+
+      travelCharge:
+          travelCharge,
+
+      platformFee:
+          platformFee,
+
+      taxAmount:
+          taxAmount,
+
+      totalAmount:
+          totalAmount,
+
+      // Payment
+      paymentStatus:
+          'pending',
+
+      paymentMethod:
+          'online',
+
+      paidAmount:
+          0,
+
+      // Booking status
+      bookingStatus:
+          'pendingPayment',
+
+      // Notes
+      patientNotes:
+          null,
+
+      // Dates
+      createdAt:
+          now,
+
+      updatedAt:
+          now,
+    );
+
+    // -------------------------------------------------------------
+    // CREATE FIRESTORE BOOKING
+    // -------------------------------------------------------------
+
+    setState(() {
+      _isCreatingBooking = true;
+    });
+
+    try {
+      final createdBooking =
+          await _bookingService
+              .createBooking(
+        booking,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      debugPrint(
+        '=========================================',
+      );
+
+      debugPrint(
+        '✅ BOOKING CREATED SUCCESSFULLY',
+      );
+
+      debugPrint(
+        'Booking ID: ${createdBooking.id}',
+      );
+
+      debugPrint(
+        'Physiotherapist: '
+        '${createdBooking.physiotherapistName}',
+      );
+
+      debugPrint(
+        'Amount: ₹${createdBooking.totalAmount}',
+      );
+
+      debugPrint(
+        '=========================================',
+      );
+
+      // -----------------------------------------------------------
+      // PAYMENT SCREEN NEXT
+      // -----------------------------------------------------------
+      //
+      // Booking is successfully created.
+      //
+      // Next we will navigate:
+      //
+      // PaymentScreen(
+      //   booking: createdBooking,
+      // )
+      //
+      // -----------------------------------------------------------
+
+      _showBookingCreatedDialog(
+        createdBooking,
+      );
+    } catch (error, stackTrace) {
+      debugPrint(
+        '❌ Error creating booking: $error',
+      );
+
+      debugPrintStack(
+        stackTrace:
+            stackTrace,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage(
+        'Unable to create your booking. Please try again.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCreatingBooking = false;
+        });
+      }
+    }
+  }
+
+  // ===============================================================
+  // VALIDATE ALL DATA
+  // ===============================================================
+
+  bool _validateAllBookingData() {
+    final name =
+        _nameController.text.trim();
+
+    final phone =
+        _phoneController.text.trim();
+
+    final address =
+        _addressController.text.trim();
+
+    if (widget.physiotherapistId
         .trim()
         .isEmpty) {
       _showMessage(
-        'Please enter the patient name.',
+        'Physiotherapist information is missing.',
       );
-      return;
+
+      return false;
     }
 
-    if (_phoneController.text
-            .trim()
-            .length <
-        10) {
+    if (_selectedTime == null ||
+        _selectedTime!.trim().isEmpty) {
       _showMessage(
-        'Please enter a valid mobile number.',
+        'Please select an appointment time.',
       );
-      return;
+
+      return false;
+    }
+
+    if (name.isEmpty) {
+      _showMessage(
+        'Please enter the patient name.',
+      );
+
+      return false;
+    }
+
+    if (phone.length < 10) {
+      _showMessage(
+        'Please enter a valid phone number.',
+      );
+
+      return false;
     }
 
     if (_homeVisit &&
-        _addressController.text
-            .trim()
-            .isEmpty) {
+        address.isEmpty) {
       _showMessage(
         'Please enter your home address.',
       );
-      return;
+
+      return false;
     }
 
-    debugPrint(
-      '================================',
+    return true;
+  }
+
+  // ===============================================================
+  // PARSE TIME
+  // ===============================================================
+
+  int? _parseTimeToMinutes(
+    String time,
+  ) {
+    try {
+      final value =
+          time.trim().toUpperCase();
+
+      final parts =
+          value.split(' ');
+
+      if (parts.length != 2) {
+        return null;
+      }
+
+      final timePart =
+          parts[0];
+
+      final period =
+          parts[1];
+
+      final timeParts =
+          timePart.split(':');
+
+      if (timeParts.length != 2) {
+        return null;
+      }
+
+      var hour =
+          int.parse(timeParts[0]);
+
+      final minute =
+          int.parse(timeParts[1]);
+
+      if (period == 'PM' &&
+          hour != 12) {
+        hour += 12;
+      }
+
+      if (period == 'AM' &&
+          hour == 12) {
+        hour = 0;
+      }
+
+      return
+          (hour * 60) +
+              minute;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ===============================================================
+  // BOOKING CREATED DIALOG
+  // ===============================================================
+
+  Future<void> _showBookingCreatedDialog(
+    BookingModel booking,
+  ) async {
+    await showDialog<void>(
+      context: context,
+
+      barrierDismissible: false,
+
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(
+              24,
+            ),
+          ),
+
+          title: const Row(
+            children: [
+              Icon(
+                Icons.check_circle_rounded,
+                color:
+                    Color(0xFF22A06B),
+              ),
+
+              SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  'Booking created!',
+                ),
+              ),
+            ],
+          ),
+
+          content: Text(
+            'Your appointment has been created successfully. '
+            'Booking ID: ${booking.id}\n\n'
+            'Total payable: ₹${booking.totalAmount.toStringAsFixed(0)}',
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                );
+
+                Navigator.pop(
+                  context,
+                );
+              },
+
+              child:
+                  const Text('Done'),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                );
+
+                // =================================================
+                // NEXT:
+                // NAVIGATE TO PAYMENT SCREEN HERE
+                // =================================================
+
+                _showMessage(
+                  'Payment screen will open next.',
+                );
+              },
+
+              child:
+                  const Text(
+                'Continue to payment',
+              ),
+            ),
+          ],
+        );
+      },
     );
-
-    debugPrint(
-      'BOOKING CONTINUE',
-    );
-
-    debugPrint(
-      'Doctor: ${widget.doctorName}',
-    );
-
-    debugPrint(
-      'Package: ${selectedPackage.title}',
-    );
-
-    debugPrint(
-      'Visits: ${selectedPackage.visits}',
-    );
-
-    debugPrint(
-      'Care: ${_homeVisit ? 'Home Visit' : 'Clinic Visit'}',
-    );
-
-    debugPrint(
-      'Date: ${_formatDate(_selectedDate)}',
-    );
-
-    debugPrint(
-      'Time: $_selectedTime',
-    );
-
-    debugPrint(
-      'Patient: ${_nameController.text.trim()}',
-    );
-
-    debugPrint(
-      '================================',
-    );
-
-    _showMessage(
-      'Booking details are ready for payment.',
-    );
-
-    // =============================================================
-    // NEXT:
-    // CONNECT YOUR PAYMENT SCREEN HERE
-    // =============================================================
-
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => PaymentScreen(...),
-    //   ),
-    // );
   }
 
   // ===============================================================
@@ -893,152 +1522,8 @@ class _BookingDetailsScreenState
   // ===============================================================
 
   void _showHelp() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor:
-          Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          padding:
-              const EdgeInsets.fromLTRB(
-            22,
-            14,
-            22,
-            28,
-          ),
-          decoration:
-              const BoxDecoration(
-            color: Colors.white,
-            borderRadius:
-                BorderRadius.vertical(
-              top: Radius.circular(28),
-            ),
-          ),
-          child: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            children: [
-              Container(
-                width: 42,
-                height: 4,
-                decoration:
-                    BoxDecoration(
-                  color:
-                      const Color(
-                    0xFFDDE1EA,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    20,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Container(
-                width: 58,
-                height: 58,
-                decoration:
-                    BoxDecoration(
-                  gradient:
-                      const LinearGradient(
-                    colors: [
-                      Color(0xFFF0EEFF),
-                      Color(0xFFE9F8F5),
-                    ],
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    18,
-                  ),
-                ),
-                child: const Icon(
-                  Icons
-                      .support_agent_rounded,
-                  size: 29,
-                  color:
-                      Color(0xFF5146D9),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              const Text(
-                'Need help?',
-                style: TextStyle(
-                  fontSize: 20,
-                  color:
-                      Color(0xFF111A3D),
-                  fontWeight:
-                      FontWeight.w900,
-                ),
-              ),
-
-              const SizedBox(height: 7),
-
-              const Text(
-                'Our support team can help you with your appointment.',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.45,
-                  color:
-                      Color(0xFF737C94),
-                  fontWeight:
-                      FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              SizedBox(
-                width:
-                    double.infinity,
-                height: 52,
-                child:
-                    ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      context,
-                    );
-                  },
-                  style:
-                      ElevatedButton
-                          .styleFrom(
-                    backgroundColor:
-                        const Color(
-                      0xFF5146D9,
-                    ),
-                    elevation: 0,
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        16,
-                      ),
-                    ),
-                  ),
-                  child:
-                      const Text(
-                    'Contact Support',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color:
-                          Colors.white,
-                      fontWeight:
-                          FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+    _showMessage(
+      'Need help? Our support team is here for you.',
     );
   }
 
@@ -1049,37 +1534,21 @@ class _BookingDetailsScreenState
   void _showMessage(
     String message,
   ) {
+    if (!mounted) {
+      return;
+    }
+
     ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        behavior:
-            SnackBarBehavior.floating,
-        margin:
-            const EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          16,
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content:
+              Text(message),
+
+          behavior:
+              SnackBarBehavior.floating,
         ),
-        shape:
-            RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(
-            15,
-          ),
-        ),
-        content:
-            Text(
-          message,
-          style:
-              const TextStyle(
-            fontSize: 12,
-            fontWeight:
-                FontWeight.w700,
-          ),
-        ),
-      ),
-    );
+      );
   }
 
   // ===============================================================
@@ -1090,18 +1559,18 @@ class _BookingDetailsScreenState
     DateTime date,
   ) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
+      'January',
+      'February',
+      'March',
+      'April',
       'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
 
     return '${date.day} '
@@ -1109,7 +1578,6 @@ class _BookingDetailsScreenState
         '${date.year}';
   }
 }
-
 // ==================================================================
 // PACKAGE MODEL
 // ==================================================================
