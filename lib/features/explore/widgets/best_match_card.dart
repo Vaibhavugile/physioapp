@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/physio_match_model.dart';
+import '../../core/config/pricing_config.dart';
 
 class BestMatchCard extends StatefulWidget {
   final PhysioMatchModel match;
@@ -139,34 +140,71 @@ class _BestMatchCardState
     return score;
   }
 
-  String get _priceText {
-    final price =
-        _getBestPrice();
+  // ==============================================================
+  // UNIVERSAL PLATFORM PRICING
+  // ==============================================================
 
-    if (price <= 0) {
+  String get _tier {
+    return PricingConfig.getTierFromExperience(
+      _physio.experienceYears,
+    );
+  }
+
+  String get _tierName {
+    return PricingConfig.getTierName(_tier);
+  }
+
+  String get _tierDescription {
+    return PricingConfig.getTierDescription(_tier);
+  }
+
+  String get _careMode {
+    // Best Match prioritizes Home because this card is intended to
+    // recommend the most convenient physiotherapist for the patient.
+    if (_physio.homeVisitEnabled) {
+      return PricingConfig.home;
+    }
+
+    if (_physio.clinicVisitEnabled) {
+      return PricingConfig.clinic;
+    }
+
+    if (_physio.onlineConsultationEnabled) {
+      return PricingConfig.online;
+    }
+
+    return PricingConfig.home;
+  }
+
+  String get _careModeName {
+    return PricingConfig.getCareModeName(_careMode);
+  }
+
+  double get _sessionPrice {
+    return PricingConfig.getSessionPrice(
+      experienceYears: _physio.experienceYears,
+      careMode: _careMode,
+    );
+  }
+
+  String get _priceText {
+    if (_sessionPrice <= 0) {
       return 'Price on request';
     }
 
-    return '₹${price.toStringAsFixed(0)}';
+    return '₹${_sessionPrice.toStringAsFixed(0)}';
   }
 
-  double _getBestPrice() {
-    if (_physio.homeVisitEnabled &&
-        _physio.homeVisitPrice > 0) {
-      return _physio.homeVisitPrice;
+  IconData get _careModeIcon {
+    switch (_careMode) {
+      case PricingConfig.clinic:
+        return Icons.local_hospital_rounded;
+      case PricingConfig.online:
+        return Icons.videocam_rounded;
+      case PricingConfig.home:
+      default:
+        return Icons.home_rounded;
     }
-
-    if (_physio.clinicVisitEnabled &&
-        _physio.clinicVisitPrice > 0) {
-      return _physio.clinicVisitPrice;
-    }
-
-    if (_physio.onlineConsultationEnabled &&
-        _physio.onlineConsultationPrice > 0) {
-      return _physio.onlineConsultationPrice;
-    }
-
-    return 0;
   }
 
   // ==============================================================
@@ -178,8 +216,13 @@ class _BestMatchCardState
     final imageUrl =
         _physio.profileImageUrl;
 
-    return GestureDetector(
-      onTapDown: (_) {
+    return Semantics(
+      button: widget.onViewProfile != null || widget.onBookSession != null,
+      label:
+          'Best match, $_name, $_tierName, $_careModeName, '
+          '$_priceText per session, $_matchPercentage',
+      child: GestureDetector(
+        onTapDown: (_) {
         setState(() {
           _pressed = true;
         });
@@ -697,7 +740,46 @@ class _BestMatchCardState
                           ],
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 9),
+
+                        // ========================================
+                        // UNIVERSAL EXPERIENCE TIER
+                        // ========================================
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2F0FF),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFE4E1FF),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.workspace_premium_rounded,
+                                size: 12,
+                                color: Color(0xFF6148DF),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _tierName,
+                                style: const TextStyle(
+                                  fontSize: 8,
+                                  color: Color(0xFF5146D9),
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
 
                         // ========================================
                         // RATING
@@ -811,33 +893,21 @@ class _BestMatchCardState
                           runSpacing: 5,
 
                           children: [
-                            if (_physio.homeVisitEnabled)
-                              const _MiniBadge(
-                                icon:
-                                    Icons.home_outlined,
-
-                                label:
-                                    'Home Visit',
-                              ),
+                            _MiniBadge(
+                              icon: _careModeIcon,
+                              label: _careModeName,
+                            ),
 
                             if (_physio.isVerified)
                               const _MiniBadge(
-                                icon:
-                                    Icons.verified_outlined,
-
-                                label:
-                                    'Verified',
+                                icon: Icons.verified_outlined,
+                                label: 'Verified',
                               ),
 
-                            if (_physio.experienceYears >=
-                                5)
-                              const _MiniBadge(
-                                icon: Icons
-                                    .workspace_premium_outlined,
-
-                                label:
-                                    'Experienced',
-                              ),
+                            _MiniBadge(
+                              icon: Icons.workspace_premium_outlined,
+                              label: _tierName,
+                            ),
                           ],
                         ),
                       ],
@@ -1007,6 +1077,19 @@ class _BestMatchCardState
                               ],
                             ),
                           ),
+
+                          const SizedBox(height: 3),
+
+                          Text(
+                            '$_tierName • $_careModeName',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 7.5,
+                              color: Color(0xFF737C99),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1153,6 +1236,7 @@ class _BestMatchCardState
               ),
             ],
           ),
+        ),
         ),
       ),
     );

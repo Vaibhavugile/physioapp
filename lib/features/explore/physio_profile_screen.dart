@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/config/pricing_config.dart';
 import '../booking/booking_details_screen.dart';
 import 'models/physio_match_model.dart';
 
@@ -35,34 +36,66 @@ class _PhysioProfileScreenState
     final p = widget.match.physiotherapist;
 
     mode = p.homeVisitEnabled
-        ? 'home'
+        ? PricingConfig.home
         : p.clinicVisitEnabled
-            ? 'clinic'
+            ? PricingConfig.clinic
             : p.onlineConsultationEnabled
-                ? 'online'
+                ? PricingConfig.online
                 : null;
+  }
+
+  // ================================================================
+  // CURRENT TIER
+  // ================================================================
+
+  dynamic get currentTier {
+    final p = widget.match.physiotherapist;
+
+    return PricingConfig.getTierFromExperience(
+      p.experienceYears,
+    );
+  }
+
+  // ================================================================
+  // CURRENT TIER NAME
+  // ================================================================
+
+  String get currentTierName {
+    return PricingConfig.getTierName(
+      currentTier,
+    );
   }
 
   // ================================================================
   // CURRENT PRICE
   // ================================================================
+  //
+  // IMPORTANT:
+  // Price is NOT taken from the physiotherapist document.
+  //
+  // Price is calculated universally from:
+  //
+  // experienceYears
+  //        ↓
+  // tier
+  //        ↓
+  // care mode
+  //        ↓
+  // PricingConfig
+  //
+  // ================================================================
 
   double get price {
     final p = widget.match.physiotherapist;
 
-    if (mode == 'home') {
-      return p.homeVisitPrice;
+    if (mode == null) {
+      return 0;
     }
 
-    if (mode == 'clinic') {
-      return p.clinicVisitPrice;
-    }
-
-    if (mode == 'online') {
-      return p.onlineConsultationPrice;
-    }
-
-    return 0;
+    return PricingConfig.getSessionPrice(
+      experienceYears: p.experienceYears,
+      careMode: mode!,
+    );
   }
 
   // ================================================================
@@ -70,15 +103,15 @@ class _PhysioProfileScreenState
   // ================================================================
 
   String get modeTitle {
-    if (mode == 'home') {
+    if (mode == PricingConfig.home) {
       return 'Home Visit';
     }
 
-    if (mode == 'clinic') {
+    if (mode == PricingConfig.clinic) {
       return 'Clinic Visit';
     }
 
-    if (mode == 'online') {
+    if (mode == PricingConfig.online) {
       return 'Online Consultation';
     }
 
@@ -95,7 +128,6 @@ class _PhysioProfileScreenState
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FC),
-
       body: SafeArea(
         child: Stack(
           children: [
@@ -110,14 +142,11 @@ class _PhysioProfileScreenState
                 18,
                 120,
               ),
-
               physics:
                   const BouncingScrollPhysics(),
-
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
-
                 children: [
                   // ==================================================
                   // HEADER
@@ -179,31 +208,58 @@ class _PhysioProfileScreenState
                     spacing: 10,
                     runSpacing: 10,
                     children: [
+                      // =================================================
+                      // HOME
+                      // =================================================
+
                       if (p.homeVisitEnabled)
                         _mode(
-                          'home',
+                          PricingConfig.home,
                           Icons.home_rounded,
                           'Home Visit',
                           'At your doorstep',
-                          p.homeVisitPrice,
+                          PricingConfig.getSessionPrice(
+                            experienceYears:
+                                p.experienceYears,
+                            careMode:
+                                PricingConfig.home,
+                          ),
                         ),
+
+                      // =================================================
+                      // CLINIC
+                      // =================================================
 
                       if (p.clinicVisitEnabled)
                         _mode(
-                          'clinic',
+                          PricingConfig.clinic,
                           Icons.local_hospital_rounded,
                           'Clinic Visit',
                           'Visit the clinic',
-                          p.clinicVisitPrice,
+                          PricingConfig.getSessionPrice(
+                            experienceYears:
+                                p.experienceYears,
+                            careMode:
+                                PricingConfig.clinic,
+                          ),
                         ),
+
+                      // =================================================
+                      // ONLINE
+                      // =================================================
 
                       if (p.onlineConsultationEnabled)
                         _mode(
-                          'online',
+                          PricingConfig.online,
                           Icons.video_call_rounded,
                           'Online',
                           'Consult remotely',
-                          p.onlineConsultationPrice,
+                          PricingConfig.getSessionPrice(
+                            experienceYears:
+                                p.experienceYears,
+                            careMode:
+                                PricingConfig.online,
+                          ),
                         ),
                     ],
                   ),
@@ -214,7 +270,7 @@ class _PhysioProfileScreenState
                   // HOME VISIT DETAILS
                   // ==================================================
 
-                  if (mode == 'home') ...[
+                  if (mode == PricingConfig.home) ...[
                     _title(
                       'Home visit',
                       'Personalized care at your location',
@@ -225,7 +281,8 @@ class _PhysioProfileScreenState
                     _card(
                       Icons.home_rounded,
                       'Care at your doorstep',
-                      widget.match.withinHomeVisitRange
+                      widget.match
+                              .withinHomeVisitRange
                           ? 'This physiotherapist is available within your home-visit range.'
                           : 'Home-visit availability will be confirmed before booking.',
                     ),
@@ -237,7 +294,7 @@ class _PhysioProfileScreenState
                   // CLINIC DETAILS
                   // ==================================================
 
-                  if (mode == 'clinic') ...[
+                  if (mode == PricingConfig.clinic) ...[
                     _title(
                       'Clinic details',
                       'Where your appointment will take place',
@@ -269,7 +326,7 @@ class _PhysioProfileScreenState
                   // ONLINE DETAILS
                   // ==================================================
 
-                  if (mode == 'online') ...[
+                  if (mode == PricingConfig.online) ...[
                     _title(
                       'Online consultation',
                       'Connect remotely with your physiotherapist',
@@ -303,7 +360,9 @@ class _PhysioProfileScreenState
                           CrossAxisAlignment.start,
                       children: [
                         Text(
-                          p.professionalBio.trim().isEmpty
+                          p.professionalBio
+                                  .trim()
+                                  .isEmpty
                               ? '${p.professionalTitle} committed to helping patients recover and move better.'
                               : p.professionalBio,
                           style: const TextStyle(
@@ -367,19 +426,19 @@ class _PhysioProfileScreenState
                           return Chip(
                             label: Text(
                               x,
-                              style: const TextStyle(
+                              style:
+                                  const TextStyle(
                                 fontSize: 10,
                                 fontWeight:
                                     FontWeight.w800,
                               ),
                             ),
-
                             backgroundColor:
                                 const Color(
                               0xFFF0EEFF,
                             ),
-
-                            side: BorderSide.none,
+                            side:
+                                BorderSide.none,
                           );
                         },
                       ).toList(),
@@ -389,12 +448,7 @@ class _PhysioProfileScreenState
                   const SizedBox(height: 20),
 
                   // ==================================================
-                  // AVAILABILITY INFORMATION ONLY
-                  // ==================================================
-                  //
-                  // TIME SLOT SELECTION REMOVED.
-                  // User will select date & time in BookingDetailsScreen.
-                  //
+                  // AVAILABILITY
                   // ==================================================
 
                   _title(
@@ -448,7 +502,7 @@ class _PhysioProfileScreenState
                   const SizedBox(height: 20),
 
                   // ==================================================
-                  // PRICE CARD
+                  // PRICING CARD
                   // ==================================================
 
                   _card(
@@ -456,6 +510,19 @@ class _PhysioProfileScreenState
                     modeTitle,
                     '₹${price.toStringAsFixed(0)} • '
                     '${p.sessionDurationMinutes} minute session',
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ==================================================
+                  // TIER CARD
+                  // ==================================================
+
+                  _card(
+                    Icons.workspace_premium_rounded,
+                    '$currentTierName Tier',
+                    '${p.experienceYears} years of professional experience • '
+                    'Pricing is based on the platform tier.',
                   ),
                 ],
               ),
@@ -469,7 +536,6 @@ class _PhysioProfileScreenState
               left: 0,
               right: 0,
               bottom: 0,
-
               child: Container(
                 padding:
                     const EdgeInsets.fromLTRB(
@@ -478,9 +544,7 @@ class _PhysioProfileScreenState
                   18,
                   18,
                 ),
-
                 color: Colors.white,
-
                 child: Row(
                   children: [
                     // =================================================
@@ -491,33 +555,26 @@ class _PhysioProfileScreenState
                       child: Column(
                         mainAxisSize:
                             MainAxisSize.min,
-
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
-
                         children: [
                           Text(
                             '₹${price.toStringAsFixed(0)}',
-
                             style:
                                 const TextStyle(
                               fontSize: 19,
-
                               fontWeight:
                                   FontWeight.w900,
-
                               color:
                                   Color(0xFF111A3D),
                             ),
                           ),
 
                           Text(
-                            modeTitle,
-
+                            '$currentTierName • $modeTitle',
                             style:
                                 const TextStyle(
                               fontSize: 9.5,
-
                               color:
                                   Color(0xFF7D859B),
                             ),
@@ -550,16 +607,11 @@ class _PhysioProfileScreenState
 
                         Navigator.push(
                           context,
-
                           MaterialPageRoute(
                             builder: (_) =>
                                 BookingDetailsScreen(
                               // =======================================
                               // PHYSIOTHERAPIST ID
-                              // =======================================
-                              //
-                              // Using the Firestore model ID.
-                              //
                               // =======================================
 
                               physiotherapistId:
@@ -583,11 +635,10 @@ class _PhysioProfileScreenState
                                   p.rating,
 
                               // =======================================
-                              // PRICE
+                              // UNIVERSAL TIER PRICE
                               // =======================================
 
-                              baseSessionPrice:
-                                  price,
+                              experienceYears: p.experienceYears,
 
                               // =======================================
                               // SELECTED CARE MODE
@@ -599,35 +650,29 @@ class _PhysioProfileScreenState
                           ),
                         );
                       },
-
                       child: Container(
                         padding:
                             const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 16,
                         ),
-
                         decoration:
                             BoxDecoration(
                           color:
                               const Color(
                             0xFF5146D9,
                           ),
-
                           borderRadius:
                               BorderRadius.circular(
                             16,
                           ),
                         ),
-
                         child: const Text(
                           'Book Appointment',
-
-                          style: TextStyle(
+                          style:
+                              TextStyle(
                             color: Colors.white,
-
                             fontSize: 11,
-
                             fontWeight:
                                 FontWeight.w900,
                           ),
@@ -654,7 +699,6 @@ class _PhysioProfileScreenState
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-
           behavior:
               SnackBarBehavior.floating,
         ),
@@ -671,26 +715,20 @@ class _PhysioProfileScreenState
   ) {
     return GestureDetector(
       onTap: tap,
-
       child: Container(
         width: 42,
         height: 42,
-
         decoration: BoxDecoration(
           color: Colors.white,
-
           borderRadius:
               BorderRadius.circular(14),
-
           border: Border.all(
             color:
                 const Color(0xFFE3E6EF),
           ),
         ),
-
         child: Icon(
           icon,
-
           color:
               const Color(0xFF151D3D),
         ),
@@ -706,20 +744,25 @@ class _PhysioProfileScreenState
     final url =
         (p.profileImageUrl ?? '').trim();
 
+    final tier =
+        PricingConfig.getTierFromExperience(
+      p.experienceYears,
+    );
+
+    final tierName =
+        PricingConfig.getTierName(tier);
+
     return _box(
       Column(
         children: [
           SizedBox(
             height: 225,
             width: double.infinity,
-
             child: ClipRRect(
               borderRadius:
                   BorderRadius.circular(21),
-
               child: Stack(
                 fit: StackFit.expand,
-
                 children: [
                   Container(
                     color:
@@ -735,9 +778,7 @@ class _PhysioProfileScreenState
                         )
                       : Image.network(
                           url,
-
                           fit: BoxFit.cover,
-
                           errorBuilder:
                               (
                             _,
@@ -756,7 +797,6 @@ class _PhysioProfileScreenState
                   Positioned(
                     left: 12,
                     top: 12,
-
                     child: _pill(
                       Icons.location_on_rounded,
                       widget.match.distanceLabel,
@@ -766,7 +806,6 @@ class _PhysioProfileScreenState
                   Positioned(
                     right: 12,
                     top: 12,
-
                     child: _pill(
                       Icons.workspace_premium_rounded,
                       '${widget.match.matchPercentage}% match',
@@ -786,8 +825,8 @@ class _PhysioProfileScreenState
                   p.fullName.isEmpty
                       ? 'Physiotherapist'
                       : p.fullName,
-
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 20,
                     fontWeight:
                         FontWeight.w900,
@@ -809,17 +848,69 @@ class _PhysioProfileScreenState
           const SizedBox(height: 5),
 
           Align(
-            alignment: Alignment.centerLeft,
-
+            alignment:
+                Alignment.centerLeft,
             child: Text(
-              p.primarySpecialization.isEmpty
+              p.primarySpecialization
+                      .isEmpty
                   ? p.professionalTitle
                   : p.primarySpecialization,
-
-              style: const TextStyle(
+              style:
+                  const TextStyle(
                 fontSize: 11.5,
                 color:
                     Color(0xFF69728D),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // ==========================================================
+          // TIER BADGE
+          // ==========================================================
+
+          Align(
+            alignment:
+                Alignment.centerLeft,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(0xFFF0EEFF),
+                borderRadius:
+                    BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize:
+                    MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.workspace_premium_rounded,
+                    size: 14,
+                    color:
+                        Color(0xFF5146D9),
+                  ),
+
+                  const SizedBox(width: 5),
+
+                  Text(
+                    '$tierName Tier',
+                    style:
+                        const TextStyle(
+                      fontSize: 9.5,
+                      fontWeight:
+                          FontWeight.w900,
+                      color:
+                          Color(0xFF5146D9),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -831,9 +922,11 @@ class _PhysioProfileScreenState
               Expanded(
                 child: _stat(
                   Icons.star_rounded,
-                  p.rating.toStringAsFixed(1),
+                  p.rating
+                      .toStringAsFixed(1),
                   '${p.totalReviews} reviews',
-                  const Color(0xFFFFB21A),
+                  const Color(
+                      0xFFFFB21A),
                 ),
               ),
 
@@ -842,20 +935,24 @@ class _PhysioProfileScreenState
                   Icons.workspace_premium_rounded,
                   '${p.experienceYears}+',
                   'Years experience',
-                  const Color(0xFF5146D9),
+                  const Color(
+                      0xFF5146D9),
                 ),
               ),
 
               Expanded(
                 child: _stat(
                   Icons.location_on_rounded,
-                  widget.match.distanceLabel
+                  widget
+                      .match
+                      .distanceLabel
                       .replaceAll(
                     ' away',
                     '',
                   ),
                   widget.match.matchLabel,
-                  const Color(0xFF079F87),
+                  const Color(
+                      0xFF079F87),
                 ),
               ),
             ],
@@ -887,7 +984,8 @@ class _PhysioProfileScreenState
 
         Text(
           value,
-          style: const TextStyle(
+          style:
+              const TextStyle(
             fontSize: 12,
             fontWeight:
                 FontWeight.w900,
@@ -896,10 +994,10 @@ class _PhysioProfileScreenState
 
         Text(
           label,
-
-          textAlign: TextAlign.center,
-
-          style: const TextStyle(
+          textAlign:
+              TextAlign.center,
+          style:
+              const TextStyle(
             fontSize: 9,
             color:
                 Color(0xFF7D859B),
@@ -923,19 +1021,16 @@ class _PhysioProfileScreenState
         horizontal: 9,
         vertical: 6,
       ),
-
-      decoration: BoxDecoration(
+      decoration:
+          BoxDecoration(
         color:
             Colors.white.withOpacity(.94),
-
         borderRadius:
             BorderRadius.circular(12),
       ),
-
       child: Row(
         mainAxisSize:
             MainAxisSize.min,
-
         children: [
           Icon(
             icon,
@@ -948,8 +1043,8 @@ class _PhysioProfileScreenState
 
           Text(
             text,
-
-            style: const TextStyle(
+            style:
+                const TextStyle(
               fontSize: 9,
               fontWeight:
                   FontWeight.w900,
@@ -971,12 +1066,11 @@ class _PhysioProfileScreenState
     return Column(
       crossAxisAlignment:
           CrossAxisAlignment.start,
-
       children: [
         Text(
           title,
-
-          style: const TextStyle(
+          style:
+              const TextStyle(
             fontSize: 16,
             fontWeight:
                 FontWeight.w900,
@@ -989,8 +1083,8 @@ class _PhysioProfileScreenState
 
         Text(
           subtitle,
-
-          style: const TextStyle(
+          style:
+              const TextStyle(
             fontSize: 10.5,
             color:
                 Color(0xFF7D859B),
@@ -1023,76 +1117,81 @@ class _PhysioProfileScreenState
                       .width -
                   46) /
               2,
-
-      child: GestureDetector(
+      child:
+          GestureDetector(
         onTap: () {
           setState(() {
             mode = key;
           });
         },
-
         child: Container(
           padding:
               const EdgeInsets.all(12),
-
-          decoration: BoxDecoration(
+          decoration:
+              BoxDecoration(
             color: selected
-                ? const Color(0xFFF0EEFF)
+                ? const Color(
+                    0xFFF0EEFF)
                 : Colors.white,
-
             borderRadius:
-                BorderRadius.circular(20),
-
-            border: Border.all(
+                BorderRadius.circular(
+              20,
+            ),
+            border:
+                Border.all(
               color: selected
-                  ? const Color(0xFF8E82EF)
+                  ? const Color(
+                      0xFF8E82EF)
                   : const Color(
                       0xFFE3E6EF,
                     ),
             ),
           ),
-
           child: Column(
             crossAxisAlignment:
-                CrossAxisAlignment.start,
-
+                CrossAxisAlignment
+                    .start,
             children: [
               Icon(
                 icon,
                 color:
-                    const Color(0xFF5146D9),
+                    const Color(
+                        0xFF5146D9),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(
+                  height: 10),
 
               Text(
                 title,
-
-                style: const TextStyle(
+                style:
+                    const TextStyle(
                   fontSize: 11,
                   fontWeight:
                       FontWeight.w900,
                 ),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(
+                  height: 4),
 
               Text(
                 subtitle,
-
-                style: const TextStyle(
+                style:
+                    const TextStyle(
                   fontSize: 9.5,
                   color:
                       Color(0xFF737C99),
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(
+                  height: 8),
 
               Text(
                 '₹${amount.toStringAsFixed(0)} / session',
-
-                style: const TextStyle(
+                style:
+                    const TextStyle(
                   fontSize: 10,
                   color:
                       Color(0xFF079F87),
@@ -1119,40 +1218,44 @@ class _PhysioProfileScreenState
     return _box(
       Row(
         crossAxisAlignment:
-            CrossAxisAlignment.start,
-
+            CrossAxisAlignment
+                .start,
         children: [
           Icon(
             icon,
             color:
-                const Color(0xFF5146D9),
+                const Color(
+                    0xFF5146D9),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(
+              width: 12),
 
           Expanded(
             child: Column(
               crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+                  CrossAxisAlignment
+                      .start,
               children: [
                 Text(
                   title,
-
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontWeight:
                         FontWeight.w900,
                   ),
                 ),
 
-                const SizedBox(height: 5),
+                const SizedBox(
+                    height: 5),
 
                 Text(
-                  description.isEmpty
+                  description
+                          .isEmpty
                       ? 'Details will be confirmed before booking.'
                       : description,
-
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 11,
                     height: 1.4,
                     color:
@@ -1176,35 +1279,31 @@ class _PhysioProfileScreenState
   ) {
     return Container(
       width: double.infinity,
-
       padding:
           const EdgeInsets.all(15),
-
-      decoration: BoxDecoration(
+      decoration:
+          BoxDecoration(
         color: Colors.white,
-
         borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
+            BorderRadius.circular(
+          20,
+        ),
+        border:
+            Border.all(
           color:
               const Color(0xFFE3E6EF),
         ),
-
         boxShadow: [
           BoxShadow(
             color:
                 const Color(0xFF26345C)
                     .withOpacity(.05),
-
             blurRadius: 16,
-
             offset:
                 const Offset(0, 6),
           ),
         ],
       ),
-
       child: child,
     );
   }

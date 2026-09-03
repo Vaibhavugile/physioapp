@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/physio_match_model.dart';
 import '../physio_profile_screen.dart';
+import '../../core/config/pricing_config.dart';
 
 class TopRatedPhysios extends StatelessWidget {
   final List<PhysioMatchModel> matches;
@@ -10,11 +11,14 @@ class TopRatedPhysios extends StatelessWidget {
 
   final VoidCallback? onSeeAll;
 
+  final String careMode;
+
   const TopRatedPhysios({
     super.key,
     required this.matches,
     this.onPhysioTap,
     this.onSeeAll,
+    this.careMode = PricingConfig.home,
   });
 
   @override
@@ -129,18 +133,19 @@ class TopRatedPhysios extends StatelessWidget {
           itemCount: matches.length,
 
           gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 11,
-            mainAxisSpacing: 13,
-            mainAxisExtent: 286,
-          ),
+    const SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 2,
+  crossAxisSpacing: 11,
+  mainAxisSpacing: 13,
+  mainAxisExtent: 310,
+),
 
           itemBuilder: (context, index) {
             final match = matches[index];
 
             return _PhysioCard(
               match: match,
+              careMode: careMode,
 
               onTap: () {
   if (onPhysioTap != null) {
@@ -358,16 +363,48 @@ class TopRatedPhysios extends StatelessWidget {
 }
 
 // ===================================================================
+// UNIVERSAL PRICING CHIP
+// ===================================================================
+
+class _PricingChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isTier;
+
+  const _PricingChip({required this.icon, required this.label, this.isTier = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = isTier ? const Color(0xFF5146D9) : const Color(0xFF079F87);
+    final background = isTier ? const Color(0xFFF3F1FF) : const Color(0xFFEAF8F5);
+    final border = isTier ? const Color(0xFFE2DFFF) : const Color(0xFFD7EEE8);
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 86),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(7), border: Border.all(color: border, width: .7)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 9, color: iconColor),
+        const SizedBox(width: 3),
+        Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 6.5, color: iconColor, fontWeight: FontWeight.w900))),
+      ]),
+    );
+  }
+}
+
+// ===================================================================
 // PHYSIO CARD
 // ===================================================================
 
 class _PhysioCard extends StatelessWidget {
   final PhysioMatchModel match;
 
+  final String careMode;
+
   final VoidCallback? onTap;
 
   const _PhysioCard({
     required this.match,
+    required this.careMode,
     this.onTap,
   });
 
@@ -395,9 +432,10 @@ class _PhysioCard extends StatelessWidget {
       match,
     );
 
-    final price = _getPrice(
-      physio,
-    );
+    final resolvedCareMode = _getResolvedCareMode(physio);
+    final price = _getPrice(physio, resolvedCareMode);
+    final tierName = _getTierName(physio);
+    final careModeLabel = PricingConfig.getCareModeName(resolvedCareMode);
 
     final imageUrl = _getImageUrl(
       physio,
@@ -757,6 +795,25 @@ class _PhysioCard extends StatelessWidget {
                         ],
                       ),
 
+                      Row(
+                        children: [
+                          _PricingChip(
+                            icon: Icons.workspace_premium_rounded,
+                            label: tierName,
+                            isTier: true,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: _PricingChip(
+                              icon: _careModeIcon(resolvedCareMode),
+                              label: _shortCareModeLabel(careModeLabel),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 7),
+
                       const Spacer(),
 
                       Container(
@@ -782,7 +839,7 @@ class _PhysioCard extends StatelessWidget {
 
                               children: [
                                 const Text(
-                                  'FROM',
+                                  'PLATFORM PRICE',
 
                                   style: TextStyle(
                                     fontSize: 6,
@@ -1036,27 +1093,67 @@ class _PhysioCard extends StatelessWidget {
     }
   }
 
-  String _getPrice(
-    dynamic physio,
-  ) {
+  int _getExperience(dynamic physio) {
     try {
-      final value = physio.sessionPrice;
-
-      if (value is num && value > 0) {
-        return '₹${value.toStringAsFixed(0)}';
-      }
+      final value = physio.experienceYears;
+      if (value is num) return value.toInt();
+      final parsed = int.tryParse(value?.toString() ?? '');
+      if (parsed != null) return parsed;
     } catch (_) {}
-
     try {
-      final value = physio.consultationFee;
-
-      if (value is num && value > 0) {
-        return '₹${value.toStringAsFixed(0)}';
-      }
+      final value = physio.experience;
+      if (value is num) return value.toInt();
+      final parsed = int.tryParse(value?.toString() ?? '');
+      if (parsed != null) return parsed;
     } catch (_) {}
-
-    return '₹--';
+    return 0;
   }
+
+  String _getResolvedCareMode(dynamic physio) {
+    final requested = careMode.trim().toLowerCase();
+    bool enabled(String mode) {
+      try {
+        if (mode == PricingConfig.home) return physio.homeVisitEnabled == true;
+        if (mode == PricingConfig.clinic) return physio.clinicVisitEnabled == true;
+        if (mode == PricingConfig.online) return physio.onlineConsultationEnabled == true;
+      } catch (_) {}
+      return false;
+    }
+    if ((requested == PricingConfig.home || requested == PricingConfig.clinic || requested == PricingConfig.online) && enabled(requested)) return requested;
+    if (enabled(PricingConfig.home)) return PricingConfig.home;
+    if (enabled(PricingConfig.clinic)) return PricingConfig.clinic;
+    if (enabled(PricingConfig.online)) return PricingConfig.online;
+    return requested == PricingConfig.clinic ? PricingConfig.clinic : requested == PricingConfig.online ? PricingConfig.online : PricingConfig.home;
+  }
+
+  String _getTierName(dynamic physio) {
+    return PricingConfig.getTierName(PricingConfig.getTierFromExperience(_getExperience(physio)));
+  }
+
+  String _getPrice(dynamic physio, String resolvedCareMode) {
+    final price = PricingConfig.getSessionPrice(
+      experienceYears: _getExperience(physio),
+      careMode: resolvedCareMode,
+    );
+    return price > 0 ? '₹${price.toStringAsFixed(0)}' : '₹--';
+  }
+
+  IconData _careModeIcon(String mode) {
+    switch (mode) {
+      case PricingConfig.clinic: return Icons.local_hospital_rounded;
+      case PricingConfig.online: return Icons.videocam_rounded;
+      default: return Icons.home_rounded;
+    }
+  }
+
+  String _shortCareModeLabel(String label) {
+    switch (label) {
+      case 'Clinic Visit': return 'Clinic';
+      case 'Online Consultation': return 'Online';
+      default: return 'Home';
+    }
+  }
+
 
   String _getImageUrl(
     dynamic physio,

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../core/config/pricing_config.dart';
+
 import 'models/booking_model.dart';
 import 'services/booking_service.dart';
 
@@ -30,10 +32,15 @@ class BookingDetailsScreen extends StatefulWidget {
   final String? physiotherapistPhone;
 
   // ==============================================================
-  // PRICING
+  // UNIVERSAL PRICING INPUT
   // ==============================================================
-
-  final double baseSessionPrice;
+  //
+  // Physiotherapists do not provide their own price.
+  // PricingConfig determines:
+  // Experience → Tier → Care Mode → Session Price
+  //
+  // ==============================================================
+  final int experienceYears;
 
   // ==============================================================
   // OPTIONAL PRESELECTED VALUES
@@ -57,9 +64,9 @@ class BookingDetailsScreen extends StatefulWidget {
 
     this.physiotherapistPhone,
 
-    required this.baseSessionPrice,
+    required this.experienceYears,
 
-    this.initialCareMode = 'home',
+    this.initialCareMode = PricingConfig.home,
 
     this.initialTime,
   });
@@ -126,69 +133,66 @@ class _BookingDetailsScreenState
   // PACKAGE DATA
   // ===============================================================
   //
-  // Dynamic pricing based on the physiotherapist's base price.
+  // Package pricing is completely controlled by PricingConfig.
+  // No individual physiotherapist price is used.
   //
-  // 1 Session → Full price
-  // 3 Sessions → 10% discount
-  // 5 Sessions → 15% discount
+  // Experience → Tier → Care Mode → Session Price → Package Discount
   //
   // ===============================================================
 
+  String get _careMode {
+    return _homeVisit
+        ? PricingConfig.home
+        : PricingConfig.clinic;
+  }
+
+  String get _tier {
+    return PricingConfig.getTierFromExperience(
+      widget.experienceYears < 0
+          ? 0
+          : widget.experienceYears,
+    );
+  }
+
+  String get _tierName {
+    return PricingConfig.getTierName(_tier);
+  }
+
+  double get _sessionPrice {
+    return PricingConfig.getSessionPrice(
+      experienceYears: widget.experienceYears < 0
+          ? 0
+          : widget.experienceYears,
+      careMode: _careMode,
+    );
+  }
+
   List<_PackageOption> get _packages {
-    final basePrice =
-        widget.baseSessionPrice > 0
-            ? widget.baseSessionPrice
-            : 599;
+    return PricingConfig.packages.map((config) {
+      final pricing =
+          PricingConfig.calculatePackagePricing(
+        experienceYears:
+            widget.experienceYears < 0
+                ? 0
+                : widget.experienceYears,
+        careMode: _careMode,
+        package: config,
+      );
 
-    final singlePrice =
-        basePrice;
-
-    final threeOriginal =
-        basePrice * 3;
-
-    final threePrice =
-        threeOriginal * 0.90;
-
-    final fiveOriginal =
-        basePrice * 5;
-
-    final fivePrice =
-        fiveOriginal * 0.85;
-
-    return [
-      _PackageOption(
-        visits: 1,
-        title: 'Single Session',
-        description:
-            'One-time physiotherapy session',
-        price: singlePrice.round(),
-        savings: 0,
-      ),
-
-      _PackageOption(
-        visits: 3,
-        title: '3 Visit Recovery Pack',
-        description:
-            'Build consistency in your recovery',
-        price: threePrice.round(),
-        savings:
-            (threeOriginal - threePrice)
-                .round(),
-        popular: true,
-      ),
-
-      _PackageOption(
-        visits: 5,
-        title: '5 Visit Recovery Pack',
-        description:
-            'For ongoing rehabilitation',
-        price: fivePrice.round(),
-        savings:
-            (fiveOriginal - fivePrice)
-                .round(),
-        bestValue: true,
-      ),
-    ];
+      return _PackageOption(
+        id: config.id,
+        visits: config.visits,
+        title: config.title,
+        description: config.description,
+        price: pricing.finalPrice.round(),
+        savings: pricing.discountAmount.round(),
+        originalPrice: pricing.originalPrice.round(),
+        sessionPrice: pricing.sessionPrice,
+        discountPercent: pricing.discountPercent,
+        popular: config.popular,
+        bestValue: config.bestValue,
+      );
+    }).toList();
   }
 
   // ===============================================================
@@ -607,6 +611,19 @@ class _BookingDetailsScreenState
       key: key,
 
       children: [
+        _PremiumInfoCard(
+          icon: Icons.workspace_premium_rounded,
+          title:
+              '$_tierName tier • ₹${_sessionPrice.toStringAsFixed(0)} / session',
+          description:
+              'Universal platform pricing. '
+              'All physiotherapists in the same experience tier '
+              'use the same price for this care mode.',
+          compact: true,
+        ),
+
+        const SizedBox(height: 14),
+
         Column(
           children:
               _packages.map(
@@ -840,6 +857,19 @@ class _BookingDetailsScreenState
               _selectedTime ??
                   'Not selected',
         ),
+
+        const SizedBox(height: 12),
+
+        _PremiumInfoCard(
+          icon: Icons.payments_rounded,
+          title:
+              '$_tierName tier • ₹${selectedPackage.price}',
+          description:
+              '${selectedPackage.visits} sessions • '
+              '${selectedPackage.discountPercent.toStringAsFixed(0)}% package discount • '
+              'You save ₹${selectedPackage.savings}.',
+          compact: true,
+        ),
       ],
     );
   }
@@ -998,33 +1028,55 @@ class _BookingDetailsScreenState
     final package =
         selectedPackage;
 
+    // =============================================================
+    // FINAL UNIVERSAL PRICING SNAPSHOT
+    // =============================================================
+    //
+    // Recalculate here instead of trusting a value passed from the
+    // previous screen. This keeps the Firestore booking price tied
+    // to the central PricingConfig.
+    //
+    // =============================================================
+
+    final packageConfig =
+        PricingConfig.getPackageById(package.id);
+
+    if (packageConfig == null) {
+      _showMessage(
+        'Selected package is no longer available.',
+      );
+      return;
+    }
+
+    final packagePricing =
+        PricingConfig.calculatePackagePricing(
+      experienceYears:
+          widget.experienceYears < 0
+              ? 0
+              : widget.experienceYears,
+      careMode:
+          _careMode,
+      package:
+          packageConfig,
+    );
+
     final basePrice =
-        widget.baseSessionPrice > 0
-            ? widget.baseSessionPrice
-            : package.price.toDouble();
+        packagePricing.sessionPrice;
 
     final totalSessions =
-        package.visits;
+        packagePricing.visits;
 
     final subtotal =
-        basePrice *
-            totalSessions;
+        packagePricing.originalPrice;
 
     final discountAmount =
-        (subtotal -
-                package.price)
-            .clamp(
-              0,
-              double.infinity,
-            )
-            .toDouble();
+        packagePricing.discountAmount;
 
     final discountPercent =
-        subtotal > 0
-            ? (discountAmount /
-                    subtotal) *
-                100
-            : 0.0;
+        packagePricing.discountPercent;
+
+    final packageFinalPrice =
+        packagePricing.finalPrice;
 
     // -------------------------------------------------------------
     // SERVICE TYPE
@@ -1078,8 +1130,7 @@ class _BookingDetailsScreenState
     final taxAmount = 0.0;
 
     final totalAmount =
-        subtotal -
-            discountAmount +
+        packageFinalPrice +
             travelCharge +
             platformFee +
             taxAmount;
@@ -1135,9 +1186,7 @@ class _BookingDetailsScreenState
 
       // Package
       packageId:
-          totalSessions > 1
-              ? 'package_$totalSessions'
-              : null,
+          package.id,
 
       packageName:
           package.title,
@@ -1583,20 +1632,39 @@ class _BookingDetailsScreenState
 // ==================================================================
 
 class _PackageOption {
+  final String id;
   final int visits;
   final String title;
   final String description;
+
+  // Final package price after the configured discount.
   final int price;
+
+  // Savings compared with individual sessions.
   final int savings;
+
+  // Original price before package discount.
+  final int originalPrice;
+
+  // Universal session price for this tier/care mode.
+  final double sessionPrice;
+
+  // Universal package discount.
+  final double discountPercent;
+
   final bool popular;
   final bool bestValue;
 
   const _PackageOption({
+    required this.id,
     required this.visits,
     required this.title,
     required this.description,
     required this.price,
     required this.savings,
+    required this.originalPrice,
+    required this.sessionPrice,
+    required this.discountPercent,
     this.popular = false,
     this.bestValue = false,
   });
