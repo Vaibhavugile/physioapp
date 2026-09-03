@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -48,7 +49,7 @@ class BookingDetailsScreen extends StatefulWidget {
 
   final String initialCareMode;
   final String? initialTime;
-
+final List<String> workingDays;
   const BookingDetailsScreen({
     super.key,
 
@@ -69,6 +70,15 @@ class BookingDetailsScreen extends StatefulWidget {
     this.initialCareMode = PricingConfig.home,
 
     this.initialTime,
+    this.workingDays = const [
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+  'Sun',
+],
   });
 
   @override
@@ -120,6 +130,45 @@ class _BookingDetailsScreenState
   late DateTime _selectedDate;
 
   String? _selectedTime;
+
+  // ===============================================================
+  // APPOINTMENT AVAILABILITY
+  // ===============================================================
+  //
+  // A time slot is considered booked when ANY booking exists for
+  // this physiotherapist on the selected date at that time.
+  // Care mode is intentionally NOT considered.
+  //
+  // Home + Clinic + Online all block the same appointment slot.
+  // ===============================================================
+
+  List<String> _unavailableSlots = <String>[];
+  bool _isLoadingAvailability = false;
+
+  // ===============================================================
+  // PHYSIOTHERAPIST WORKING DAYS
+  // ===============================================================
+  //
+  // These values come from the physiotherapist's onboarding
+  // availability configuration stored in Firestore.
+  //
+  // Example:
+  // ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  //
+  // The date selector uses this list to disable weekly off-days.
+  // ===============================================================
+
+ List<String> _workingDays = <String>[
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+  'SUN',
+];
+
+  bool _isLoadingWorkingDays = false;
 
   // ===============================================================
   // CURRENT STEP
@@ -202,7 +251,23 @@ class _BookingDetailsScreenState
   @override
   void initState() {
     super.initState();
+_workingDays = widget.workingDays
+    .map((day) => _normalizeWorkingDay(day))
+    .where((day) => day.isNotEmpty)
+    .toSet()
+    .toList();
 
+if (_workingDays.isEmpty) {
+  _workingDays = <String>[
+    'MON',
+    'TUE',
+    'WED',
+    'THU',
+    'FRI',
+    'SAT',
+    'SUN',
+  ];
+}
     final now = DateTime.now();
 
     _selectedDate = DateTime(
@@ -233,6 +298,330 @@ class _BookingDetailsScreenState
       _selectedTime =
           widget.initialTime!.trim();
     }
+
+    // Load the physiotherapist's weekly working days first.
+    // Once loaded, the first valid working date is selected and
+    // booked slots for that date are loaded.
+    _loadPhysiotherapistAvailability();
+  }
+
+  // ===============================================================
+  // LOAD PHYSIOTHERAPIST AVAILABILITY
+  // ===============================================================
+
+  Future<void> _loadPhysiotherapistAvailability() async {
+    if (widget.physiotherapistId.trim().isEmpty) {
+      _loadUnavailableSlots();
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoadingWorkingDays = true;
+      });
+    }
+
+    try {
+      final document = await FirebaseFirestore.instance
+          .collection('physiotherapists')
+          .doc(widget.physiotherapistId)
+          .get();
+
+      final data = document.data();
+
+      if (data != null) {
+        final rawWorkingDays = data['workingDays'];
+
+        if (rawWorkingDays is List) {
+          final normalizedDays = rawWorkingDays
+              .map((day) => _normalizeWorkingDay(day.toString()))
+              .where((day) => day.isNotEmpty)
+              .toSet()
+              .toList();
+
+          if (normalizedDays.isNotEmpty) {
+            _workingDays = normalizedDays;
+          }
+        }
+      }
+
+      final firstValidDate =
+          _findNextWorkingDate(_selectedDate);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _selectedDate = firstValidDate;
+        _selectedTime = null;
+        _isLoadingWorkingDays = false;
+      });
+
+      await _loadUnavailableSlots();
+    } catch (error, stackTrace) {
+      debugPrint(
+        '❌ Error loading physiotherapist availability: $error',
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      // If availability cannot be loaded, retain the seven-day
+      // fallback so the booking screen remains usable.
+      setState(() {
+        _isLoadingWorkingDays = false;
+      });
+
+      await _loadUnavailableSlots();
+    }
+  }
+
+  // ===============================================================
+  // NORMALIZE WORKING DAY
+  // ===============================================================
+
+  String _normalizeWorkingDay(String value) {
+    final normalized = value.trim().toUpperCase();
+
+    if (normalized.startsWith('MON')) return 'MON';
+    if (normalized.startsWith('TUE')) return 'TUE';
+    if (normalized.startsWith('WED')) return 'WED';
+    if (normalized.startsWith('THU')) return 'THU';
+    if (normalized.startsWith('FRI')) return 'FRI';
+    if (normalized.startsWith('SAT')) return 'SAT';
+    if (normalized.startsWith('SUN')) return 'SUN';
+
+    return '';
+  }
+
+  // ===============================================================
+  // CHECK WORKING DAY
+  // ===============================================================
+
+  bool _isWorkingDay(DateTime date) {
+    const dayNames = <int, String>{
+      DateTime.monday: 'MON',
+      DateTime.tuesday: 'TUE',
+      DateTime.wednesday: 'WED',
+      DateTime.thursday: 'THU',
+      DateTime.friday: 'FRI',
+      DateTime.saturday: 'SAT',
+      DateTime.sunday: 'SUN',
+    };
+
+    final dayName = dayNames[date.weekday];
+
+    if (dayName == null) {
+      return false;
+    }
+
+    return _workingDays.contains(dayName);
+  }
+
+  // ===============================================================
+  // FIND NEXT WORKING DATE
+  // ===============================================================
+
+  DateTime _findNextWorkingDate(DateTime fromDate) {
+    final baseDate = DateTime(
+      fromDate.year,
+      fromDate.month,
+      fromDate.day,
+    );
+
+    for (int offset = 0; offset < 31; offset++) {
+      final candidate =
+          baseDate.add(Duration(days: offset));
+
+      if (_isWorkingDay(candidate)) {
+        return candidate;
+      }
+    }
+
+    // Safety fallback. Onboarding validation should always prevent
+    // an empty working-days configuration.
+    return baseDate;
+  }
+
+  // ===============================================================
+  // LOAD BOOKED APPOINTMENT SLOTS
+  // ===============================================================
+
+  Future<void> _loadUnavailableSlots() async {
+    if (widget.physiotherapistId.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _unavailableSlots = <String>[];
+          _isLoadingAvailability = false;
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoadingAvailability = true;
+      });
+    }
+
+    try {
+      final startOfDay = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
+
+      final endOfDay = startOfDay.add(
+        const Duration(days: 1),
+      );
+
+      // We intentionally query by physiotherapist only and filter the
+      // selected date locally. This avoids requiring a Firestore
+      // composite index for physiotherapistId + appointmentDate.
+      final snapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where(
+            'physiotherapistId',
+            isEqualTo: widget.physiotherapistId,
+          )
+          .get();
+
+      final bookedSlots = <String>{};
+
+      for (final document in snapshot.docs) {
+        final data = document.data();
+
+        // Cancelled and rejected appointments should release the
+        // time slot again. Pending-payment, pending-acceptance and
+        // confirmed bookings continue to block the slot.
+        final bookingStatus =
+            data['bookingStatus']
+                ?.toString()
+                .trim()
+                .toLowerCase();
+
+        if (bookingStatus == 'cancelled' ||
+            bookingStatus == 'rejected') {
+          continue;
+        }
+
+        final rawDate = data['appointmentDate'];
+        final appointmentDate = _parseFirestoreDate(rawDate);
+
+        if (appointmentDate == null) {
+          continue;
+        }
+
+        final belongsToSelectedDate =
+            !appointmentDate.isBefore(startOfDay) &&
+            appointmentDate.isBefore(endOfDay);
+
+        if (!belongsToSelectedDate) {
+          continue;
+        }
+
+        final rawTime = data['appointmentTime'];
+
+        if (rawTime == null) {
+          continue;
+        }
+
+        final time = rawTime.toString().trim();
+
+        if (time.isNotEmpty) {
+          bookedSlots.add(_normalizeAppointmentTime(time));
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _unavailableSlots = bookedSlots.toList();
+        _isLoadingAvailability = false;
+
+        // If the currently selected time became unavailable after a
+        // date change or refresh, remove the selection.
+        if (_selectedTime != null &&
+            bookedSlots.contains(
+              _normalizeAppointmentTime(_selectedTime!),
+            )) {
+          _selectedTime = null;
+        }
+      });
+
+      debugPrint(
+        '📅 Availability loaded: '
+        '${bookedSlots.length} booked slot(s) for '
+        '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
+      );
+
+      if (bookedSlots.isNotEmpty) {
+        debugPrint(
+          '⛔ Booked slots: ${bookedSlots.join(', ')}',
+        );
+      }
+    } catch (error, stackTrace) {
+      debugPrint(
+        '❌ Error loading appointment availability: $error',
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _unavailableSlots = <String>[];
+        _isLoadingAvailability = false;
+      });
+
+      _showMessage(
+        'Unable to load appointment availability. Please try again.',
+      );
+    }
+  }
+
+  // ===============================================================
+  // FIRESTORE DATE PARSER
+  // ===============================================================
+
+  DateTime? _parseFirestoreDate(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+
+    if (value is DateTime) {
+      return value;
+    }
+
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+
+    return null;
+  }
+
+  // ===============================================================
+  // NORMALIZE APPOINTMENT TIME
+  // ===============================================================
+
+  String _normalizeAppointmentTime(String value) {
+    return value.trim().toUpperCase();
   }
 
   // ===============================================================
@@ -703,10 +1092,22 @@ class _BookingDetailsScreenState
           selectedDate:
               _selectedDate,
 
+          workingDays:
+              _workingDays,
+
           onDateSelected: (date) {
+            if (!_isWorkingDay(date)) {
+              return;
+            }
+
             setState(() {
               _selectedDate = date;
+              _selectedTime = null;
+              _unavailableSlots = <String>[];
             });
+
+            // Every date has its own availability.
+            _loadUnavailableSlots();
           },
         ),
 
@@ -717,10 +1118,7 @@ class _BookingDetailsScreenState
               _selectedTime,
 
           unavailableSlots:
-              const [
-            '01:00 PM',
-            '04:30 PM',
-          ],
+              _unavailableSlots,
 
           onTimeSelected: (time) {
             setState(() {
@@ -728,6 +1126,32 @@ class _BookingDetailsScreenState
             });
           },
         ),
+
+        if (_isLoadingWorkingDays || _isLoadingAvailability) ...[
+          const SizedBox(height: 10),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.8,
+                  color: Color(0xFF5146D9),
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Checking booked appointments...',
+                style: TextStyle(
+                  fontSize: 9.5,
+                  color: Color(0xFF737C94),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
 
         const SizedBox(height: 18),
 
@@ -932,6 +1356,14 @@ class _BookingDetailsScreenState
         return true;
 
       case 2:
+        if (!_isWorkingDay(_selectedDate)) {
+          _showMessage(
+            'Please select a working day for this physiotherapist.',
+          );
+
+          return false;
+        }
+
         if (_selectedTime == null ||
             _selectedTime!.trim().isEmpty) {
           _showMessage(
@@ -1134,6 +1566,27 @@ class _BookingDetailsScreenState
             travelCharge +
             platformFee +
             taxAmount;
+
+    // -------------------------------------------------------------
+    // FINAL AVAILABILITY RECHECK
+    // -------------------------------------------------------------
+    //
+    // The slot may have been booked by another patient while this
+    // screen was open. Re-check Firestore immediately before creating
+    // the booking so we do not knowingly create an already-booked slot.
+    // -------------------------------------------------------------
+
+    final latestSlotAvailable =
+        await _isSelectedSlotStillAvailable();
+
+    if (!latestSlotAvailable) {
+      _showMessage(
+        'This appointment slot is no longer available. Please choose another time.',
+      );
+
+      await _loadUnavailableSlots();
+      return;
+    }
 
     // -------------------------------------------------------------
     // CREATE BOOKING
@@ -1362,6 +1815,100 @@ class _BookingDetailsScreenState
   }
 
   // ===============================================================
+  // FINAL SLOT AVAILABILITY CHECK
+  // ===============================================================
+
+  Future<bool> _isSelectedSlotStillAvailable() async {
+    if (_selectedTime == null ||
+        _selectedTime!.trim().isEmpty) {
+      return false;
+    }
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where(
+            'physiotherapistId',
+            isEqualTo: widget.physiotherapistId,
+          )
+          .get();
+
+      final startOfDay = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
+
+      final endOfDay =
+          startOfDay.add(const Duration(days: 1));
+
+      final selectedTime =
+          _normalizeAppointmentTime(_selectedTime!);
+
+      for (final document in snapshot.docs) {
+        final data = document.data();
+
+        final bookingStatus =
+            data['bookingStatus']
+                ?.toString()
+                .trim()
+                .toLowerCase();
+
+        if (bookingStatus == 'cancelled' ||
+            bookingStatus == 'rejected') {
+          continue;
+        }
+
+        final appointmentDate =
+            _parseFirestoreDate(
+          data['appointmentDate'],
+        );
+
+        if (appointmentDate == null) {
+          continue;
+        }
+
+        final belongsToSelectedDate =
+            !appointmentDate.isBefore(startOfDay) &&
+            appointmentDate.isBefore(endOfDay);
+
+        if (!belongsToSelectedDate) {
+          continue;
+        }
+
+        final rawTime = data['appointmentTime'];
+
+        if (rawTime == null) {
+          continue;
+        }
+
+        final existingTime =
+            _normalizeAppointmentTime(
+          rawTime.toString(),
+        );
+
+        if (existingTime == selectedTime) {
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint(
+        '❌ Final slot availability check failed: $error',
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      // Fail closed. If we cannot verify availability, do not create
+      // a booking that could collide with another appointment.
+      return false;
+    }
+  }
+
+  // ===============================================================
   // VALIDATE ALL DATA
   // ===============================================================
 
@@ -1385,10 +1932,28 @@ class _BookingDetailsScreenState
       return false;
     }
 
+    if (!_isWorkingDay(_selectedDate)) {
+      _showMessage(
+        'Please select a working day for this physiotherapist.',
+      );
+
+      return false;
+    }
+
     if (_selectedTime == null ||
         _selectedTime!.trim().isEmpty) {
       _showMessage(
         'Please select an appointment time.',
+      );
+
+      return false;
+    }
+
+    if (_unavailableSlots.contains(
+      _normalizeAppointmentTime(_selectedTime!),
+    )) {
+      _showMessage(
+        'That appointment slot has just been booked. Please choose another time.',
       );
 
       return false;

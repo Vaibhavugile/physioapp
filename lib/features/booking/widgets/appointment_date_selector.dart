@@ -5,12 +5,56 @@ class AppointmentDateSelector extends StatelessWidget {
   final ValueChanged<DateTime>? onDateSelected;
   final int daysToShow;
 
+  /// Working days configured by the physiotherapist.
+  ///
+  /// Values can be stored as either:
+  /// Mon / Tue / Wed / Thu / Fri / Sat / Sun
+  /// or:
+  /// MON / TUE / WED / THU / FRI / SAT / SUN
+  ///
+  /// Dates outside these working days are shown but cannot be selected.
+  final List<String> workingDays;
+
   const AppointmentDateSelector({
     super.key,
     required this.selectedDate,
     this.onDateSelected,
     this.daysToShow = 7,
+    this.workingDays = const [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ],
   });
+
+  // ===============================================================
+  // WORKING-DAY HELPERS
+  // ===============================================================
+
+  /// Converts any supported working-day value into a standard
+  /// three-letter uppercase value.
+  static String _normalizeWorkingDay(String value) {
+    final normalized = value.trim().toUpperCase();
+
+    if (normalized.length <= 3) {
+      return normalized;
+    }
+
+    return normalized.substring(0, 3);
+  }
+
+  bool _isWorkingDay(DateTime date) {
+    final day = _dayName(date);
+
+    return workingDays.any(
+      (workingDay) =>
+          _normalizeWorkingDay(workingDay) == day,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,12 +141,17 @@ class AppointmentDateSelector extends StatelessWidget {
                 today,
               );
 
+              final isWorkingDay =
+                  _isWorkingDay(date);
+
               return GestureDetector(
-                onTap: () {
-                  onDateSelected?.call(
-                    date,
-                  );
-                },
+                onTap: isWorkingDay
+                    ? () {
+                        onDateSelected?.call(
+                          date,
+                        );
+                      }
+                    : null,
 
                 behavior:
                     HitTestBehavior.opaque,
@@ -127,7 +176,7 @@ class AppointmentDateSelector extends StatelessWidget {
 
                   decoration:
                       BoxDecoration(
-                    gradient: isSelected
+                    gradient: isSelected && isWorkingDay
                         ? const LinearGradient(
                             begin:
                                 Alignment.topLeft,
@@ -144,9 +193,11 @@ class AppointmentDateSelector extends StatelessWidget {
                           )
                         : null,
 
-                    color: isSelected
-                        ? null
-                        : Colors.white,
+                    color: isWorkingDay
+                        ? (isSelected
+                            ? null
+                            : Colors.white)
+                        : const Color(0xFFF4F5F8),
 
                     borderRadius:
                         BorderRadius.circular(
@@ -154,34 +205,39 @@ class AppointmentDateSelector extends StatelessWidget {
                     ),
 
                     border: Border.all(
-                      color: isSelected
-                          ? const Color(
-                              0xFF5146D9,
-                            )
-                          : const Color(
-                              0xFFE3E6EF,
-                            ),
+                      color: !isWorkingDay
+                          ? const Color(0xFFE7E9EF)
+                          : isSelected
+                              ? const Color(
+                                  0xFF5146D9,
+                                )
+                              : const Color(
+                                  0xFFE3E6EF,
+                                ),
 
                       width:
-                          isSelected ? 1.2 : .9,
+                          isSelected && isWorkingDay
+                              ? 1.2
+                              : .9,
                     ),
 
                     boxShadow: [
-                      BoxShadow(
-                        color: isSelected
-                            ? const Color(
-                                0xFF5146D9,
-                              ).withOpacity(.18)
-                            : const Color(
-                                0xFF26345C,
-                              ).withOpacity(.045),
+                      if (isWorkingDay)
+                        BoxShadow(
+                          color: isSelected
+                              ? const Color(
+                                  0xFF5146D9,
+                                ).withOpacity(.18)
+                              : const Color(
+                                  0xFF26345C,
+                                ).withOpacity(.045),
 
-                        blurRadius:
-                            isSelected ? 15 : 11,
+                          blurRadius:
+                              isSelected ? 15 : 11,
 
-                        offset:
-                            const Offset(0, 5),
-                      ),
+                          offset:
+                              const Offset(0, 5),
+                        ),
                     ],
                   ),
 
@@ -202,11 +258,13 @@ class AppointmentDateSelector extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 8.5,
 
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(
-                                  0xFF7B849B,
-                                ),
+                          color: !isWorkingDay
+                              ? const Color(0xFFB0B5C2)
+                              : isSelected
+                                  ? Colors.white
+                                  : const Color(
+                                      0xFF7B849B,
+                                    ),
 
                           fontWeight:
                               FontWeight.w900,
@@ -227,11 +285,13 @@ class AppointmentDateSelector extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
 
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(
-                                  0xFF151D3D,
-                                ),
+                          color: !isWorkingDay
+                              ? const Color(0xFF9FA5B4)
+                              : isSelected
+                                  ? Colors.white
+                                  : const Color(
+                                      0xFF151D3D,
+                                    ),
 
                           fontWeight:
                               FontWeight.w900,
@@ -252,12 +312,14 @@ class AppointmentDateSelector extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 8.5,
 
-                          color: isSelected
-                              ? Colors.white
-                                  .withOpacity(.82)
-                              : const Color(
-                                  0xFF8A92A8,
-                                ),
+                          color: !isWorkingDay
+                              ? const Color(0xFFB2B7C3)
+                              : isSelected
+                                  ? Colors.white
+                                      .withOpacity(.82)
+                                  : const Color(
+                                      0xFF8A92A8,
+                                    ),
 
                           fontWeight:
                               FontWeight.w700,
@@ -265,11 +327,73 @@ class AppointmentDateSelector extends StatelessWidget {
                           letterSpacing: .3,
                         ),
                       ),
+
+                      if (!isWorkingDay) ...[
+                        const SizedBox(height: 3),
+                        const Text(
+                          'OFF',
+                          style: TextStyle(
+                            fontSize: 6.5,
+                            color: Color(0xFFB0B5C2),
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: .4,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               );
             },
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // =========================================================
+        // WORKING-DAY INFO
+        // =========================================================
+
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 11,
+            vertical: 9,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FC),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: const Color(0xFFE5E8EF),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF9F5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.event_available_rounded,
+                  size: 14,
+                  color: Color(0xFF079F87),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _workingDaysLabel(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFF69738B),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
 
@@ -436,6 +560,43 @@ class AppointmentDateSelector extends StatelessWidget {
     ];
 
     return months[date.month - 1];
+  }
+
+  String _workingDaysLabel() {
+    final normalizedDays = workingDays
+        .map(_normalizeWorkingDay)
+        .where(
+          (day) => const {
+            'MON',
+            'TUE',
+            'WED',
+            'THU',
+            'FRI',
+            'SAT',
+            'SUN',
+          }.contains(day),
+        )
+        .toSet();
+
+    const order = [
+      'MON',
+      'TUE',
+      'WED',
+      'THU',
+      'FRI',
+      'SAT',
+      'SUN',
+    ];
+
+    final selected = order
+        .where(normalizedDays.contains)
+        .toList();
+
+    if (selected.isEmpty) {
+      return 'No working days configured';
+    }
+
+    return 'Available on ${selected.join(', ')}';
   }
 
   static String _formattedDate(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../home/widgets/home_bottom_nav.dart';
 import '../explore/explore_screen.dart';
-
+import '../booking/my_bookings_screen.dart';
 class MainNavigation extends StatefulWidget {
   const MainNavigation({
     super.key,
@@ -29,10 +29,7 @@ class _MainNavigationState
       ExploreScreen(),
 
       // Temporary screens.
-      _ComingSoonScreen(
-        title: 'Bookings',
-        icon: Icons.calendar_month_rounded,
-      ),
+      const MyBookingsScreen(),
 
       _ComingSoonScreen(
         title: 'Recovery',

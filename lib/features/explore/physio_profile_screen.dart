@@ -641,6 +641,18 @@ class _PhysioProfileScreenState
                               experienceYears: p.experienceYears,
 
                               // =======================================
+                              // PHYSIOTHERAPIST WORKING DAYS
+                              // =======================================
+                              //
+                              // Pass the physiotherapist's onboarding
+                              // availability into the booking flow so
+                              // patients can only select working days.
+                              //
+                              workingDays: List<String>.from(
+                                p.workingDays,
+                              ),
+
+                              // =======================================
                               // SELECTED CARE MODE
                               // =======================================
 

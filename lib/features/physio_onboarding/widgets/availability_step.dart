@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AvailabilityStep extends StatelessWidget {
+  /// Default marketplace schedule:
+  /// 9:00 AM to 6:00 PM with 1-hour appointment slots.
+  static const int defaultStartHour = 9;
+  static const int defaultEndHour = 18;
+  static const int slotDurationMinutes = 60;
+  static const int defaultAppointmentsPerDay = 9;
+
   final Set<String> selectedDays;
 
   final TimeOfDay startTime;
@@ -157,53 +164,157 @@ class AvailabilityStep extends StatelessWidget {
 
         const _SectionHeader(
           title: 'Working hours',
-          subtitle: 'Set your usual availability for appointments.',
+          subtitle:
+              'Your standard booking window is 9:00 AM to 6:00 PM. Patients can book one-hour sessions within this window.',
         ),
 
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            Expanded(
-              child: _TimeCard(
-                title: 'Start time',
-                time: startTime,
-                icon: Icons.login_rounded,
-                onTap: () async {
-                  final selectedTime =
-                      await showTimePicker(
-                    context: context,
-                    initialTime: startTime,
-                  );
-
-                  if (selectedTime != null) {
-                    onStartTimeChanged(selectedTime);
-                  }
-                },
-              ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFFE1E6EF),
             ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: _TimeCard(
-                title: 'End time',
-                time: endTime,
-                icon: Icons.logout_rounded,
-                onTap: () async {
-                  final selectedTime =
-                      await showTimePicker(
-                    context: context,
-                    initialTime: endTime,
-                  );
-
-                  if (selectedTime != null) {
-                    onEndTimeChanged(selectedTime);
-                  }
-                },
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF111A3D).withValues(alpha: 0.04),
+                blurRadius: 18,
+                offset: const Offset(0, 7),
               ),
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF2FF),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFF246BFD),
+                      size: 23,
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Standard appointment window',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF27314D),
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          '9 hours of bookable time each working day',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF7B849C),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF8F1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      '1 HR',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF16805A),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _FixedTimeCard(
+                      title: 'Starts',
+                      time: '9:00 AM',
+                      icon: Icons.login_rounded,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 18,
+                      color: Color(0xFF98A1B5),
+                    ),
+                  ),
+                  Expanded(
+                    child: _FixedTimeCard(
+                      title: 'Ends',
+                      time: '6:00 PM',
+                      icon: Icons.logout_rounded,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F9FD),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 17,
+                      color: Color(0xFF246BFD),
+                    ),
+                    SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        'Patients will see these 1-hour slots: 9–10 AM, 10–11 AM, 11 AM–12 PM, 12–1 PM, 1–2 PM, 2–3 PM, 3–4 PM, 4–5 PM and 5–6 PM.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          height: 1.45,
+                          color: Color(0xFF59637A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: 28),
@@ -257,9 +368,9 @@ class AvailabilityStep extends StatelessWidget {
         // =========================================================
 
         const _SectionHeader(
-          title: 'Daily appointment limit',
+          title: 'Daily appointment capacity',
           subtitle:
-              'Control how many patient appointments you want to accept per day.',
+              'With 9:00 AM–6:00 PM and one-hour sessions, there are 9 standard appointment slots per working day.',
         ),
 
         const SizedBox(height: 16),
@@ -288,16 +399,13 @@ class AvailabilityStep extends StatelessWidget {
                   color: Color(0xFF246BFD),
                 ),
               ),
-
               const SizedBox(width: 13),
-
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Maximum appointments',
+                      'Maximum standard bookings',
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
@@ -306,49 +414,32 @@ class AvailabilityStep extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Maximum bookings accepted per day',
+                      '9 one-hour appointments can be booked each day',
                       style: TextStyle(
                         fontSize: 11.5,
+                        height: 1.35,
                         color: Color(0xFF7B849C),
                       ),
                     ),
                   ],
                 ),
               ),
-
-              _CounterButton(
-                icon: Icons.remove,
-                onTap: maxAppointmentsPerDay > 1
-                    ? () {
-                        onMaxAppointmentsChanged(
-                          maxAppointmentsPerDay - 1,
-                        );
-                      }
-                    : null,
-              ),
-
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  '$maxAppointmentsPerDay',
-                  style: const TextStyle(
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF246BFD),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Text(
+                  '9',
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF111A3D),
+                    color: Colors.white,
                   ),
                 ),
-              ),
-
-              _CounterButton(
-                icon: Icons.add,
-                onTap: maxAppointmentsPerDay < 50
-                    ? () {
-                        onMaxAppointmentsChanged(
-                          maxAppointmentsPerDay + 1,
-                        );
-                      }
-                    : null,
               ),
             ],
           ),
@@ -408,7 +499,7 @@ class AvailabilityStep extends StatelessWidget {
 
               Expanded(
                 child: Text(
-                  'You can update your availability later from your professional dashboard. Patients will only see available appointment slots.',
+                  'Your working days are your regular schedule. Each selected day has 9 one-hour slots from 9:00 AM to 6:00 PM. Later, the professional dashboard can be used to close specific dates or pause bookings.',
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.5,

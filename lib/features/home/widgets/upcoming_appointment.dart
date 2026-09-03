@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../models/appointment_model.dart';
-import '../../../services/appointment_service.dart';
+import '../../booking/models/booking_model.dart';
+import '../../booking/services/booking_service.dart';
 
 class UpcomingAppointment extends StatelessWidget {
   const UpcomingAppointment({
@@ -19,8 +19,8 @@ class UpcomingAppointment extends StatelessWidget {
   static final FirebaseAuth _auth =
       FirebaseAuth.instance;
 
-  static final AppointmentService _appointmentService =
-      AppointmentService();
+  static const BookingService _bookingService =
+      BookingService();
 
   // ==============================================================
   // BUILD
@@ -38,10 +38,9 @@ class UpcomingAppointment extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return StreamBuilder<AppointmentModel?>(
-      stream: _appointmentService
-          .streamNextUpcomingAppointment(
-        userId: user.uid,
+    return StreamBuilder<List<BookingModel>>(
+      stream: _bookingService.streamUserBookings(
+        user.uid,
       ),
 
       builder: (
@@ -74,20 +73,21 @@ class UpcomingAppointment extends StatelessWidget {
         // NO APPOINTMENT
         // --------------------------------------------------------
 
-        final appointment = snapshot.data;
+        final bookings = snapshot.data ?? const <BookingModel>[];
+        final booking = _findNextUpcomingBooking(bookings);
 
-        if (appointment == null) {
+        if (booking == null) {
           return _NoUpcomingAppointment(
             onTap: onTap,
           );
         }
 
         // --------------------------------------------------------
-        // APPOINTMENT FOUND
+        // BOOKING FOUND
         // --------------------------------------------------------
 
         return _UpcomingAppointmentCard(
-          appointment: appointment,
+          booking: booking,
           onTap: onTap,
         );
       },
@@ -96,16 +96,89 @@ class UpcomingAppointment extends StatelessWidget {
 }
 
 // =================================================================
+ // FIND NEXT UPCOMING BOOKING
+ // =================================================================
+
+BookingModel? _findNextUpcomingBooking(
+  List<BookingModel> bookings,
+) {
+  final now = DateTime.now();
+
+  final upcoming = bookings.where((booking) {
+    final status = booking.bookingStatus.trim().toLowerCase();
+
+    // Cancelled/rejected bookings should never appear as upcoming.
+    if (status == 'cancelled' || status == 'rejected') {
+      return false;
+    }
+
+    final appointmentDateTime =
+        _bookingDateTime(booking);
+
+    return !appointmentDateTime.isBefore(now);
+  }).toList();
+
+  if (upcoming.isEmpty) {
+    return null;
+  }
+
+  upcoming.sort(
+    (a, b) => _bookingDateTime(a)
+        .compareTo(_bookingDateTime(b)),
+  );
+
+  return upcoming.first;
+}
+
+DateTime _bookingDateTime(
+  BookingModel booking,
+) {
+  final date = booking.appointmentDate;
+  final time = booking.appointmentTime.trim();
+
+  final match = RegExp(
+    r'^(\d{1,2}):(\d{2})\s*(AM|PM)?',
+    caseSensitive: false,
+  ).firstMatch(time);
+
+  if (match != null) {
+    var hour = int.tryParse(match.group(1)!) ?? 0;
+    final minute = int.tryParse(match.group(2)!) ?? 0;
+    final period = match.group(3)?.toUpperCase();
+
+    if (period == 'PM' && hour < 12) {
+      hour += 12;
+    } else if (period == 'AM' && hour == 12) {
+      hour = 0;
+    }
+
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+  }
+
+  return DateTime(
+    date.year,
+    date.month,
+    date.day,
+  );
+}
+
+// =================================================================
 // PREMIUM APPOINTMENT CARD
 // =================================================================
 
 class _UpcomingAppointmentCard extends StatelessWidget {
   const _UpcomingAppointmentCard({
-    required this.appointment,
+    required this.booking,
     this.onTap,
   });
 
-  final AppointmentModel appointment;
+  final BookingModel booking;
 
   final VoidCallback? onTap;
 
@@ -116,7 +189,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final date =
-        appointment.appointmentDate;
+        booking.appointmentDate;
 
     final doctorName =
         _getDoctorName();
@@ -320,7 +393,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
                                 .access_time_rounded,
 
                             text:
-                                appointment.startTime,
+                                booking.appointmentTime,
                           ),
 
                           _InfoItem(
@@ -511,7 +584,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   String _getDoctorName() {
     final name =
-        appointment.physiotherapistName;
+        booking.physiotherapistName;
 
     if (name.trim().isNotEmpty) {
       return name;
@@ -522,7 +595,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   String _getSpecialization() {
     final specialization =
-        appointment.physiotherapistSpecialization;
+        'Physiotherapy Specialist';
 
     if (specialization.trim().isNotEmpty) {
       return specialization;
@@ -533,7 +606,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   String? _getImageUrl() {
     final image =
-        appointment.physiotherapistImageUrl;
+        booking.physiotherapistPhotoUrl;
 
     if (image == null ||
         image.trim().isEmpty) {
@@ -549,7 +622,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
     // uses different visit type names.
 
     final type =
-        appointment.appointmentType
+        booking.serviceType
     .toString()
     .toLowerCase();
 
@@ -566,7 +639,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   IconData _getVisitIcon() {
     final type =
-        appointment.appointmentType
+        booking.serviceType
     .toString()
     .toLowerCase();
 
@@ -586,7 +659,7 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
   String _getStatus() {
     final status =
-        appointment.status
+        booking.bookingStatus
             .trim()
             .toLowerCase();
 
@@ -596,7 +669,11 @@ class _UpcomingAppointmentCard extends StatelessWidget {
 
     switch (status) {
       case 'pending':
+      case 'pendingpayment':
         return 'Pending';
+
+      case 'pendingacceptance':
+        return 'Awaiting Confirmation';
 
       case 'confirmed':
         return 'Confirmed';
@@ -628,15 +705,15 @@ class _UpcomingAppointmentCard extends StatelessWidget {
   }
 
   bool _hasPackage() {
-    return appointment.isPackageBooking;
+    return (booking.totalSessions > 1);
   }
 
   String _packageText() {
     final total =
-        appointment.totalSessions ?? 0;
+        booking.totalSessions;
 
     final remaining =
-        appointment.remainingSessions ?? 0;
+        booking.remainingSessions;
 
     if (total <= 0) {
       return 'Package session';
@@ -666,6 +743,9 @@ class _StatusBadge extends StatelessWidget {
 
     switch (status.toLowerCase()) {
       case 'pending':
+      case 'pendingpayment':
+      case 'pending acceptance':
+      case 'pendingacceptance':
         backgroundColor =
             const Color(0xFFFFF6E4);
 
