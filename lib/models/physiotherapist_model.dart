@@ -107,6 +107,8 @@ class PhysiotherapistModel {
 
   final String city;
 
+  final String locality;
+
   final String state;
 
   final String pincode;
@@ -128,6 +130,8 @@ class PhysiotherapistModel {
   final String endTime;
 
   final Map<String, dynamic> availability;
+
+  final Map<String, dynamic> serviceSchedules;
 
   final int sessionDurationMinutes;
 
@@ -262,6 +266,7 @@ class PhysiotherapistModel {
     required this.clinicName,
     required this.address,
     required this.city,
+    this.locality = '',
     required this.state,
     required this.pincode,
     required this.latitude,
@@ -273,6 +278,7 @@ class PhysiotherapistModel {
     required this.startTime,
     required this.endTime,
     required this.availability,
+    this.serviceSchedules = const {},
     required this.sessionDurationMinutes,
     required this.maxAppointmentsPerDay,
 
@@ -369,6 +375,7 @@ class PhysiotherapistModel {
       clinicName: '',
       address: '',
       city: '',
+      locality: '',
       state: '',
       pincode: '',
       latitude: 0,
@@ -380,6 +387,7 @@ class PhysiotherapistModel {
       startTime: '09:00 AM',
       endTime: '06:00 PM',
       availability: const {},
+      serviceSchedules: const {},
       sessionDurationMinutes: 60,
       maxAppointmentsPerDay: 10,
 
@@ -577,6 +585,9 @@ class PhysiotherapistModel {
       city:
           data['city'] ?? '',
 
+      locality:
+          data['locality'] ?? '',
+
       state:
           data['state'] ?? '',
 
@@ -619,6 +630,9 @@ class PhysiotherapistModel {
           _map(
         data['availability'],
       ),
+
+      serviceSchedules:
+          _map(data['serviceSchedules']),
 
       sessionDurationMinutes:
           _toInt(
@@ -905,6 +919,9 @@ class PhysiotherapistModel {
       'city':
           city,
 
+      'locality':
+          locality,
+
       'state':
           state,
 
@@ -935,6 +952,9 @@ class PhysiotherapistModel {
 
       'availability':
           availability,
+
+      'serviceSchedules':
+          serviceSchedules,
 
       'sessionDurationMinutes':
           sessionDurationMinutes,
@@ -1109,6 +1129,7 @@ class PhysiotherapistModel {
     String? clinicName,
     String? address,
     String? city,
+    String? locality,
     String? state,
     String? pincode,
     double? latitude,
@@ -1119,6 +1140,7 @@ class PhysiotherapistModel {
     String? startTime,
     String? endTime,
     Map<String, dynamic>? availability,
+    Map<String, dynamic>? serviceSchedules,
     int? sessionDurationMinutes,
     int? maxAppointmentsPerDay,
 
@@ -1265,6 +1287,10 @@ class PhysiotherapistModel {
           city ??
               this.city,
 
+      locality:
+          locality ??
+              this.locality,
+
       state:
           state ??
               this.state,
@@ -1301,6 +1327,10 @@ class PhysiotherapistModel {
       availability:
           availability ??
               this.availability,
+
+      serviceSchedules:
+          serviceSchedules ??
+              this.serviceSchedules,
 
       sessionDurationMinutes:
           sessionDurationMinutes ??

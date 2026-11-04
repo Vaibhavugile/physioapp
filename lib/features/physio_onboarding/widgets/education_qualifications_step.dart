@@ -337,7 +337,7 @@ class _EducationQualificationsStepState
                   EdgeInsets.only(
                 left: 22,
                 right: 22,
-                top: 22,
+                top: 20,
 
                 bottom:
                     MediaQuery.of(context)
@@ -347,11 +347,11 @@ class _EducationQualificationsStepState
               ),
 
               decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFD),
+                color: Colors.white,
 
                 borderRadius:
                     BorderRadius.vertical(
-                  top: Radius.circular(28),
+                  top: Radius.circular(24),
                 ),
               ),
 
@@ -391,11 +391,12 @@ class _EducationQualificationsStepState
                           : 'Edit qualification',
 
                       style: const TextStyle(
-                        fontSize: 19,
+                        fontSize: 20,
+                        letterSpacing: -0.4,
                         fontWeight:
                             FontWeight.w900,
                         color:
-                            Color(0xFF111A3D),
+                            Color(0xFF153D3A),
                       ),
                     ),
 
@@ -406,7 +407,7 @@ class _EducationQualificationsStepState
                       style: TextStyle(
                         fontSize: 11,
                         color:
-                            Color(0xFF7B849C),
+                            Color(0xFF718D89),
                         fontWeight:
                             FontWeight.w500,
                       ),
@@ -524,7 +525,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w800,
                         color:
-                            Color(0xFF303955),
+                            Color(0xFF304E4A),
                       ),
                     ),
 
@@ -566,7 +567,7 @@ class _EducationQualificationsStepState
                           border: Border.all(
                             color:
                                 const Color(
-                              0xFFE2E7F0,
+                              0xFFE3EFEC,
                             ),
                           ),
                         ),
@@ -577,7 +578,7 @@ class _EducationQualificationsStepState
                               Icons.calendar_month_outlined,
                               size: 20,
                               color:
-                                  Color(0xFF2457F5),
+                                  Color(0xFF078F83),
                             ),
 
                             const SizedBox(width: 12),
@@ -591,7 +592,7 @@ class _EducationQualificationsStepState
                                 fontWeight:
                                     FontWeight.w700,
                                 color:
-                                    Color(0xFF111A3D),
+                                    Color(0xFF153D3A),
                               ),
                             ),
 
@@ -600,7 +601,7 @@ class _EducationQualificationsStepState
                             const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color:
-                                  Color(0xFF2457F5),
+                                  Color(0xFF078F83),
                             ),
                           ],
                         ),
@@ -678,7 +679,7 @@ class _EducationQualificationsStepState
                             ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color(
-                            0xFF2457F5,
+                            0xFF078F83,
                           ),
 
                           foregroundColor:
@@ -688,7 +689,7 @@ class _EducationQualificationsStepState
 
                           padding:
                               const EdgeInsets.symmetric(
-                            vertical: 16,
+                            vertical: 15,
                           ),
 
                           shape:
@@ -771,7 +772,7 @@ class _EducationQualificationsStepState
                   EdgeInsets.only(
                 left: 22,
                 right: 22,
-                top: 22,
+                top: 20,
 
                 bottom:
                     MediaQuery.of(context)
@@ -781,11 +782,11 @@ class _EducationQualificationsStepState
               ),
 
               decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFD),
+                color: Colors.white,
 
                 borderRadius:
                     BorderRadius.vertical(
-                  top: Radius.circular(28),
+                  top: Radius.circular(24),
                 ),
               ),
 
@@ -823,11 +824,12 @@ class _EducationQualificationsStepState
                           : 'Edit certification',
 
                       style: const TextStyle(
-                        fontSize: 19,
+                        fontSize: 20,
+                        letterSpacing: -0.4,
                         fontWeight:
                             FontWeight.w900,
                         color:
-                            Color(0xFF111A3D),
+                            Color(0xFF153D3A),
                       ),
                     ),
 
@@ -838,7 +840,7 @@ class _EducationQualificationsStepState
                       style: TextStyle(
                         fontSize: 11,
                         color:
-                            Color(0xFF7B849C),
+                            Color(0xFF718D89),
                         fontWeight:
                             FontWeight.w500,
                       ),
@@ -886,7 +888,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w800,
                         color:
-                            Color(0xFF303955),
+                            Color(0xFF304E4A),
                       ),
                     ),
 
@@ -928,7 +930,7 @@ class _EducationQualificationsStepState
                           border: Border.all(
                             color:
                                 const Color(
-                              0xFFE2E7F0,
+                              0xFFE3EFEC,
                             ),
                           ),
                         ),
@@ -939,7 +941,7 @@ class _EducationQualificationsStepState
                               Icons.calendar_month_outlined,
                               size: 20,
                               color:
-                                  Color(0xFF2457F5),
+                                  Color(0xFF078F83),
                             ),
 
                             const SizedBox(width: 12),
@@ -953,7 +955,7 @@ class _EducationQualificationsStepState
                                 fontWeight:
                                     FontWeight.w700,
                                 color:
-                                    Color(0xFF111A3D),
+                                    Color(0xFF153D3A),
                               ),
                             ),
 
@@ -962,7 +964,7 @@ class _EducationQualificationsStepState
                             const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color:
-                                  Color(0xFF2457F5),
+                                  Color(0xFF078F83),
                             ),
                           ],
                         ),
@@ -1030,7 +1032,7 @@ class _EducationQualificationsStepState
                             ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color(
-                            0xFF2457F5,
+                            0xFF078F83,
                           ),
 
                           foregroundColor:
@@ -1040,7 +1042,7 @@ class _EducationQualificationsStepState
 
                           padding:
                               const EdgeInsets.symmetric(
-                            vertical: 16,
+                            vertical: 15,
                           ),
 
                           shape:
@@ -1138,10 +1140,10 @@ class _EducationQualificationsStepState
 
                       color: selected
                           ? const Color(
-                              0xFF2457F5,
+                              0xFF078F83,
                             )
                           : const Color(
-                              0xFF303955,
+                              0xFF304E4A,
                             ),
                     ),
                   ),
@@ -1150,7 +1152,7 @@ class _EducationQualificationsStepState
                       ? const Icon(
                           Icons.check_circle,
                           color:
-                              Color(0xFF2457F5),
+                              Color(0xFF078F83),
                         )
                       : null,
 
@@ -1175,210 +1177,120 @@ class _EducationQualificationsStepState
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+    final qualificationCount = _qualifications.length;
+    final certificationCount = _certifications.length;
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildIntroCard(),
-
-        const SizedBox(height: 24),
-
-        // ========================================================
-        // EDUCATION
-        // ========================================================
+        const SizedBox(height: 22),
 
         _buildSectionHeader(
-          icon:
-              Icons.school_outlined,
-
-          title:
-              'Education & qualifications',
-
-          subtitle:
-              'Add your physiotherapy degrees and academic background.',
+          icon: Icons.school_rounded,
+          title: 'Education & qualifications',
+          subtitle: '$qualificationCount ${qualificationCount == 1 ? 'qualification' : 'qualifications'} added',
         ),
+        const SizedBox(height: 13),
 
-        const SizedBox(height: 16),
-
-        if (_qualifications.isEmpty)
-          _buildEmptyEducationCard(),
-
+        if (_qualifications.isEmpty) _buildEmptyEducationCard(),
         if (_qualifications.isNotEmpty)
           ...List.generate(
             _qualifications.length,
-            (index) {
-              return Padding(
-                padding:
-                    const EdgeInsets.only(
-                  bottom: 12,
-                ),
-
-                child:
-                    _buildQualificationCard(
-                  qualification:
-                      _qualifications[index],
-
-                  index: index,
-                ),
-              );
-            },
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _buildQualificationCard(
+                qualification: _qualifications[index],
+                index: index,
+              ),
+            ),
           ),
-
-        const SizedBox(height: 4),
-
+        const SizedBox(height: 3),
         _buildAddButton(
-          icon: Icons.add_circle_outline,
+          icon: Icons.add_rounded,
           label: 'Add qualification',
-
-          onTap: () {
-            _showQualificationSheet();
-          },
+          onTap: () => _showQualificationSheet(),
         ),
 
-        const SizedBox(height: 30),
-
-        // ========================================================
-        // CERTIFICATIONS
-        // ========================================================
+        const SizedBox(height: 26),
 
         _buildSectionHeader(
-          icon:
-              Icons.workspace_premium_outlined,
-
-          title:
-              'Professional certifications',
-
-          subtitle:
-              'Add courses, certifications and additional professional training.',
+          icon: Icons.workspace_premium_rounded,
+          title: 'Professional certifications',
+          subtitle: '$certificationCount ${certificationCount == 1 ? 'certification' : 'certifications'} added · Optional',
         ),
+        const SizedBox(height: 13),
 
-        const SizedBox(height: 16),
-
-        if (_certifications.isEmpty)
-          _buildEmptyCertificationCard(),
-
+        if (_certifications.isEmpty) _buildEmptyCertificationCard(),
         if (_certifications.isNotEmpty)
           ...List.generate(
             _certifications.length,
-            (index) {
-              return Padding(
-                padding:
-                    const EdgeInsets.only(
-                  bottom: 12,
-                ),
-
-                child:
-                    _buildCertificationCard(
-                  certification:
-                      _certifications[index],
-
-                  index: index,
-                ),
-              );
-            },
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _buildCertificationCard(
+                certification: _certifications[index],
+                index: index,
+              ),
+            ),
           ),
-
-        const SizedBox(height: 4),
-
+        const SizedBox(height: 3),
         _buildAddButton(
-          icon:
-              Icons.workspace_premium_outlined,
-
-          label:
-              'Add certification',
-
-          onTap: () {
-            _showCertificationSheet();
-          },
+          icon: Icons.add_rounded,
+          label: 'Add certification',
+          onTap: () => _showCertificationSheet(),
         ),
 
-        const SizedBox(height: 30),
-
+        const SizedBox(height: 20),
         _buildInfoCard(),
       ],
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // INTRO CARD
   // ==============================================================
 
   Widget _buildIntroCard() {
     return Container(
-      width: double.infinity,
-
-      padding:
-          const EdgeInsets.all(18),
-
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
       decoration: BoxDecoration(
-        gradient:
-            const LinearGradient(
-          colors: [
-            Color(0xFF2457F5),
-            Color(0xFF5B82FF),
-          ],
-
-          begin:
-              Alignment.topLeft,
-
-          end:
-              Alignment.bottomRight,
-        ),
-
-        borderRadius:
-            BorderRadius.circular(22),
+        color: const Color(0xFFF1F8F5),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE1EEE8)),
       ),
-
       child: Row(
         children: [
           Container(
-            width: 50,
-            height: 50,
-
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color:
-                  Colors.white.withOpacity(.16),
-
-              borderRadius:
-                  BorderRadius.circular(16),
+              color: const Color(0xFF0A9485),
+              borderRadius: BorderRadius.circular(13),
             ),
-
-            child: const Icon(
-              Icons.school_rounded,
-              color: Colors.white,
-              size: 25,
-            ),
+            child: const Icon(Icons.school_rounded, color: Colors.white, size: 21),
           ),
-
-          const SizedBox(width: 14),
-
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Show your expertise',
+                  'Build your professional credentials',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight:
-                        FontWeight.w900,
+                    color: Color(0xFF173F3B),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.2,
                   ),
                 ),
-
                 SizedBox(height: 4),
-
                 Text(
-                  'Your qualifications help us verify your professional profile and build patient confidence.',
+                  'Add your main physiotherapy qualification. You can include extra certifications too.',
                   style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10.5,
-                    height: 1.45,
-                    fontWeight:
-                        FontWeight.w500,
+                    color: Color(0xFF718D89),
+                    fontSize: 10,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1389,7 +1301,7 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // SECTION HEADER
   // ==============================================================
 
@@ -1399,62 +1311,37 @@ class _EducationQualificationsStepState
     required String subtitle,
   }) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-
       children: [
         Container(
-          width: 42,
-          height: 42,
-
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
-            color:
-                const Color(0xFFEAF0FF),
-
-            borderRadius:
-                BorderRadius.circular(14),
+            color: const Color(0xFFEAF5F2),
+            borderRadius: BorderRadius.circular(12),
           ),
-
-          child: Icon(
-            icon,
-            size: 21,
-            color:
-                const Color(0xFF2457F5),
-          ),
+          child: Icon(icon, color: const Color(0xFF078F83), size: 19),
         ),
-
-        const SizedBox(width: 12),
-
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight:
-                      FontWeight.w900,
-                  color:
-                      Color(0xFF111A3D),
+                  color: Color(0xFF173F3B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.2,
                 ),
               ),
-
-              const SizedBox(height: 4),
-
+              const SizedBox(height: 3),
               Text(
                 subtitle,
-
                 style: const TextStyle(
+                  color: Color(0xFF81958F),
                   fontSize: 10,
-                  height: 1.45,
-                  color:
-                      Color(0xFF7B849C),
-                  fontWeight:
-                      FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1464,119 +1351,100 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // EMPTY EDUCATION
   // ==============================================================
 
   Widget _buildEmptyEducationCard() {
     return Container(
       width: double.infinity,
-
-      padding:
-          const EdgeInsets.all(20),
-
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
       decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color:
-              const Color(0xFFE2E7F0),
-        ),
+        color: const Color(0xFFFBFDFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4ECE9)),
       ),
-
-      child: const Column(
+      child: Row(
         children: [
-          Icon(
-            Icons.school_outlined,
-            size: 32,
-            color: Color(0xFF9BA4B8),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F6F4),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.school_outlined, color: Color(0xFF8BA49D), size: 20),
           ),
-
-          SizedBox(height: 9),
-
-          Text(
-            'No qualifications added yet',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight:
-                  FontWeight.w800,
-              color:
-                  Color(0xFF303955),
+          const SizedBox(width: 11),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'No qualification added yet',
+                  style: TextStyle(
+                    color: Color(0xFF294B46),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Start with your primary physiotherapy degree.',
+                  style: TextStyle(color: Color(0xFF849891), fontSize: 10, height: 1.35),
+                ),
+              ],
             ),
           ),
-
-          SizedBox(height: 4),
-
-          Text(
-            'Add at least your primary physiotherapy degree.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              color:
-                  Color(0xFF7B849C),
-            ),
-          ),
+          const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Color(0xFF9AADA7)),
         ],
       ),
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // EMPTY CERTIFICATION
   // ==============================================================
 
   Widget _buildEmptyCertificationCard() {
     return Container(
       width: double.infinity,
-
-      padding:
-          const EdgeInsets.all(20),
-
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color:
-              const Color(0xFFE2E7F0),
-        ),
+        color: const Color(0xFFFBFDFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4ECE9)),
       ),
-
-      child: const Column(
+      child: Row(
         children: [
-          Icon(
-            Icons.workspace_premium_outlined,
-            size: 32,
-            color: Color(0xFF9BA4B8),
-          ),
-
-          SizedBox(height: 9),
-
-          Text(
-            'No additional certifications',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight:
-                  FontWeight.w800,
-              color:
-                  Color(0xFF303955),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7EA),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: const Icon(Icons.workspace_premium_outlined, color: Color(0xFFD99A3C), size: 20),
           ),
-
-          SizedBox(height: 4),
-
-          Text(
-            'You can add certifications now or later.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              color:
-                  Color(0xFF7B849C),
+          const SizedBox(width: 11),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'No extra certifications',
+                  style: TextStyle(
+                    color: Color(0xFF294B46),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'This section is optional. Add courses or training if available.',
+                  style: TextStyle(color: Color(0xFF849891), fontSize: 10, height: 1.35),
+                ),
+              ],
             ),
           ),
         ],
@@ -1584,176 +1452,116 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // QUALIFICATION CARD
   // ==============================================================
 
   Widget _buildQualificationCard({
-    required EducationQualification
-        qualification,
-
+    required EducationQualification qualification,
     required int index,
   }) {
     return Container(
-      padding:
-          const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color:
-              const Color(0xFFE0E6F0),
-        ),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: const Color(0xFFE3ECE8)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x07173F3B),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
-
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color:
-                  const Color(0xFFEAF0FF),
-
-              borderRadius:
-                  BorderRadius.circular(14),
+              color: const Color(0xFFEAF6F2),
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            child: const Icon(
-              Icons.school_outlined,
-              color:
-                  Color(0xFF2457F5),
-            ),
+            child: const Icon(Icons.school_rounded, color: Color(0xFF078F83), size: 20),
           ),
-
-          const SizedBox(width: 12),
-
+          const SizedBox(width: 11),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   qualification.degree,
-
                   style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight:
-                        FontWeight.w800,
-                    color:
-                        Color(0xFF111A3D),
+                    color: Color(0xFF173F3B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-
-                if (qualification
-                    .specialization
-                    .isNotEmpty) ...[
-                  const SizedBox(height: 3),
-
+                if (qualification.specialization.isNotEmpty) ...[
+                  const SizedBox(height: 4),
                   Text(
                     qualification.specialization,
-
                     style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          Color(0xFF2457F5),
+                      color: Color(0xFF078F83),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
-
-                const SizedBox(height: 6),
-
+                const SizedBox(height: 7),
                 Text(
                   qualification.institution,
-
                   style: const TextStyle(
+                    color: Color(0xFF536E67),
                     fontSize: 10,
-                    color:
-                        Color(0xFF68738B),
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-
-                if (qualification
-                    .university
-                    .isNotEmpty) ...[
-                  const SizedBox(height: 2),
-
+                if (qualification.university.isNotEmpty) ...[
+                  const SizedBox(height: 3),
                   Text(
                     qualification.university,
-
-                    style: const TextStyle(
-                      fontSize: 9.5,
-                      color:
-                          Color(0xFF9BA4B8),
-                    ),
+                    style: const TextStyle(color: Color(0xFF91A39D), fontSize: 9.5),
                   ),
                 ],
-
-                const SizedBox(height: 7),
-
-                Text(
-                  'Completed ${qualification.passingYear}',
-
-                  style: const TextStyle(
-                    fontSize: 9.5,
-                    color:
-                        Color(0xFF7B849C),
-                    fontWeight:
-                        FontWeight.w600,
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2F7F5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'PASSED ${qualification.passingYear}',
+                    style: const TextStyle(
+                      color: Color(0xFF6F8981),
+                      fontSize: 8,
+                      letterSpacing: .55,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
           PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_vert,
-              size: 20,
-              color: Color(0xFF7B849C),
-            ),
-
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 42, minHeight: 42),
+            icon: const Icon(Icons.more_horiz_rounded, size: 21, color: Color(0xFF78918A)),
             onSelected: (value) {
               if (value == 'edit') {
-                _showQualificationSheet(
-                  existing: qualification,
-                  editIndex: index,
-                );
+                _showQualificationSheet(existing: qualification, editIndex: index);
               }
-
               if (value == 'delete') {
-                setState(() {
-                  _qualifications
-                      .removeAt(index);
-                });
-
+                setState(() => _qualifications.removeAt(index));
                 _notifyChanged();
               }
             },
-
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-
-              const PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ],
           ),
         ],
@@ -1761,144 +1569,100 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // CERTIFICATION CARD
   // ==============================================================
 
   Widget _buildCertificationCard({
-    required ProfessionalCertification
-        certification,
-
+    required ProfessionalCertification certification,
     required int index,
   }) {
     return Container(
-      padding:
-          const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color:
-              const Color(0xFFE0E6F0),
-        ),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: const Color(0xFFE3ECE8)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x07173F3B),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
-
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color:
-                  const Color(0xFFFFF4E5),
-
-              borderRadius:
-                  BorderRadius.circular(14),
+              color: const Color(0xFFFFF6E9),
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            child: const Icon(
-              Icons.workspace_premium_outlined,
-              color:
-                  Color(0xFFFF9D28),
-            ),
+            child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD89A3E), size: 20),
           ),
-
-          const SizedBox(width: 12),
-
+          const SizedBox(width: 11),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   certification.certificateName,
-
                   style: const TextStyle(
+                    color: Color(0xFF173F3B),
                     fontSize: 12,
-                    fontWeight:
-                        FontWeight.w800,
-                    color:
-                        Color(0xFF111A3D),
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-
-                if (certification
-                    .issuingOrganization
-                    .isNotEmpty) ...[
-                  const SizedBox(height: 4),
-
+                if (certification.issuingOrganization.isNotEmpty) ...[
+                  const SizedBox(height: 5),
                   Text(
-                    certification
-                        .issuingOrganization,
-
+                    certification.issuingOrganization,
                     style: const TextStyle(
+                      color: Color(0xFF536E67),
                       fontSize: 10,
-                      color:
-                          Color(0xFF68738B),
-                      fontWeight:
-                          FontWeight.w600,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
-
-                const SizedBox(height: 6),
-
-                Text(
-                  'Completed ${certification.completionYear}',
-
-                  style: const TextStyle(
-                    fontSize: 9.5,
-                    color:
-                        Color(0xFF7B849C),
-                    fontWeight:
-                        FontWeight.w600,
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2F7F5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'COMPLETED ${certification.completionYear}',
+                    style: const TextStyle(
+                      color: Color(0xFF6F8981),
+                      fontSize: 8,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
           PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_vert,
-              size: 20,
-              color: Color(0xFF7B849C),
-            ),
-
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 42, minHeight: 42),
+            icon: const Icon(Icons.more_horiz_rounded, size: 21, color: Color(0xFF78918A)),
             onSelected: (value) {
               if (value == 'edit') {
-                _showCertificationSheet(
-                  existing: certification,
-                  editIndex: index,
-                );
+                _showCertificationSheet(existing: certification, editIndex: index);
               }
-
               if (value == 'delete') {
-                setState(() {
-                  _certifications
-                      .removeAt(index);
-                });
-
+                setState(() => _certifications.removeAt(index));
                 _notifyChanged();
               }
             },
-
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-
-              const PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ],
           ),
         ],
@@ -1906,7 +1670,7 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // ADD BUTTON
   // ==============================================================
 
@@ -1915,107 +1679,64 @@ class _EducationQualificationsStepState
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: Container(
-        width: double.infinity,
-
-        padding:
-            const EdgeInsets.symmetric(
-          vertical: 14,
-        ),
-
-        decoration: BoxDecoration(
-          color:
-              const Color(0xFFEAF0FF),
-
-          borderRadius:
-              BorderRadius.circular(16),
-
-          border: Border.all(
-            color:
-                const Color(0xFFBFD0FF),
+    return Material(
+      color: const Color(0xFFEDF7F4),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFCFE6DE)),
           ),
-        ),
-
-        child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-
-          children: [
-            Icon(
-              icon,
-              size: 19,
-              color:
-                  const Color(0xFF2457F5),
-            ),
-
-            const SizedBox(width: 8),
-
-            Text(
-              label,
-
-              style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight:
-                    FontWeight.w800,
-                color:
-                    Color(0xFF2457F5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: const Color(0xFF078F83)),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF078F83),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // INFO CARD
   // ==============================================================
 
   Widget _buildInfoCard() {
     return Container(
-      width: double.infinity,
-
-      padding:
-          const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color:
-            const Color(0xFFFFF8EA),
-
-        borderRadius:
-            BorderRadius.circular(18),
-
-        border: Border.all(
-          color:
-              const Color(0xFFFFE2A8),
-        ),
+        color: const Color(0xFFFFF9EF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF3E5C9)),
       ),
-
       child: const Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: Color(0xFFE89A00),
-            size: 20,
-          ),
-
-          SizedBox(width: 10),
-
+          Icon(Icons.info_outline_rounded, color: Color(0xFFC18A36), size: 17),
+          SizedBox(width: 9),
           Expanded(
             child: Text(
               'Your education and qualifications may be reviewed during profile verification. Please provide accurate information.',
               style: TextStyle(
-                fontSize: 10,
-                height: 1.5,
-                color: Color(0xFF7A5B20),
-                fontWeight:
-                    FontWeight.w600,
+                color: Color(0xFF806A43),
+                fontSize: 9.5,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -2024,7 +1745,7 @@ class _EducationQualificationsStepState
     );
   }
 
-  // ==============================================================
+    // ==============================================================
   // SHEET TEXT FIELD
   // ==============================================================
 
@@ -2047,7 +1768,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w800,
             color:
-                Color(0xFF303955),
+                Color(0xFF304E4A),
           ),
         ),
 
@@ -2061,7 +1782,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w600,
             color:
-                Color(0xFF111A3D),
+                Color(0xFF153D3A),
           ),
 
           decoration: InputDecoration(
@@ -2070,14 +1791,14 @@ class _EducationQualificationsStepState
             hintStyle: const TextStyle(
               fontSize: 10.5,
               color:
-                  Color(0xFF9BA4B8),
+                  Color(0xFF9BB0AC),
             ),
 
             prefixIcon: Icon(
               icon,
               size: 20,
               color:
-                  const Color(0xFF2457F5),
+                  const Color(0xFF078F83),
             ),
 
             filled: true,
@@ -2097,7 +1818,7 @@ class _EducationQualificationsStepState
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFFE2E7F0),
+                    Color(0xFFE3EFEC),
               ),
             ),
 
@@ -2109,7 +1830,7 @@ class _EducationQualificationsStepState
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFFE2E7F0),
+                    Color(0xFFE3EFEC),
               ),
             ),
 
@@ -2121,7 +1842,7 @@ class _EducationQualificationsStepState
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFF2457F5),
+                    Color(0xFF078F83),
                 width: 1.4,
               ),
             ),
@@ -2155,7 +1876,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w800,
             color:
-                Color(0xFF303955),
+                Color(0xFF304E4A),
           ),
         ),
 
@@ -2175,7 +1896,7 @@ class _EducationQualificationsStepState
 
             border: Border.all(
               color:
-                  const Color(0xFFE2E7F0),
+                  const Color(0xFFE3EFEC),
             ),
           ),
 
@@ -2192,14 +1913,14 @@ class _EducationQualificationsStepState
                 style: const TextStyle(
                   fontSize: 10.5,
                   color:
-                      Color(0xFF9BA4B8),
+                      Color(0xFF9BB0AC),
                 ),
               ),
 
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color:
-                    Color(0xFF2457F5),
+                    Color(0xFF078F83),
               ),
 
               items:
@@ -2216,7 +1937,7 @@ class _EducationQualificationsStepState
                       fontWeight:
                           FontWeight.w600,
                       color:
-                          Color(0xFF111A3D),
+                          Color(0xFF153D3A),
                     ),
                   ),
                 );

@@ -493,6 +493,7 @@ class PhysiotherapistService {
     required String clinicName,
     required String address,
     required String city,
+    String? locality,
     required String state,
     required String pincode,
     double latitude = 0,
@@ -510,6 +511,8 @@ class PhysiotherapistService {
 
         'city':
             city.trim(),
+
+        if (locality != null) 'locality': locality.trim(),
 
         'state':
             state.trim(),
@@ -541,6 +544,7 @@ class PhysiotherapistService {
     required Map<String, dynamic> availability,
     required int sessionDurationMinutes,
     required int maxAppointmentsPerDay,
+    Map<String, dynamic>? serviceSchedules,
   }) async {
     await updateFields(
       uid: uid,
@@ -556,6 +560,8 @@ class PhysiotherapistService {
 
         'availability':
             availability,
+
+        if (serviceSchedules != null) 'serviceSchedules': serviceSchedules,
 
         'sessionDurationMinutes':
             sessionDurationMinutes,
@@ -614,6 +620,7 @@ class PhysiotherapistService {
       },
     );
   }
+
 
   // ==============================================================
   // UPDATE DOCUMENTS

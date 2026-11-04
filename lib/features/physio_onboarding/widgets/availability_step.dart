@@ -1,779 +1,114 @@
 import 'package:flutter/material.dart';
 
 class AvailabilityStep extends StatelessWidget {
-  /// Default marketplace schedule:
-  /// 9:00 AM to 6:00 PM with 1-hour appointment slots.
-  static const int defaultStartHour = 9;
-  static const int defaultEndHour = 18;
-  static const int slotDurationMinutes = 60;
-  static const int defaultAppointmentsPerDay = 9;
-
-  final Set<String> selectedDays;
-
-  final TimeOfDay startTime;
-  final TimeOfDay endTime;
-
   final bool homeVisitsAvailable;
   final bool clinicVisitsAvailable;
   final bool onlineConsultationAvailable;
   final bool emergencyAvailable;
-
   final int maxAppointmentsPerDay;
-
-  final ValueChanged<Set<String>> onDaysChanged;
-
-  final ValueChanged<TimeOfDay> onStartTimeChanged;
-  final ValueChanged<TimeOfDay> onEndTimeChanged;
-
   final ValueChanged<bool> onHomeVisitsChanged;
   final ValueChanged<bool> onClinicVisitsChanged;
   final ValueChanged<bool> onOnlineConsultationChanged;
   final ValueChanged<bool> onEmergencyAvailabilityChanged;
-
   final ValueChanged<int> onMaxAppointmentsChanged;
+  final Map<String, dynamic> serviceSchedules;
+  final ValueChanged<Map<String, dynamic>> onServiceSchedulesChanged;
 
   const AvailabilityStep({
     super.key,
-    required this.selectedDays,
-    required this.startTime,
-    required this.endTime,
     required this.homeVisitsAvailable,
     required this.clinicVisitsAvailable,
     required this.onlineConsultationAvailable,
     required this.emergencyAvailable,
     required this.maxAppointmentsPerDay,
-    required this.onDaysChanged,
-    required this.onStartTimeChanged,
-    required this.onEndTimeChanged,
     required this.onHomeVisitsChanged,
     required this.onClinicVisitsChanged,
     required this.onOnlineConsultationChanged,
     required this.onEmergencyAvailabilityChanged,
     required this.onMaxAppointmentsChanged,
+    this.serviceSchedules = const {},
+    required this.onServiceSchedulesChanged,
   });
 
-  static const List<String> _days = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
-  ];
+  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // =========================================================
-        // HEADER
-        // =========================================================
+    final services = [
+      _ServiceConfig('home', 'Home visits', 'Travel to patients within your service radius', Icons.home_work_outlined, homeVisitsAvailable, onHomeVisitsChanged),
+      _ServiceConfig('clinic', 'Clinic visits', 'Appointments at your registered clinic', Icons.local_hospital_outlined, clinicVisitsAvailable, onClinicVisitsChanged),
+      _ServiceConfig('online', 'Online consultations', 'Video consultations from anywhere', Icons.video_call_outlined, onlineConsultationAvailable, onOnlineConsultationChanged),
+    ];
 
-        const Text(
-          'Availability & working hours',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF111A3D),
-            letterSpacing: -0.5,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        const Text(
-          'Set when you are available so patients can book appointments according to your schedule.',
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Color(0xFF7B849C),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        // =========================================================
-        // AVAILABLE DAYS
-        // =========================================================
-
-        const _SectionHeader(
-          title: 'Working days',
-          subtitle: 'Select the days when you are available.',
-        ),
-
-        const SizedBox(height: 16),
-
-        Wrap(
-          spacing: 9,
-          runSpacing: 10,
-          children: _days.map((day) {
-            final isSelected = selectedDays.contains(day);
-
-            return InkWell(
-              onTap: () {
-                final updatedDays = Set<String>.from(selectedDays);
-
-                if (isSelected) {
-                  updatedDays.remove(day);
-                } else {
-                  updatedDays.add(day);
-                }
-
-                onDaysChanged(updatedDays);
-              },
-              borderRadius: BorderRadius.circular(14),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 58,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF246BFD)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF246BFD)
-                        : const Color(0xFFE1E6EF),
-                  ),
-                ),
-                child: Text(
-                  day,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: isSelected
-                        ? Colors.white
-                        : const Color(0xFF59637A),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-
-        const SizedBox(height: 30),
-
-        // =========================================================
-        // WORKING HOURS
-        // =========================================================
-
-        const _SectionHeader(
-          title: 'Working hours',
-          subtitle:
-              'Your standard booking window is 9:00 AM to 6:00 PM. Patients can book one-hour sessions within this window.',
-        ),
-
-        const SizedBox(height: 16),
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFFE1E6EF),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF111A3D).withValues(alpha: 0.04),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAF2FF),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.schedule_rounded,
-                      color: Color(0xFF246BFD),
-                      size: 23,
-                    ),
-                  ),
-                  const SizedBox(width: 13),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Standard appointment window',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF27314D),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          '9 hours of bookable time each working day',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF7B849C),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAF8F1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      '1 HR',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF16805A),
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: _FixedTimeCard(
-                      title: 'Starts',
-                      time: '9:00 AM',
-                      icon: Icons.login_rounded,
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                      color: Color(0xFF98A1B5),
-                    ),
-                  ),
-                  Expanded(
-                    child: _FixedTimeCard(
-                      title: 'Ends',
-                      time: '6:00 PM',
-                      icon: Icons.logout_rounded,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7F9FD),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 17,
-                      color: Color(0xFF246BFD),
-                    ),
-                    SizedBox(width: 9),
-                    Expanded(
-                      child: Text(
-                        'Patients will see these 1-hour slots: 9–10 AM, 10–11 AM, 11 AM–12 PM, 12–1 PM, 1–2 PM, 2–3 PM, 3–4 PM, 4–5 PM and 5–6 PM.',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          height: 1.45,
-                          color: Color(0xFF59637A),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        // =========================================================
-        // CONSULTATION TYPES
-        // =========================================================
-
-        const _SectionHeader(
-          title: 'Services you provide',
-          subtitle: 'Choose how patients can consult with you.',
-        ),
-
-        const SizedBox(height: 16),
-
-        _AvailabilityOption(
-          icon: Icons.home_work_outlined,
-          title: 'Home visits',
-          subtitle:
-              'Visit patients at their home or preferred location.',
-          value: homeVisitsAvailable,
-          onChanged: onHomeVisitsChanged,
-        ),
-
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Your availability', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, letterSpacing: -.6, color: Color(0xFF173F3B))),
+      const SizedBox(height: 7),
+      const Text('Turn on the services you offer, then set separate days and timings for each one. You can choose flexible availability when your schedule is open.', style: TextStyle(fontSize: 14, height: 1.55, color: Color(0xFF718D89))),
+      const SizedBox(height: 20),
+      ...services.map((service) => _ServiceScheduleCard(
+        config: service,
+        value: Map<String, dynamic>.from(serviceSchedules[service.key] is Map ? serviceSchedules[service.key] as Map : {}),
+        onEnabled: service.onChanged,
+        onChanged: (value) {
+          final updated = Map<String, dynamic>.from(serviceSchedules);
+          updated[service.key] = value;
+          onServiceSchedulesChanged(updated);
+        },
+      )),
+      const SizedBox(height: 10),
+      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFFF5FAF9), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE3EFEC))), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Booking preferences', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF234641))),
         const SizedBox(height: 12),
-
-        _AvailabilityOption(
-          icon: Icons.local_hospital_outlined,
-          title: 'Clinic appointments',
-          subtitle:
-              'Provide treatment at your clinic or practice location.',
-          value: clinicVisitsAvailable,
-          onChanged: onClinicVisitsChanged,
-        ),
-
-        const SizedBox(height: 12),
-
-        _AvailabilityOption(
-          icon: Icons.video_call_outlined,
-          title: 'Online consultation',
-          subtitle:
-              'Offer virtual consultations and follow-up sessions.',
-          value: onlineConsultationAvailable,
-          onChanged: onOnlineConsultationChanged,
-        ),
-
-        const SizedBox(height: 28),
-
-        // =========================================================
-        // DAILY APPOINTMENT LIMIT
-        // =========================================================
-
-        const _SectionHeader(
-          title: 'Daily appointment capacity',
-          subtitle:
-              'With 9:00 AM–6:00 PM and one-hour sessions, there are 9 standard appointment slots per working day.',
-        ),
-
-        const SizedBox(height: 16),
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFE1E6EF),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2FF),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.event_available_outlined,
-                  color: Color(0xFF246BFD),
-                ),
-              ),
-              const SizedBox(width: 13),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Maximum standard bookings',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF27314D),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '9 one-hour appointments can be booked each day',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.35,
-                        color: Color(0xFF7B849C),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF246BFD),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: const Text(
-                  '9',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        // =========================================================
-        // EMERGENCY AVAILABILITY
-        // =========================================================
-
-        const _SectionHeader(
-          title: 'Additional availability',
-          subtitle:
-              'Enable emergency availability if you accept urgent appointments.',
-        ),
-
-        const SizedBox(height: 16),
-
-        _AvailabilityOption(
-          icon: Icons.emergency_outlined,
-          title: 'Emergency appointments',
-          subtitle:
-              'Allow patients to request urgent physiotherapy sessions.',
-          value: emergencyAvailable,
-          onChanged:
-              onEmergencyAvailabilityChanged,
-          isEmergency: true,
-        ),
-
-        const SizedBox(height: 24),
-
-        // =========================================================
-        // INFORMATION BOX
-        // =========================================================
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFD5E4FF),
-            ),
-          ),
-          child: const Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: Color(0xFF246BFD),
-              ),
-
-              SizedBox(width: 11),
-
-              Expanded(
-                child: Text(
-                  'Your working days are your regular schedule. Each selected day has 9 one-hour slots from 9:00 AM to 6:00 PM. Later, the professional dashboard can be used to close specific dates or pause bookings.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.5,
-                    color: Color(0xFF4B5B78),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 10),
-      ],
-    );
+        SwitchListTile.adaptive(contentPadding: EdgeInsets.zero, value: emergencyAvailable, onChanged: onEmergencyAvailabilityChanged, title: const Text('Emergency appointments', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)), subtitle: const Text('Allow patients to request urgent appointments', style: TextStyle(fontSize: 11))),
+        Row(children: [const Expanded(child: Text('Maximum appointments per day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700))), IconButton(onPressed: maxAppointmentsPerDay > 1 ? () => onMaxAppointmentsChanged(maxAppointmentsPerDay - 1) : null, icon: const Icon(Icons.remove_circle_outline)), Text('$maxAppointmentsPerDay', style: const TextStyle(fontWeight: FontWeight.w800)), IconButton(onPressed: maxAppointmentsPerDay < 50 ? () => onMaxAppointmentsChanged(maxAppointmentsPerDay + 1) : null, icon: const Icon(Icons.add_circle_outline))]),
+      ])),
+    ]);
   }
 }
 
-// ================================================================
-// SECTION HEADER
-// ================================================================
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _SectionHeader({
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF111A3D),
-          ),
-        ),
-
-        const SizedBox(height: 5),
-
-        Text(
-          subtitle,
-          style: const TextStyle(
-            fontSize: 12,
-            height: 1.45,
-            color: Color(0xFF7B849C),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ================================================================
-// TIME CARD
-// ================================================================
-
-class _TimeCard extends StatelessWidget {
-  final String title;
-  final TimeOfDay time;
+class _ServiceConfig {
+  final String key, title, subtitle;
   final IconData icon;
-  final VoidCallback onTap;
-
-  const _TimeCard({
-    required this.title,
-    required this.time,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: const Color(0xFFE1E6EF),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              size: 21,
-              color: const Color(0xFF246BFD),
-            ),
-
-            const SizedBox(height: 14),
-
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: Color(0xFF7B849C),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            Text(
-              time.format(context),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111A3D),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ================================================================
-// AVAILABILITY OPTION
-// ================================================================
-
-class _AvailabilityOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
+  final bool enabled;
   final ValueChanged<bool> onChanged;
-  final bool isEmergency;
-
-  const _AvailabilityOption({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-    this.isEmergency = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final activeColor = isEmergency
-        ? const Color(0xFFE5484D)
-        : const Color(0xFF246BFD);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 13,
-      ),
-      decoration: BoxDecoration(
-        color: value
-            ? activeColor.withValues(alpha: 0.06)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: value
-              ? activeColor.withValues(alpha: 0.35)
-              : const Color(0xFFE1E6EF),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 47,
-            height: 47,
-            decoration: BoxDecoration(
-              color: value
-                  ? activeColor.withValues(alpha: 0.12)
-                  : const Color(0xFFF3F6FB),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              icon,
-              color: value
-                  ? activeColor
-                  : const Color(0xFF59637A),
-            ),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF27314D),
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    height: 1.4,
-                    color: Color(0xFF7B849C),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 8),
-
-          Switch(
-            value: value,
-            activeThumbColor: activeColor,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
+  const _ServiceConfig(this.key, this.title, this.subtitle, this.icon, this.enabled, this.onChanged);
 }
 
-// ================================================================
-// COUNTER BUTTON
-// ================================================================
-
-class _CounterButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _CounterButton({
-    required this.icon,
-    required this.onTap,
-  });
+class _ServiceScheduleCard extends StatelessWidget {
+  final _ServiceConfig config;
+  final Map<String, dynamic> value;
+  final ValueChanged<bool> onEnabled;
+  final ValueChanged<Map<String, dynamic>> onChanged;
+  const _ServiceScheduleCard({required this.config, required this.value, required this.onEnabled, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final enabled = onTap != null;
-
-    return Material(
-      color: enabled
-          ? const Color(0xFFEAF2FF)
-          : const Color(0xFFF1F3F6),
-      borderRadius: BorderRadius.circular(11),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(11),
-        child: SizedBox(
-          width: 34,
-          height: 34,
-          child: Icon(
-            icon,
-            size: 19,
-            color: enabled
-                ? const Color(0xFF246BFD)
-                : const Color(0xFFB0B7C3),
-          ),
-        ),
-      ),
-    );
+    final days = List<String>.from(value['days'] ?? const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+    final start = _parseTime(value['startTime']?.toString()) ?? const TimeOfDay(hour: 9, minute: 0);
+    final end = _parseTime(value['endTime']?.toString()) ?? const TimeOfDay(hour: 18, minute: 0);
+    final flexible = value['flexible'] == true;
+    return AnimatedContainer(duration: const Duration(milliseconds: 180), margin: const EdgeInsets.only(bottom: 13), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: config.enabled ? const Color(0xFFBDE9E2) : const Color(0xFFE3EFEC)), boxShadow: const [BoxShadow(color: Color(0x070D1B2A), blurRadius: 18, offset: Offset(0, 7))]), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFEAF7F5), borderRadius: BorderRadius.circular(13)), child: Icon(config.icon, color: const Color(0xFF0A9C8C))), const SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(config.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF26354B))), const SizedBox(height: 3), Text(config.subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF829994)))])), Switch.adaptive(value: config.enabled, onChanged: (enabled) { onEnabled(enabled); onChanged({...value, 'enabled': enabled, 'days': days, 'startTime': _formatTime(start), 'endTime': _formatTime(end), 'flexible': flexible}); })]),
+      if (config.enabled) ...[
+        const Divider(height: 24),
+        Wrap(spacing: 7, runSpacing: 7, children: AvailabilityStep._days.map((day) { final selected = days.contains(day); return InkWell(onTap: () { final next = List<String>.from(days); selected ? next.remove(day) : next.add(day); onChanged({...value, 'enabled': true, 'days': next, 'startTime': _formatTime(start), 'endTime': _formatTime(end), 'flexible': flexible}); }, borderRadius: BorderRadius.circular(10), child: AnimatedContainer(duration: const Duration(milliseconds: 150), width: 39, height: 36, alignment: Alignment.center, decoration: BoxDecoration(color: selected ? const Color(0xFF0A9C8C) : const Color(0xFFF3FAF9), borderRadius: BorderRadius.circular(10), border: Border.all(color: selected ? const Color(0xFF0A9C8C) : const Color(0xFFE3EFEC))), child: Text(day, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: selected ? Colors.white : const Color(0xFF718D89))))); }).toList()),
+        const SizedBox(height: 12),
+        SwitchListTile.adaptive(contentPadding: EdgeInsets.zero, dense: true, value: flexible, onChanged: (v) => onChanged({...value, 'enabled': true, 'days': days, 'startTime': _formatTime(start), 'endTime': _formatTime(end), 'flexible': v}), title: const Text('Flexible / anytime availability', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)), subtitle: const Text('Patients can request any time on your selected days', style: TextStyle(fontSize: 10))),
+        if (!flexible) Row(children: [Expanded(child: _TimeButton(label: 'From', value: start, onTap: () async { final picked = await showTimePicker(context: context, initialTime: start); if (picked != null) onChanged({...value, 'enabled': true, 'days': days, 'startTime': _formatTime(picked), 'endTime': _formatTime(end), 'flexible': false}); })), const SizedBox(width: 10), Expanded(child: _TimeButton(label: 'Until', value: end, onTap: () async { final picked = await showTimePicker(context: context, initialTime: end); if (picked != null) onChanged({...value, 'enabled': true, 'days': days, 'startTime': _formatTime(start), 'endTime': _formatTime(picked), 'flexible': false}); }))]),
+        if (days.isEmpty) const Padding(padding: EdgeInsets.only(top: 8), child: Text('Select at least one day for this service.', style: TextStyle(color: Colors.red, fontSize: 11))),
+      ],
+    ]));
   }
+
+  static TimeOfDay? _parseTime(String? value) { if (value == null || !value.contains(':')) return null; final parts = value.split(':'); final h = int.tryParse(parts[0]); final m = int.tryParse(parts[1]); if (h == null || m == null) return null; return TimeOfDay(hour: h, minute: m); }
+  static String _formatTime(TimeOfDay value) => '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+}
+
+class _TimeButton extends StatelessWidget {
+  final String label;
+  final TimeOfDay value;
+  final VoidCallback onTap;
+  const _TimeButton({required this.label, required this.value, required this.onTap});
+  @override
+  Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11), decoration: BoxDecoration(color: const Color(0xFFF5FAF9), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE3EFEC))), child: Row(children: [Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF829994))), const Spacer(), Text(value.format(context), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF234641))), const SizedBox(width: 5), const Icon(Icons.schedule_rounded, size: 15, color: Color(0xFF0A9C8C))])));
 }

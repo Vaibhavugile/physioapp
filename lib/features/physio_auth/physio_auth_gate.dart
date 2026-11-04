@@ -5,6 +5,7 @@ import '../../models/physiotherapist_model.dart';
 import '../../services/physiotherapist_service.dart';
 import '../physio_onboarding/physio_onboarding_screen.dart';
 import 'physio_login_screen.dart';
+import 'physio_partner_hub_screen.dart';
 
 class PhysioAuthGate extends StatelessWidget {
   const PhysioAuthGate({
@@ -102,8 +103,10 @@ class PhysioAuthGate extends StatelessWidget {
             // PENDING
             // ========================================================
 
-            if (status == 'pending') {
-              return const _VerificationPendingScreen();
+            if (status == 'pending' || status == 'under_review') {
+              return PhysioPartnerHubScreen(
+                physiotherapist: physiotherapist,
+              );
             }
 
             // ========================================================

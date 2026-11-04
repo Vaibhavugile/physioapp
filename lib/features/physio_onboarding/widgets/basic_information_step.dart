@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// Personal identity only. Practice location is collected once in
+/// PhysioLocationStep so city/locality are never requested twice.
 class BasicInformationStep extends StatefulWidget {
   final String? initialFullName;
   final String? initialGender;
   final DateTime? initialDateOfBirth;
   final String? initialEmail;
-  final String? initialCity;
-  final String? initialState;
   final String? phoneNumber;
-
   final ValueChanged<BasicInformationData> onChanged;
 
   const BasicInformationStep({
@@ -17,831 +16,76 @@ class BasicInformationStep extends StatefulWidget {
     this.initialGender,
     this.initialDateOfBirth,
     this.initialEmail,
-    this.initialCity,
-    this.initialState,
     this.phoneNumber,
     required this.onChanged,
   });
 
   @override
-  State<BasicInformationStep> createState() =>
-      _BasicInformationStepState();
+  State<BasicInformationStep> createState() => _BasicInformationStepState();
 }
-
-// ================================================================
-// DATA MODEL
-// ================================================================
 
 class BasicInformationData {
   final String fullName;
   final String gender;
   final DateTime? dateOfBirth;
   final String email;
-  final String city;
-  final String state;
 
   const BasicInformationData({
     required this.fullName,
     required this.gender,
     required this.dateOfBirth,
     required this.email,
-    required this.city,
-    required this.state,
   });
 }
 
-class _BasicInformationStepState
-    extends State<BasicInformationStep> {
-  // ==============================================================
-  // FORM KEY
-  // ==============================================================
-
+class _BasicInformationStepState extends State<BasicInformationStep>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _name;
+  late final TextEditingController _email;
+  String _gender = '';
+  DateTime? _dob;
+  late final AnimationController _animation;
 
-  // ==============================================================
-  // CONTROLLERS
-  // ==============================================================
-
-  late final TextEditingController _fullNameController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _cityController;
-  late final TextEditingController _stateController;
-
-  // ==============================================================
-  // STATE
-  // ==============================================================
-
-  String? _selectedGender;
-
-  DateTime? _selectedDateOfBirth;
-
-  // ==============================================================
-  // INIT
-  // ==============================================================
+  static const _ink = Color(0xFF183D39);
+  static const _green = Color(0xFF078F83);
+  static const _muted = Color(0xFF7A918C);
+  static const _line = Color(0xFFE3ECE9);
+  static const _pale = Color(0xFFF4F9F7);
 
   @override
   void initState() {
     super.initState();
-
-    _fullNameController =
-        TextEditingController(
-      text: widget.initialFullName ?? '',
-    );
-
-    _emailController =
-        TextEditingController(
-      text: widget.initialEmail ?? '',
-    );
-
-    _cityController =
-        TextEditingController(
-      text: widget.initialCity ?? '',
-    );
-
-    _stateController =
-        TextEditingController(
-      text: widget.initialState ?? '',
-    );
-
-    _selectedGender =
-        widget.initialGender;
-
-    _selectedDateOfBirth =
-        widget.initialDateOfBirth;
-
-    _fullNameController.addListener(_notifyChanged);
-    _emailController.addListener(_notifyChanged);
-    _cityController.addListener(_notifyChanged);
-    _stateController.addListener(_notifyChanged);
+    _name = TextEditingController(text: widget.initialFullName ?? '');
+    _email = TextEditingController(text: widget.initialEmail ?? '');
+    _gender = widget.initialGender ?? '';
+    _dob = widget.initialDateOfBirth;
+    _name.addListener(_emit);
+    _email.addListener(_emit);
+    _animation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    )..forward();
   }
 
-  // ==============================================================
-  // DISPOSE
-  // ==============================================================
+  void _emit() {
+    widget.onChanged(BasicInformationData(
+      fullName: _name.text.trim(),
+      gender: _gender,
+      dateOfBirth: _dob,
+      email: _email.text.trim(),
+    ));
+  }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _cityController.dispose();
-    _stateController.dispose();
-
+    _name.removeListener(_emit);
+    _email.removeListener(_emit);
+    _name.dispose();
+    _email.dispose();
+    _animation.dispose();
     super.dispose();
   }
-
-  // ==============================================================
-  // NOTIFY PARENT
-  // ==============================================================
-
-  void _notifyChanged() {
-    widget.onChanged(
-      BasicInformationData(
-        fullName:
-            _fullNameController.text.trim(),
-        gender:
-            _selectedGender ?? '',
-        dateOfBirth:
-            _selectedDateOfBirth,
-        email:
-            _emailController.text.trim(),
-        city:
-            _cityController.text.trim(),
-        state:
-            _stateController.text.trim(),
-      ),
-    );
-  }
-
-  // ==============================================================
-  // VALIDATE
-  // ==============================================================
-
-  bool validate() {
-    final formValid =
-        _formKey.currentState?.validate() ?? false;
-
-    if (_selectedGender == null ||
-        _selectedGender!.isEmpty) {
-      _showError(
-        'Please select your gender.',
-      );
-
-      return false;
-    }
-
-    if (_selectedDateOfBirth == null) {
-      _showError(
-        'Please select your date of birth.',
-      );
-
-      return false;
-    }
-
-    return formValid;
-  }
-
-  // ==============================================================
-  // ERROR
-  // ==============================================================
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior:
-              SnackBarBehavior.floating,
-        ),
-      );
-  }
-
-  // ==============================================================
-  // DATE PICKER
-  // ==============================================================
-
-  Future<void> _selectDateOfBirth() async {
-    final now = DateTime.now();
-
-    final initialDate =
-        _selectedDateOfBirth ??
-            DateTime(
-              now.year - 25,
-              now.month,
-              now.day,
-            );
-
-    final selectedDate =
-        await showDatePicker(
-      context: context,
-
-      initialDate: initialDate,
-
-      firstDate:
-          DateTime(now.year - 80),
-
-      lastDate:
-          DateTime(
-        now.year - 18,
-        now.month,
-        now.day,
-      ),
-    );
-
-    if (selectedDate == null) {
-      return;
-    }
-
-    setState(() {
-      _selectedDateOfBirth =
-          selectedDate;
-    });
-
-    _notifyChanged();
-  }
-
-  // ==============================================================
-  // DATE FORMAT
-  // ==============================================================
-
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
-  }
-
-  // ==============================================================
-  // BUILD
-  // ==============================================================
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
-        children: [
-          // ======================================================
-          // PROFILE PHOTO
-          // ======================================================
-
-          Center(
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-
-                      decoration: BoxDecoration(
-                        color:
-                            const Color(0xFFEAF0FF),
-
-                        shape: BoxShape.circle,
-
-                        border: Border.all(
-                          color:
-                              const Color(0xFFD9E3FF),
-                          width: 2,
-                        ),
-                      ),
-
-                      child: const Icon(
-                        Icons.person_rounded,
-                        size: 46,
-                        color:
-                            Color(0xFF2457F5),
-                      ),
-                    ),
-
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-
-                      child: Container(
-                        width: 34,
-                        height: 34,
-
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF2457F5),
-
-                          shape: BoxShape.circle,
-
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 3,
-                          ),
-                        ),
-
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  'Profile photo',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight:
-                        FontWeight.w800,
-                    color:
-                        Color(0xFF2457F5),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // ======================================================
-          // FULL NAME
-          // ======================================================
-
-          _buildLabel('Full name'),
-
-          const SizedBox(height: 8),
-
-          TextFormField(
-            controller: _fullNameController,
-
-            textCapitalization:
-                TextCapitalization.words,
-
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return 'Please enter your full name.';
-              }
-
-              if (value.trim().length < 3) {
-                return 'Please enter a valid name.';
-              }
-
-              return null;
-            },
-
-            decoration: _inputDecoration(
-              hint: 'Enter your full name',
-              icon:
-                  Icons.person_outline_rounded,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // GENDER
-          // ======================================================
-
-          _buildLabel('Gender'),
-
-          const SizedBox(height: 8),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildGenderOption(
-                  label: 'Male',
-                  icon: Icons.male_rounded,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _buildGenderOption(
-                  label: 'Female',
-                  icon: Icons.female_rounded,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _buildGenderOption(
-                  label: 'Other',
-                  icon: Icons.person_outline_rounded,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // DATE OF BIRTH
-          // ======================================================
-
-          _buildLabel('Date of birth'),
-
-          const SizedBox(height: 8),
-
-          InkWell(
-            onTap: _selectDateOfBirth,
-
-            borderRadius:
-                BorderRadius.circular(16),
-
-            child: Container(
-              height: 56,
-
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 16,
-              ),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-
-                borderRadius:
-                    BorderRadius.circular(16),
-
-                border: Border.all(
-                  color:
-                      const Color(0xFFE1E6EF),
-                ),
-              ),
-
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today_outlined,
-                    size: 20,
-                    color:
-                        Color(0xFF7B849C),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Text(
-                      _selectedDateOfBirth == null
-                          ? 'Select your date of birth'
-                          : _formatDate(
-                              _selectedDateOfBirth!,
-                            ),
-
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight:
-                            FontWeight.w600,
-
-                        color:
-                            _selectedDateOfBirth ==
-                                    null
-                                ? const Color(
-                                    0xFF98A1B5,
-                                  )
-                                : const Color(
-                                    0xFF111A3D,
-                                  ),
-                      ),
-                    ),
-                  ),
-
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color:
-                        Color(0xFF7B849C),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // EMAIL
-          // ======================================================
-
-          _buildLabel(
-            'Email address',
-            optional: true,
-          ),
-
-          const SizedBox(height: 8),
-
-          TextFormField(
-            controller: _emailController,
-
-            keyboardType:
-                TextInputType.emailAddress,
-
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return null;
-              }
-
-              final email =
-                  value.trim();
-
-              if (!email.contains('@') ||
-                  !email.contains('.')) {
-                return 'Please enter a valid email.';
-              }
-
-              return null;
-            },
-
-            decoration: _inputDecoration(
-              hint: 'Enter your email address',
-              icon:
-                  Icons.email_outlined,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // PHONE NUMBER
-          // ======================================================
-
-          _buildLabel('Mobile number'),
-
-          const SizedBox(height: 8),
-
-          Container(
-            height: 56,
-
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-
-            decoration: BoxDecoration(
-              color:
-                  const Color(0xFFF0F3F8),
-
-              borderRadius:
-                  BorderRadius.circular(16),
-
-              border: Border.all(
-                color:
-                    const Color(0xFFE1E6EF),
-              ),
-            ),
-
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.phone_outlined,
-                  size: 20,
-                  color:
-                      Color(0xFF7B849C),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Text(
-                    widget.phoneNumber ??
-                        'Mobile number',
-
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          FontWeight.w700,
-                      color:
-                          Color(0xFF4B556D),
-                    ),
-                  ),
-                ),
-
-                const Icon(
-                  Icons.verified_rounded,
-                  size: 19,
-                  color:
-                      Color(0xFF1DAA61),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          const Text(
-            'Verified through your OTP login and cannot be changed here.',
-            style: TextStyle(
-              fontSize: 9.5,
-              color:
-                  Color(0xFF98A1B5),
-              fontWeight:
-                  FontWeight.w500,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // CITY
-          // ======================================================
-
-          _buildLabel('City'),
-
-          const SizedBox(height: 8),
-
-          TextFormField(
-            controller: _cityController,
-
-            textCapitalization:
-                TextCapitalization.words,
-
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return 'Please enter your city.';
-              }
-
-              return null;
-            },
-
-            decoration: _inputDecoration(
-              hint: 'Enter your city',
-              icon:
-                  Icons.location_city_outlined,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ======================================================
-          // STATE
-          // ======================================================
-
-          _buildLabel('State'),
-
-          const SizedBox(height: 8),
-
-          TextFormField(
-            controller: _stateController,
-
-            textCapitalization:
-                TextCapitalization.words,
-
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return 'Please enter your state.';
-              }
-
-              return null;
-            },
-
-            decoration: _inputDecoration(
-              hint: 'Enter your state',
-              icon:
-                  Icons.map_outlined,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          const Text(
-            'Your profile details will be reviewed before your account is activated.',
-            style: TextStyle(
-              fontSize: 10,
-              height: 1.5,
-              color:
-                  Color(0xFF98A1B5),
-              fontWeight:
-                  FontWeight.w500,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  // ==============================================================
-  // LABEL
-  // ==============================================================
-
-  Widget _buildLabel(
-    String label, {
-    bool optional = false,
-  }) {
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight:
-                  FontWeight.w800,
-              color:
-                  Color(0xFF111A3D),
-            ),
-          ),
-
-          if (optional)
-            const TextSpan(
-              text: '  Optional',
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight:
-                    FontWeight.w600,
-                color:
-                    Color(0xFF98A1B5),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // ==============================================================
-  // GENDER OPTION
-  // ==============================================================
-
-  Widget _buildGenderOption({
-    required String label,
-    required IconData icon,
-  }) {
-    final isSelected =
-        _selectedGender == label;
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedGender = label;
-        });
-
-        _notifyChanged();
-      },
-
-      borderRadius:
-          BorderRadius.circular(14),
-
-      child: AnimatedContainer(
-        duration:
-            const Duration(milliseconds: 180),
-
-        height: 50,
-
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFEEF3FF)
-              : Colors.white,
-
-          borderRadius:
-              BorderRadius.circular(14),
-
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF2457F5)
-                : const Color(0xFFE1E6EF),
-
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-
-        child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-
-          children: [
-            Icon(
-              icon,
-              size: 17,
-              color: isSelected
-                  ? const Color(0xFF2457F5)
-                  : const Color(0xFF7B849C),
-            ),
-
-            const SizedBox(width: 5),
-
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight:
-                    FontWeight.w700,
-
-                color: isSelected
-                    ? const Color(0xFF2457F5)
-                    : const Color(0xFF7B849C),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ==============================================================
-  // INPUT DECORATION
-  // ==============================================================
 
   InputDecoration _inputDecoration({
     required String hint,
@@ -849,90 +93,487 @@ class _BasicInformationStepState
   }) {
     return InputDecoration(
       hintText: hint,
-
-      hintStyle: const TextStyle(
-        fontSize: 12,
-        color:
-            Color(0xFF98A1B5),
-        fontWeight:
-            FontWeight.w500,
-      ),
-
-      prefixIcon: Icon(
-        icon,
-        size: 20,
-        color:
-            const Color(0xFF7B849C),
-      ),
-
+      prefixIcon: Icon(icon, size: 19, color: const Color(0xFF829A94)),
       filled: true,
-
-      fillColor: Colors.white,
-
-      contentPadding:
-          const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 17,
+      fillColor: const Color(0xFFFAFCFB),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+      hintStyle: const TextStyle(
+        color: Color(0xFFA0B1AD),
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
       ),
-
       border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _line),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _green, width: 1.4),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE07878)),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE07878), width: 1.4),
+      ),
+    );
+  }
 
-        borderSide:
-            const BorderSide(
-          color:
-              Color(0xFFE1E6EF),
+  Widget _label(String value, {bool required = false, String? helper}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: _ink,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          if (helper != null)
+            Text(
+              helper,
+              style: const TextStyle(
+                color: _muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          if (required)
+            const Padding(
+              padding: EdgeInsets.only(left: 3),
+              child: Text(
+                '*',
+                style: TextStyle(
+                  color: Color(0xFFE07878),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(IconData icon, String title, String subtitle) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF5F2),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(icon, size: 17, color: _green),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: _muted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formattedDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+  }
+
+  Future<void> _selectDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dob ?? DateTime(now.year - 25, now.month, now.day),
+      firstDate: DateTime(1940),
+      lastDate: DateTime(now.year - 18, now.month, now.day),
+      helpText: 'SELECT YOUR DATE OF BIRTH',
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: _green,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: _ink,
+          ),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(() => _dob = picked);
+      _emit();
+    }
+  }
+
+  Widget _genderOption(String value) {
+    final selected = _gender == value;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          setState(() => _gender = value);
+          _emit();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFFE8F5F1) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? _green : _line,
+              width: selected ? 1.3 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (selected) ...[
+                const Icon(Icons.check_circle_rounded, color: _green, size: 14),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected ? _green : const Color(0xFF617873),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
 
-      enabledBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-
-        borderSide:
-            const BorderSide(
-          color:
-              Color(0xFFE1E6EF),
+  Widget _genderSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Gender', required: true),
+        Row(
+          children: [
+            _genderOption('Male'),
+            const SizedBox(width: 7),
+            _genderOption('Female'),
+            const SizedBox(width: 7),
+            _genderOption('Other'),
+          ],
         ),
-      ),
+        if (_gender.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 5),
+            child: Text(
+              'Choose one option',
+              style: TextStyle(color: _muted, fontSize: 10),
+            ),
+          ),
+      ],
+    );
+  }
 
-      focusedBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-
-        borderSide:
-            const BorderSide(
-          color:
-              Color(0xFF2457F5),
-          width: 1.5,
+  Widget _dobField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Date of birth', required: true),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: _selectDate,
+            child: InputDecorator(
+              decoration: _inputDecoration(
+                hint: 'DD / MM / YYYY',
+                icon: Icons.calendar_today_rounded,
+              ).copyWith(
+                suffixIcon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: _muted,
+                ),
+              ),
+              child: Text(
+                _dob == null ? 'Select date' : _formattedDate(_dob!),
+                style: TextStyle(
+                  color: _dob == null ? const Color(0xFFA0B1AD) : _ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
         ),
-      ),
-
-      errorBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-
-        borderSide:
-            const BorderSide(
-          color:
-              Color(0xFFE05252),
+        const SizedBox(height: 5),
+        const Text(
+          'You must be at least 18 years old.',
+          style: TextStyle(color: _muted, fontSize: 10),
         ),
+      ],
+    );
+  }
+
+  Widget _phoneCard() {
+    final phone = widget.phoneNumber ?? '';
+    if (phone.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F8F5),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFDDECE6)),
       ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const Icon(Icons.phone_iphone_rounded, color: _green, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'VERIFIED MOBILE NUMBER',
+                  style: TextStyle(
+                    color: _muted,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .7,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  phone,
+                  style: const TextStyle(
+                    color: _ink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.verified_rounded, color: _green, size: 17),
+          const SizedBox(width: 4),
+          const Text(
+            'Verified',
+            style: TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
+    );
+  }
 
-      focusedErrorBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: _animation, curve: Curves.easeOut),
+      child: Form(
+        key: _formKey,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 620;
+            final gap = wide ? 18.0 : 14.0;
 
-        borderSide:
-            const BorderSide(
-          color:
-              Color(0xFFE05252),
-          width: 1.5,
+            final nameField = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _label('Full name', required: true, helper: 'As per documents'),
+                TextFormField(
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  style: const TextStyle(color: _ink, fontSize: 13, fontWeight: FontWeight.w700),
+                  decoration: _inputDecoration(
+                    hint: 'Enter your full name',
+                    icon: Icons.badge_outlined,
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Please enter your full name'
+                      : null,
+                ),
+              ],
+            );
+
+            final emailField = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _label('Email address', required: true, helper: 'For account updates'),
+                TextFormField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
+                  autocorrect: false,
+                  style: const TextStyle(color: _ink, fontSize: 13, fontWeight: FontWeight.w700),
+                  decoration: _inputDecoration(
+                    hint: 'you@example.com',
+                    icon: Icons.alternate_email_rounded,
+                  ),
+                  validator: (value) {
+                    final email = (value ?? '').trim();
+                    if (email.isEmpty) return 'Please enter your email address';
+                    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+                  decoration: BoxDecoration(
+                    color: _pale,
+                    borderRadius: BorderRadius.circular(17),
+                    border: Border.all(color: const Color(0xFFE5EFEB)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0EA896), Color(0xFF08776F)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 11),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Your personal profile',
+                              style: TextStyle(color: _ink, fontSize: 13, fontWeight: FontWeight.w900),
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Use the details shown on your official documents.',
+                              style: TextStyle(color: _muted, fontSize: 10, height: 1.35),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.lock_outline_rounded, color: _green, size: 17),
+                    ],
+                  ),
+                ),
+                SizedBox(height: gap),
+                if (wide)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: nameField),
+                      const SizedBox(width: 16),
+                      Expanded(child: emailField),
+                    ],
+                  )
+                else ...[
+                  nameField,
+                  SizedBox(height: gap),
+                  emailField,
+                ],
+                SizedBox(height: gap + 2),
+                _sectionTitle(
+                  Icons.tune_rounded,
+                  'Personal details',
+                  'A couple of details to complete your identity.',
+                ),
+                const SizedBox(height: 14),
+                if (wide)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _genderSelector()),
+                      const SizedBox(width: 16),
+                      Expanded(child: _dobField()),
+                    ],
+                  )
+                else ...[
+                  _genderSelector(),
+                  SizedBox(height: gap),
+                  _dobField(),
+                ],
+                if ((widget.phoneNumber ?? '').isNotEmpty) ...[
+                  SizedBox(height: gap + 3),
+                  _phoneCard(),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline_rounded, color: _green, size: 15),
+                    const SizedBox(width: 7),
+                    const Expanded(
+                      child: Text(
+                        'Your practice address and locality will be collected once in the Practice Location step.',
+                        style: TextStyle(color: _muted, fontSize: 10, height: 1.45),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

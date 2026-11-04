@@ -28,16 +28,20 @@ class ExperienceWorkStep extends StatefulWidget {
   });
 
   @override
-  State<ExperienceWorkStep> createState() =>
-      _ExperienceWorkStepState();
+  State<ExperienceWorkStep> createState() => _ExperienceWorkStepState();
 }
 
 class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
-  late TextEditingController _organizationController;
-  late TextEditingController _bioController;
+  late final TextEditingController _organizationController;
+  late final TextEditingController _bioController;
 
-  final List<int> _experienceOptions =
-      List.generate(31, (index) => index);
+  static const Color _ink = Color(0xFF173E39);
+  static const Color _muted = Color(0xFF7B8E89);
+  static const Color _teal = Color(0xFF087F73);
+  static const Color _line = Color(0xFFE5EEEA);
+  static const Color _canvas = Color(0xFFF6FAF8);
+
+  final List<int> _experienceOptions = List.generate(31, (index) => index);
 
   final List<String> _employmentOptions = const [
     'Self-employed',
@@ -64,42 +68,40 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
     'Other',
   ];
 
+  static const Map<String, IconData> _employmentIcons = {
+    'Self-employed': Icons.business_center_rounded,
+    'Working at a clinic': Icons.medical_services_rounded,
+    'Working at a hospital': Icons.local_hospital_rounded,
+    'Working at a physiotherapy center': Icons.health_and_safety_rounded,
+    'Freelance physiotherapist': Icons.laptop_mac_rounded,
+    'Currently not employed': Icons.person_search_rounded,
+    'Other': Icons.more_horiz_rounded,
+  };
+
   @override
   void initState() {
     super.initState();
-
     _organizationController =
-        TextEditingController(
-      text: widget.currentOrganization,
-    );
-
-    _bioController = TextEditingController(
-      text: widget.professionalBio,
-    );
+        TextEditingController(text: widget.currentOrganization);
+    _bioController = TextEditingController(text: widget.professionalBio);
   }
 
   @override
-  void didUpdateWidget(
-    covariant ExperienceWorkStep oldWidget,
-  ) {
+  void didUpdateWidget(covariant ExperienceWorkStep oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.currentOrganization !=
-        widget.currentOrganization) {
-      if (_organizationController.text !=
-          widget.currentOrganization) {
-        _organizationController.text =
-            widget.currentOrganization;
-      }
+    if (oldWidget.currentOrganization != widget.currentOrganization &&
+        _organizationController.text != widget.currentOrganization) {
+      _organizationController.value = TextEditingValue(
+        text: widget.currentOrganization,
+        selection: TextSelection.collapsed(offset: widget.currentOrganization.length),
+      );
     }
-
-    if (oldWidget.professionalBio !=
-        widget.professionalBio) {
-      if (_bioController.text !=
-          widget.professionalBio) {
-        _bioController.text =
-            widget.professionalBio;
-      }
+    if (oldWidget.professionalBio != widget.professionalBio &&
+        _bioController.text != widget.professionalBio) {
+      _bioController.value = TextEditingValue(
+        text: widget.professionalBio,
+        selection: TextSelection.collapsed(offset: widget.professionalBio.length),
+      );
     }
   }
 
@@ -107,255 +109,372 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
   void dispose() {
     _organizationController.dispose();
     _bioController.dispose();
-
     super.dispose();
+  }
+
+  String _experienceLabel(int? years) {
+    if (years == null) return 'Not selected';
+    if (years == 0) return 'Less than 1 year';
+    if (years == 30) return '30+ years';
+    return '$years ${years == 1 ? 'year' : 'years'}';
+  }
+
+  void _toggleLanguage(String language, bool selected) {
+    final updated = List<String>.from(widget.selectedLanguages);
+    if (selected) {
+      updated.remove(language);
+    } else {
+      updated.add(language);
+    }
+    widget.onLanguagesChanged(updated);
   }
 
   @override
   Widget build(BuildContext context) {
+    final languageCount = widget.selectedLanguages.length;
+
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ========================================================
-        // HEADER
-        // ========================================================
+        // A compact profile-style heading rather than a large banner.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0C9484), Color(0xFF14534C)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: _teal.withOpacity(.18),
+                    blurRadius: 13,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.badge_rounded, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 13),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your professional story',
+                    style: TextStyle(
+                      color: _ink,
+                      fontSize: 21,
+                      letterSpacing: -.55,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Experience, workplace and patient communication',
+                    style: TextStyle(color: _muted, fontSize: 11.5, height: 1.35),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
 
-        const Text(
-          'Experience & work details',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF111A3D),
-            letterSpacing: -0.5,
+        // Profile snapshot strip.
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: _canvas,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _line),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _SnapshotMetric(
+                  icon: Icons.timeline_rounded,
+                  label: 'EXPERIENCE',
+                  value: _experienceLabel(widget.totalExperienceYears),
+                ),
+              ),
+              Container(width: 1, height: 34, color: _line),
+              const SizedBox(width: 13),
+              Expanded(
+                child: _SnapshotMetric(
+                  icon: Icons.translate_rounded,
+                  label: 'LANGUAGES',
+                  value: '$languageCount selected',
+                ),
+              ),
+            ],
           ),
         ),
-
-        const SizedBox(height: 8),
-
-        const Text(
-          'Tell us about your professional experience and current work situation.',
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Color(0xFF7B849C),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-
-        const SizedBox(height: 26),
-
-        // ========================================================
-        // EXPERIENCE
-        // ========================================================
-
-        const _SectionLabel(
-          title: 'Total professional experience',
-          requiredField: true,
-        ),
-
-        const SizedBox(height: 10),
-
-        _ExperienceDropdown(
-          value: widget.totalExperienceYears,
-          options: _experienceOptions,
-          onChanged: widget.onExperienceChanged,
-        ),
-
         const SizedBox(height: 24),
 
-        // ========================================================
-        // EMPLOYMENT STATUS
-        // ========================================================
-
-        const _SectionLabel(
-          title: 'Current employment status',
-          requiredField: true,
+        _SectionHeading(
+          number: '01',
+          title: 'Professional experience',
+          subtitle: 'How long have you been practising?',
         ),
-
-        const SizedBox(height: 10),
-
-        ..._employmentOptions.map(
-          (option) {
-            final isSelected =
-                widget.employmentStatus == option;
-
-            return Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 10),
-              child: _EmploymentOption(
-                title: option,
-                isSelected: isSelected,
-                onTap: () {
-                  widget
-                      .onEmploymentStatusChanged(
-                    option,
-                  );
-                },
+        const SizedBox(height: 13),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: _line),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.workspace_premium_outlined, color: _teal, size: 19),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Total years of experience',
+                      style: TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  if (widget.totalExperienceYears != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F6F1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _experienceLabel(widget.totalExperienceYears),
+                        style: const TextStyle(color: _teal, fontSize: 10, fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                ],
               ),
+              const SizedBox(height: 13),
+              DropdownButtonFormField<int>(
+                value: widget.totalExperienceYears,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _teal),
+                decoration: _fieldDecoration(
+                  hint: 'Choose your experience',
+                  prefix: Icons.calendar_month_rounded,
+                ),
+                items: _experienceOptions.map((years) {
+                  return DropdownMenuItem<int>(
+                    value: years,
+                    child: Text(
+                      _experienceLabel(years),
+                      style: const TextStyle(
+                        color: _ink,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: widget.onExperienceChanged,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 25),
+
+        _SectionHeading(
+          number: '02',
+          title: 'Current work setup',
+          subtitle: 'Choose the option that best describes you.',
+        ),
+        const SizedBox(height: 13),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth > 520 ? 3 : 2;
+            const gap = 9.0;
+            final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: _employmentOptions.map((option) {
+                final selected = widget.employmentStatus == option;
+                return SizedBox(
+                  width: width,
+                  child: _EmploymentTile(
+                    title: option,
+                    icon: _employmentIcons[option] ?? Icons.work_outline_rounded,
+                    selected: selected,
+                    onTap: () => widget.onEmploymentStatusChanged(option),
+                  ),
+                );
+              }).toList(),
             );
           },
         ),
+        const SizedBox(height: 21),
 
-        const SizedBox(height: 14),
-
-        // ========================================================
-        // ORGANIZATION
-        // ========================================================
-
-        const _SectionLabel(
-          title: 'Current clinic / hospital / organization',
-          requiredField: false,
+        _SectionHeading(
+          number: '03',
+          title: 'Where you work',
+          subtitle: 'Add your current clinic, hospital or organization.',
+          optional: true,
         ),
-
-        const SizedBox(height: 10),
-
+        const SizedBox(height: 12),
         TextField(
           controller: _organizationController,
-          onChanged:
-              widget.onOrganizationChanged,
-          textCapitalization:
-              TextCapitalization.words,
-          decoration: _inputDecoration(
-            hint:
-                'Example: Apollo Physiotherapy Center',
-            icon:
-                Icons.business_rounded,
+          onChanged: widget.onOrganizationChanged,
+          textCapitalization: TextCapitalization.words,
+          decoration: _fieldDecoration(
+            hint: 'e.g. Apollo Physiotherapy Center',
+            prefix: Icons.apartment_rounded,
           ),
         ),
+        const SizedBox(height: 25),
 
-        const SizedBox(height: 24),
-
-        // ========================================================
-        // PROFESSIONAL BIO
-        // ========================================================
-
-        const _SectionLabel(
-          title: 'About you',
-          requiredField: true,
+        _SectionHeading(
+          number: '04',
+          title: 'Introduce yourself',
+          subtitle: 'This introduction can be displayed on your patient profile.',
         ),
-
-        const SizedBox(height: 6),
-
-        const Text(
-          'Write a short professional introduction that patients can see on your profile.',
-          style: TextStyle(
-            fontSize: 12,
-            height: 1.45,
-            color: Color(0xFF7B849C),
-            fontWeight: FontWeight.w500,
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.fromLTRB(14, 13, 14, 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFBFDFC),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: _line),
           ),
-        ),
-
-        const SizedBox(height: 10),
-
-        TextField(
-          controller: _bioController,
-          onChanged: widget.onBioChanged,
-          maxLines: 6,
-          maxLength: 500,
-          textCapitalization:
-              TextCapitalization.sentences,
-          decoration: _inputDecoration(
-            hint:
-                'Example: I am a qualified physiotherapist with experience in treating orthopedic injuries, chronic pain and post-surgery rehabilitation...',
-            icon: Icons.description_outlined,
-          ),
-        ),
-
-        const SizedBox(height: 22),
-
-        // ========================================================
-        // LANGUAGES
-        // ========================================================
-
-        const _SectionLabel(
-          title: 'Languages you speak',
-          requiredField: true,
-        ),
-
-        const SizedBox(height: 6),
-
-        const Text(
-          'Select all languages you can comfortably communicate with patients in.',
-          style: TextStyle(
-            fontSize: 12,
-            height: 1.45,
-            color: Color(0xFF7B849C),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-
-        const SizedBox(height: 14),
-
-        Wrap(
-          spacing: 9,
-          runSpacing: 9,
-          children: _languages.map(
-            (language) {
-              final isSelected =
-                  widget.selectedLanguages
-                      .contains(language);
-
-              return _LanguageChip(
-                language: language,
-                isSelected: isSelected,
-                onTap: () {
-                  final updated =
-                      List<String>.from(
-                    widget.selectedLanguages,
-                  );
-
-                  if (isSelected) {
-                    updated.remove(language);
-                  } else {
-                    updated.add(language);
-                  }
-
-                  widget.onLanguagesChanged(
-                    updated,
-                  );
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.edit_note_rounded, color: _teal, size: 20),
+                  const SizedBox(width: 7),
+                  const Expanded(
+                    child: Text(
+                      'Professional bio',
+                      style: TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Text(
+                    '${_bioController.text.length}/500',
+                    style: const TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _bioController,
+                onChanged: (value) {
+                  widget.onBioChanged(value);
+                  setState(() {});
                 },
-              );
-            },
-          ).toList(),
+                maxLines: 5,
+                minLines: 4,
+                maxLength: 500,
+                buildCounter: (_, {required currentLength, required isFocused, maxLength}) => const SizedBox.shrink(),
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText:
+                      'Tell patients about your clinical approach, experience and the kind of care you provide...',
+                  hintStyle: TextStyle(color: Color(0xFFA1B1AC), fontSize: 12, height: 1.5),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const Divider(height: 1, color: _line),
+              const SizedBox(height: 8),
+              const Row(
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded, color: Color(0xFFB58A37), size: 15),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Tip: Mention your key treatments and patient-care approach.',
+                      style: TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+        const SizedBox(height: 25),
 
-        const SizedBox(height: 24),
-
-        // ========================================================
-        // INFO BOX
-        // ========================================================
+        _SectionHeading(
+          number: '05',
+          title: 'Languages you speak',
+          subtitle: 'Help patients find a physiotherapist they can communicate with.',
+        ),
+        const SizedBox(height: 13),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: _line),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.forum_outlined, color: _teal, size: 18),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Patient communication',
+                      style: TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Text(
+                    '$languageCount chosen',
+                    style: const TextStyle(color: _teal, fontSize: 10, fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 13),
+              Wrap(
+                spacing: 8,
+                runSpacing: 9,
+                children: _languages.map((language) {
+                  final selected = widget.selectedLanguages.contains(language);
+                  return _LanguagePill(
+                    language: language,
+                    selected: selected,
+                    onTap: () => _toggleLanguage(language, selected),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 17),
 
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFD5E4FF),
-            ),
+            color: const Color(0xFFFFFAEF),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: const Color(0xFFF1E6CD)),
           ),
           child: const Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.verified_user_outlined,
-                color: Color(0xFF246BFD),
-                size: 21,
-              ),
-
-              SizedBox(width: 11),
-
+              Icon(Icons.verified_user_outlined, color: Color(0xFFB78936), size: 19),
+              SizedBox(width: 9),
               Expanded(
                 child: Text(
-                  'Your professional information may be reviewed during the verification process. Please provide accurate details.',
+                  'Your professional information may be reviewed during verification. Please provide accurate details.',
                   style: TextStyle(
-                    fontSize: 12,
+                    color: Color(0xFF80652F),
+                    fontSize: 11,
                     height: 1.5,
-                    color: Color(0xFF4B5B78),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -363,226 +482,175 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
             ],
           ),
         ),
-
-        const SizedBox(height: 10),
       ],
     );
   }
 
-  InputDecoration _inputDecoration({
+  InputDecoration _fieldDecoration({
     required String hint,
-    required IconData icon,
+    required IconData prefix,
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        fontSize: 13,
-        color: Color(0xFF9AA3B5),
-        fontWeight: FontWeight.w500,
-      ),
-
-      prefixIcon: Padding(
-        padding: const EdgeInsets.only(
-          bottom: 0,
-        ),
-        child: Icon(
-          icon,
-          color: const Color(0xFF667085),
-          size: 21,
-        ),
-      ),
-
+      hintStyle: const TextStyle(color: Color(0xFFA1B1AC), fontSize: 12),
+      prefixIcon: Icon(prefix, color: const Color(0xFF82958F), size: 19),
       filled: true,
-      fillColor: Colors.white,
-
-      contentPadding:
-          const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 17,
-      ),
-
+      fillColor: const Color(0xFFFBFDFC),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: Color(0xFFE1E6EF),
-        ),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: _line),
       ),
-
       enabledBorder: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: Color(0xFFE1E6EF),
-        ),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: _line),
       ),
-
       focusedBorder: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: Color(0xFF246BFD),
-          width: 1.5,
-        ),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: _teal, width: 1.4),
       ),
     );
   }
 }
 
-// ================================================================
-// SECTION LABEL
-// ================================================================
+class _SnapshotMetric extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
 
-class _SectionLabel extends StatelessWidget {
-  final String title;
-  final bool requiredField;
-
-  const _SectionLabel({
-    required this.title,
-    required this.requiredField,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(
-          fontSize: 14,
-          color: Color(0xFF27314D),
-          fontWeight: FontWeight.w800,
-        ),
-        children: [
-          TextSpan(text: title),
-
-          if (requiredField)
-            const TextSpan(
-              text: ' *',
-              style: TextStyle(
-                color: Color(0xFFE5484D),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-// ================================================================
-// EXPERIENCE DROPDOWN
-// ================================================================
-
-class _ExperienceDropdown extends StatelessWidget {
-  final int? value;
-  final List<int> options;
-  final ValueChanged<int?> onChanged;
-
-  const _ExperienceDropdown({
+  const _SnapshotMetric({
+    required this.icon,
+    required this.label,
     required this.value,
-    required this.options,
-    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<int>(
-      value: value,
-
-      isExpanded: true,
-
-      decoration: InputDecoration(
-        prefixIcon: const Icon(
-          Icons.work_history_outlined,
-          color: Color(0xFF667085),
-        ),
-
-        filled: true,
-        fillColor: Colors.white,
-
-        contentPadding:
-            const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 17,
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Color(0xFFE1E6EF),
-          ),
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Color(0xFFE1E6EF),
-          ),
-        ),
-
-        focusedBorder: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Color(0xFF246BFD),
-            width: 1.5,
-          ),
-        ),
-      ),
-
-      hint: const Text(
-        'Select experience',
-        style: TextStyle(
-          fontSize: 13,
-          color: Color(0xFF9AA3B5),
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-
-      items: options.map(
-        (years) {
-          String label;
-
-          if (years == 0) {
-            label = 'Less than 1 year';
-          } else if (years == 30) {
-            label = '30+ years';
-          } else {
-            label =
-                '$years ${years == 1 ? 'year' : 'years'}';
-          }
-
-          return DropdownMenuItem<int>(
-            value: years,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF27314D),
-                fontWeight: FontWeight.w600,
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF078879), size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF91A19C),
+                  fontSize: 8,
+                  letterSpacing: .8,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          );
-        },
-      ).toList(),
-
-      onChanged: onChanged,
+              const SizedBox(height: 3),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF173E39),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-// ================================================================
-// EMPLOYMENT OPTION
-// ================================================================
-
-class _EmploymentOption extends StatelessWidget {
+class _SectionHeading extends StatelessWidget {
+  final String number;
   final String title;
-  final bool isSelected;
+  final String subtitle;
+  final bool optional;
+
+  const _SectionHeading({
+    required this.number,
+    required this.title,
+    required this.subtitle,
+    this.optional = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 29,
+          height: 29,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5F1),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Text(
+            number,
+            style: const TextStyle(
+              color: Color(0xFF087F73),
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Color(0xFF173E39),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  if (optional) ...[
+                    const SizedBox(width: 7),
+                    const Text(
+                      'OPTIONAL',
+                      style: TextStyle(
+                        color: Color(0xFF98A7A2),
+                        fontSize: 8,
+                        letterSpacing: .6,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: const TextStyle(color: Color(0xFF82928D), fontSize: 10.5, height: 1.35),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmploymentTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool selected;
   final VoidCallback onTap;
 
-  const _EmploymentOption({
+  const _EmploymentTile({
     required this.title,
-    required this.isSelected,
+    required this.icon,
+    required this.selected,
     required this.onTap,
   });
 
@@ -592,84 +660,59 @@ class _EmploymentOption extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius:
-            BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
-          duration:
-              const Duration(milliseconds: 180),
-          padding:
-              const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 14,
-          ),
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          height: 91,
+          padding: const EdgeInsets.all(11),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFEAF2FF)
-                : Colors.white,
-            borderRadius:
-                BorderRadius.circular(15),
+            color: selected ? const Color(0xFFEAF7F3) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF246BFD)
-                  : const Color(0xFFE3E7EF),
-              width: isSelected ? 1.5 : 1,
+              color: selected ? const Color(0xFF169889) : const Color(0xFFE5EEEA),
+              width: selected ? 1.4 : 1,
             ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AnimatedContainer(
-                duration:
-                    const Duration(milliseconds: 180),
-                width: 21,
-                height: 21,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF246BFD)
-                        : const Color(0xFFC6CEDA),
-                    width: 2,
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 19,
+                    color: selected ? const Color(0xFF087F73) : const Color(0xFF82958F),
                   ),
-                ),
-                child: isSelected
-                    ? Center(
-                        child: Container(
-                          width: 11,
-                          height: 11,
-                          decoration:
-                              const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color:
-                                Color(0xFF246BFD),
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected
-                        ? const Color(0xFF1D4ED8)
-                        : const Color(0xFF374151),
+                  const Spacer(),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 17,
+                    height: 17,
+                    decoration: BoxDecoration(
+                      color: selected ? const Color(0xFF087F73) : Colors.transparent,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: selected ? const Color(0xFF087F73) : const Color(0xFFD5E0DC),
+                      ),
+                    ),
+                    child: selected
+                        ? const Icon(Icons.check_rounded, size: 11, color: Colors.white)
+                        : null,
                   ),
-                ),
+                ],
               ),
-
-              Icon(
-                isSelected
-                    ? Icons.check_circle_rounded
-                    : Icons.chevron_right_rounded,
-                size: 20,
-                color: isSelected
-                    ? const Color(0xFF246BFD)
-                    : const Color(0xFFB4BCCB),
+              const Spacer(),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected ? const Color(0xFF087F73) : const Color(0xFF435B55),
+                  fontSize: 10.5,
+                  height: 1.2,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),
@@ -679,71 +722,51 @@ class _EmploymentOption extends StatelessWidget {
   }
 }
 
-// ================================================================
-// LANGUAGE CHIP
-// ================================================================
-
-class _LanguageChip extends StatelessWidget {
+class _LanguagePill extends StatelessWidget {
   final String language;
-  final bool isSelected;
+  final bool selected;
   final VoidCallback onTap;
 
-  const _LanguageChip({
+  const _LanguagePill({
     required this.language,
-    required this.isSelected,
+    required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius:
-          BorderRadius.circular(30),
-      child: AnimatedContainer(
-        duration:
-            const Duration(milliseconds: 180),
-        padding:
-            const EdgeInsets.symmetric(
-          horizontal: 15,
-          vertical: 10,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF246BFD)
-              : Colors.white,
-          borderRadius:
-              BorderRadius.circular(30),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF246BFD)
-                : const Color(0xFFE0E5EE),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected) ...[
-              const Icon(
-                Icons.check_rounded,
-                color: Colors.white,
-                size: 16,
-              ),
-
-              const SizedBox(width: 5),
-            ],
-
-            Text(
-              language,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: isSelected
-                    ? Colors.white
-                    : const Color(0xFF59637A),
-              ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFF087F73) : const Color(0xFFF7FAF8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? const Color(0xFF087F73) : const Color(0xFFE5EEEA),
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selected) ...[
+                const Icon(Icons.check_rounded, color: Colors.white, size: 13),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                language,
+                style: TextStyle(
+                  color: selected ? Colors.white : const Color(0xFF637D76),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
