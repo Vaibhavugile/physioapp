@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/physiotherapist_service.dart';
+import 'auth_visuals.dart';
 import 'physio_otp_screen.dart';
 import 'physio_getting_started_screen.dart';
 
@@ -291,319 +293,176 @@ class _PhysioLoginScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8F7),
-      body: Stack(
-        children: [
-          const Positioned(
-            top: -130,
-            right: -110,
-            child: _LoginGlow(size: 330, color: Color(0xFFE4F6F2)),
-          ),
-          const Positioned(
-            bottom: -150,
-            left: -130,
-            child: _LoginGlow(size: 320, color: Color(0xFFE8F7F3)),
-          ),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - 52,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF078F83), Color(0xFF0AA895)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF078F83).withValues(alpha: .22),
-                                    blurRadius: 22,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(Icons.health_and_safety_rounded,
-                                  color: Colors.white, size: 25),
-                            ),
-                            const SizedBox(width: 12),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('PHYSIOTHERAPIST',
-                                    style: TextStyle(
-                                      color: Color(0xFF143D3B),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.35,
-                                    )),
-                                SizedBox(height: 3),
-                                Text('Your practice. Your growth.',
-                                    style: TextStyle(
-                                      color: Color(0xFF66817E),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    )),
-                              ],
-                            ),
-                            const Spacer(),
-                            const _SecurePill(),
-                          ],
-                        ),
-                        const SizedBox(height: 38),
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0, end: 1),
-                          duration: const Duration(milliseconds: 750),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, value, child) => Opacity(
-                            opacity: value,
-                            child: Transform.translate(
-                              offset: Offset(0, 22 * (1 - value)),
-                              child: child,
-                            ),
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.fromLTRB(22, 25, 22, 24),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF143D3B), Color(0xFF078F83), Color(0xFF08766F)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF078F83).withValues(alpha: .20),
-                                  blurRadius: 34,
-                                  offset: const Offset(0, 18),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  right: -25,
-                                  top: -38,
-                                  child: Icon(Icons.health_and_safety_rounded,
-                                      size: 170, color: Colors.white.withValues(alpha: .07)),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: .13),
-                                        borderRadius: BorderRadius.circular(30),
-                                        border: Border.all(color: Colors.white.withValues(alpha: .16)),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.auto_awesome_rounded, size: 13, color: Color(0xFFD0EAE6)),
-                                          SizedBox(width: 6),
-                                          Text('A better way to grow your practice',
-                                              style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w700)),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 22),
-                                    const Text('Welcome,\\nPhysiotherapist.',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 32,
-                                          height: 1.08,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: -1.1,
-                                        )),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'Build your professional presence, connect with patients and manage your physiotherapy services — all in one place.',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: .82),
-                                        fontSize: 13,
-                                        height: 1.55,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 22),
-                                    const Row(
-                                      children: [
-                                        _HeroMiniFeature(icon: Icons.verified_user_rounded, label: 'Verified profile'),
-                                        SizedBox(width: 15),
-                                        _HeroMiniFeature(icon: Icons.calendar_month_rounded, label: 'Appointments'),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        const Text('Get started with your mobile number',
-                            style: TextStyle(
-                              color: Color(0xFF143D3B),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -.55,
-                            )),
-                        const SizedBox(height: 7),
-                        const Text('We’ll send you a secure one-time password to continue.',
-                            style: TextStyle(color: Color(0xFF66817E), fontSize: 12.5, height: 1.5)),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(19),
-                            border: Border.all(color: const Color(0xFFE0EBE8)),
-                            boxShadow: [
-                              BoxShadow(color: const Color(0xFF164A45).withValues(alpha: .045),
-                                  blurRadius: 22, offset: const Offset(0, 9)),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF0F7F5),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Text('🇮🇳', style: TextStyle(fontSize: 17)),
-                                    SizedBox(width: 7),
-                                    Text('+91', style: TextStyle(color: Color(0xFF143D3B), fontSize: 14, fontWeight: FontWeight.w800)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: _phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  maxLength: 10,
-                                  enabled: !_isLoading,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF143D3B), letterSpacing: 1),
-                                  decoration: const InputDecoration(
-                                    counterText: '',
-                                    hintText: 'Enter mobile number',
-                                    hintStyle: TextStyle(color: Color(0xFF9AAEAB), fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 0),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(vertical: 13),
-                                  ),
-                                  onSubmitted: (_) { if (!_isLoading) _sendOtp(); },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 13),
-                        const Row(
-                          children: [
-                            Icon(Icons.lock_rounded, color: Color(0xFF78908B), size: 14),
-                            SizedBox(width: 7),
-                            Expanded(child: Text('Your number is used only for secure account verification.',
-                                style: TextStyle(color: Color(0xFF78908B), fontSize: 11, height: 1.4))),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 58,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _sendOtp,
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: const Color(0xFF078F83),
-                              disabledBackgroundColor: const Color(0xFFD0EAE6),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(width: 22, height: 22,
-                                    child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text('Continue with OTP', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
-                                      SizedBox(width: 10),
-                                      Icon(Icons.arrow_forward_rounded, size: 19),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        const Center(
-                          child: Text('By continuing, you agree to our Terms of Service and Privacy Policy.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Color(0xFF78908B), fontSize: 10.5, height: 1.5)),
-                        ),
-                      ],
-                    ),
+      backgroundColor: AX.bg,
+      body: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              children: [
+                const AXPanel(
+                  height: 380,
+                  child: Column(
+                    children: [
+                      AXBrandRow(trailing: AXSecureBadge()),
+                      SizedBox(height: 8),
+                      Expanded(child: AXHeroArt()),
+                    ],
                   ),
-                );
-              },
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 30, 24, 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AXReveal(
+                        delayMs: 100,
+                        child: Text('Welcome back', style: AX.display(34)),
+                      ),
+                      const SizedBox(height: 8),
+                      const AXReveal(
+                        delayMs: 180,
+                        child: Text(
+                          'Sign in with your mobile number',
+                          style: TextStyle(fontSize: 15, color: AX.muted),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      AXReveal(delayMs: 260, child: _phoneField()),
+                      const SizedBox(height: 18),
+                      AXReveal(
+                        delayMs: 340,
+                        child: AXPill(
+                          label: 'Get OTP',
+                          loading: _isLoading,
+                          onPressed: _isLoading ? null : _sendOtp,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      AXReveal(
+                        delayMs: 420,
+                        child: Center(
+                          child: TextButton.icon(
+                            onPressed: _isLoading ? null : _openGettingStarted,
+                            icon: const Icon(Icons.play_circle_outline_rounded,
+                                size: 20, color: AX.teal),
+                            label: const Text(
+                              'How it works',
+                              style: TextStyle(
+                                color: AX.teal,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const AXReveal(
+                        delayMs: 480,
+                        child: Center(
+                          child: Text(
+                            'By continuing you accept our Terms & Privacy Policy',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11.5, color: AX.muted),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
-}
 
-class _LoginGlow extends StatelessWidget {
-  final double size;
-  final Color color;
-  const _LoginGlow({required this.size, required this.color});
-  @override
-  Widget build(BuildContext context) => IgnorePointer(
-    child: Container(
-      width: size, height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: .72)),
-    ),
-  );
-}
-
-class _SecurePill extends StatelessWidget {
-  const _SecurePill();
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30)),
-    child: const Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.shield_rounded, size: 13, color: Color(0xFF078F83)),
-      SizedBox(width: 5),
-      Text('SECURE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF078F83), letterSpacing: .7)),
-    ]),
-  );
-}
-
-class _HeroMiniFeature extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _HeroMiniFeature({required this.icon, required this.label});
-  @override
-  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
-    Icon(icon, color: const Color(0xFFD0EAE6), size: 15),
-    const SizedBox(width: 6),
-    Text(label, style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w700)),
-  ]);
+  Widget _phoneField() {
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      child: Builder(
+        builder: (context) {
+          final focused = Focus.of(context).hasFocus;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 68,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: focused ? AX.teal : AX.line,
+                width: focused ? 2 : 1,
+              ),
+              boxShadow: focused
+                  ? [
+                      BoxShadow(
+                        color: AX.teal.withValues(alpha: .14),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : AX.cardShadow,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AX.soft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    _selectedCountryCode,
+                    style: AX.display(16, color: AX.teal),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    enabled: !_isLoading,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: AX.ink,
+                    ),
+                    onSubmitted: (_) {
+                      if (!_isLoading) _sendOtp();
+                    },
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      hintText: 'Mobile number',
+                      hintStyle: TextStyle(
+                        color: Color(0xFF5F7B76),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

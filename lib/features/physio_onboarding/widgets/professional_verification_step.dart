@@ -42,8 +42,8 @@ class _ProfessionalVerificationStepState
     extends State<ProfessionalVerificationStep>
     with SingleTickerProviderStateMixin {
   static const _ink = Color(0xFF142F35);
-  static const _muted = Color(0xFF71858A);
-  static const _teal = Color(0xFF087F78);
+  static const _muted = Color(0xFF55706B);
+  static const _teal = Color(0xFF0B7A70);
   static const _line = Color(0xFFE5ECEE);
 
   late final TextEditingController _registrationNumberController;
@@ -119,15 +119,15 @@ class _ProfessionalVerificationStepState
       fillColor: const Color(0xFFF8FAFA),
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _teal, width: 1.5),
       ),
     );
@@ -228,8 +228,8 @@ class _ProfessionalVerificationStepState
                         height: 35,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEAF5F3),
-                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFFE6F4F0),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
                           number,
@@ -299,16 +299,16 @@ class _ProfessionalVerificationStepState
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 260),
             curve: Curves.easeOutCubic,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isUploaded
-                  ? const Color(0xFFF0FAF5)
+                  ? const Color(0xFFE6F4F0)
                   : const Color(0xFFFCFDFD),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isUploaded
                     ? const Color(0xFFB8E5D0)
@@ -326,7 +326,7 @@ class _ProfessionalVerificationStepState
                     color: isUploaded
                         ? const Color(0xFFDDF4E8)
                         : const Color(0xFFEAF3F3),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(
                     isUploaded ? Icons.check_rounded : icon,
@@ -415,7 +415,7 @@ class _ProfessionalVerificationStepState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF9ED),
-        borderRadius: BorderRadius.circular(19),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFF3E5C8)),
       ),
       child: Column(
@@ -486,7 +486,7 @@ class _ProfessionalVerificationStepState
               ? const [Color(0xFFEBF9F1), Color(0xFFF5FCF8)]
               : const [Color(0xFFEDF7F6), Color(0xFFF8FBFB)],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: complete
               ? const Color(0xFFBFE8D0)
@@ -506,7 +506,7 @@ class _ProfessionalVerificationStepState
                   color: complete
                       ? const Color(0xFFD7F1E2)
                       : const Color(0xFFDDF0ED),
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   complete
@@ -556,7 +556,7 @@ class _ProfessionalVerificationStepState
           ),
           const SizedBox(height: 14),
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: completed / 3),
               duration: const Duration(milliseconds: 550),
@@ -586,7 +586,7 @@ class _ProfessionalVerificationStepState
           padding: const EdgeInsets.fromLTRB(19, 20, 19, 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFEAF6F4), Color(0xFFF6FAFA)],
+              colors: [Color(0xFFE6F4F0), Color(0xFFF6FAFA)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -658,7 +658,7 @@ class _ProfessionalVerificationStepState
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(.78),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: const Color(0xFFE1EFEB)),
                     ),
                     child: const Row(

@@ -47,7 +47,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
   static const _muted = Color(0xFF748985);
   static const _green = Color(0xFF078F80);
   static const _line = Color(0xFFE3EEEB);
-  static const _surface = Color(0xFFFAFCFB);
+  static const _surface = Color(0xFFF3F8F6);
 
   late final TextEditingController _search;
   late final TextEditingController _clinic;
@@ -168,15 +168,15 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
       fillColor: _surface,
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _green, width: 1.5),
       ),
     );
@@ -289,7 +289,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEAF6F3),
+                          color: const Color(0xFFE6F4F0),
                           borderRadius: BorderRadius.circular(11),
                         ),
                         alignment: Alignment.center,
@@ -397,7 +397,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF6F3),
+                      color: const Color(0xFFE6F4F0),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -432,7 +432,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
             color: _placeSelected
                 ? const Color(0xFFECF8F1)
                 : const Color(0xFFFFF8EC),
-            borderRadius: BorderRadius.circular(13),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _placeSelected
                   ? const Color(0xFFCDEBD9)
@@ -485,7 +485,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(19),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
         children: [
@@ -494,7 +494,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
             height: 42,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(.15),
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
               Icons.near_me_rounded,
@@ -555,7 +555,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
           padding: const EdgeInsets.fromLTRB(19, 20, 19, 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFEAF7F3), Color(0xFFF6FBF9)],
+              colors: [Color(0xFFE6F4F0), Color(0xFFF6FBF9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -698,7 +698,7 @@ class _PhysioLocationStepState extends State<PhysioLocationStep>
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F8F6),
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,

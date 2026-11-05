@@ -378,7 +378,7 @@ class _EducationQualificationsStepState
                               const Color(0xFFD7DDEA),
 
                           borderRadius:
-                              BorderRadius.circular(20),
+                              BorderRadius.circular(24),
                         ),
                       ),
                     ),
@@ -396,7 +396,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w900,
                         color:
-                            Color(0xFF153D3A),
+                            Color(0xFF0E2B28),
                       ),
                     ),
 
@@ -407,7 +407,7 @@ class _EducationQualificationsStepState
                       style: TextStyle(
                         fontSize: 11,
                         color:
-                            Color(0xFF718D89),
+                            Color(0xFF55706B),
                         fontWeight:
                             FontWeight.w500,
                       ),
@@ -525,7 +525,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w800,
                         color:
-                            Color(0xFF304E4A),
+                            Color(0xFF2B4F4A),
                       ),
                     ),
 
@@ -578,7 +578,7 @@ class _EducationQualificationsStepState
                               Icons.calendar_month_outlined,
                               size: 20,
                               color:
-                                  Color(0xFF078F83),
+                                  Color(0xFF0B7A70),
                             ),
 
                             const SizedBox(width: 12),
@@ -592,7 +592,7 @@ class _EducationQualificationsStepState
                                 fontWeight:
                                     FontWeight.w700,
                                 color:
-                                    Color(0xFF153D3A),
+                                    Color(0xFF0E2B28),
                               ),
                             ),
 
@@ -601,7 +601,7 @@ class _EducationQualificationsStepState
                             const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color:
-                                  Color(0xFF078F83),
+                                  Color(0xFF0B7A70),
                             ),
                           ],
                         ),
@@ -829,7 +829,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w900,
                         color:
-                            Color(0xFF153D3A),
+                            Color(0xFF0E2B28),
                       ),
                     ),
 
@@ -840,7 +840,7 @@ class _EducationQualificationsStepState
                       style: TextStyle(
                         fontSize: 11,
                         color:
-                            Color(0xFF718D89),
+                            Color(0xFF55706B),
                         fontWeight:
                             FontWeight.w500,
                       ),
@@ -888,7 +888,7 @@ class _EducationQualificationsStepState
                         fontWeight:
                             FontWeight.w800,
                         color:
-                            Color(0xFF304E4A),
+                            Color(0xFF2B4F4A),
                       ),
                     ),
 
@@ -941,7 +941,7 @@ class _EducationQualificationsStepState
                               Icons.calendar_month_outlined,
                               size: 20,
                               color:
-                                  Color(0xFF078F83),
+                                  Color(0xFF0B7A70),
                             ),
 
                             const SizedBox(width: 12),
@@ -955,7 +955,7 @@ class _EducationQualificationsStepState
                                 fontWeight:
                                     FontWeight.w700,
                                 color:
-                                    Color(0xFF153D3A),
+                                    Color(0xFF0E2B28),
                               ),
                             ),
 
@@ -964,7 +964,7 @@ class _EducationQualificationsStepState
                             const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color:
-                                  Color(0xFF078F83),
+                                  Color(0xFF0B7A70),
                             ),
                           ],
                         ),
@@ -1103,7 +1103,7 @@ class _EducationQualificationsStepState
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius:
-                BorderRadius.circular(22),
+                BorderRadius.circular(26),
           ),
 
           title: const Text(
@@ -1152,7 +1152,7 @@ class _EducationQualificationsStepState
                       ? const Icon(
                           Icons.check_circle,
                           color:
-                              Color(0xFF078F83),
+                              Color(0xFF0B7A70),
                         )
                       : null,
 
@@ -1255,7 +1255,7 @@ class _EducationQualificationsStepState
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F8F5),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE1EEE8)),
       ),
       child: Row(
@@ -1265,7 +1265,7 @@ class _EducationQualificationsStepState
             height: 42,
             decoration: BoxDecoration(
               color: const Color(0xFF0A9485),
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.school_rounded, color: Colors.white, size: 21),
           ),
@@ -1277,7 +1277,7 @@ class _EducationQualificationsStepState
                 Text(
                   'Build your professional credentials',
                   style: TextStyle(
-                    color: Color(0xFF173F3B),
+                    color: Color(0xFF0E2B28),
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -.2,
@@ -1287,7 +1287,7 @@ class _EducationQualificationsStepState
                 Text(
                   'Add your main physiotherapy qualification. You can include extra certifications too.',
                   style: TextStyle(
-                    color: Color(0xFF718D89),
+                    color: Color(0xFF55706B),
                     fontSize: 10,
                     height: 1.4,
                     fontWeight: FontWeight.w500,
@@ -1316,10 +1316,10 @@ class _EducationQualificationsStepState
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF5F2),
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFE6F4F0),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(icon, color: const Color(0xFF078F83), size: 19),
+          child: Icon(icon, color: const Color(0xFF0B7A70), size: 19),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -1329,7 +1329,7 @@ class _EducationQualificationsStepState
               Text(
                 title,
                 style: const TextStyle(
-                  color: Color(0xFF173F3B),
+                  color: Color(0xFF0E2B28),
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.2,
@@ -1360,9 +1360,9 @@ class _EducationQualificationsStepState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFDFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE4ECE9)),
+        color: const Color(0xFFF3F8F6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE3EBE8)),
       ),
       child: Row(
         children: [
@@ -1371,7 +1371,7 @@ class _EducationQualificationsStepState
             height: 40,
             decoration: BoxDecoration(
               color: const Color(0xFFF0F6F4),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.school_outlined, color: Color(0xFF8BA49D), size: 20),
           ),
@@ -1383,7 +1383,7 @@ class _EducationQualificationsStepState
                 Text(
                   'No qualification added yet',
                   style: TextStyle(
-                    color: Color(0xFF294B46),
+                    color: Color(0xFF2B4F4A),
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1411,9 +1411,9 @@ class _EducationQualificationsStepState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFDFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE4ECE9)),
+        color: const Color(0xFFF3F8F6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE3EBE8)),
       ),
       child: Row(
         children: [
@@ -1422,7 +1422,7 @@ class _EducationQualificationsStepState
             height: 40,
             decoration: BoxDecoration(
               color: const Color(0xFFFFF7EA),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.workspace_premium_outlined, color: Color(0xFFD99A3C), size: 20),
           ),
@@ -1434,7 +1434,7 @@ class _EducationQualificationsStepState
                 Text(
                   'No extra certifications',
                   style: TextStyle(
-                    color: Color(0xFF294B46),
+                    color: Color(0xFF2B4F4A),
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1464,11 +1464,11 @@ class _EducationQualificationsStepState
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE3ECE8)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x07173F3B),
+            color: Color(0x070E2B28),
             blurRadius: 14,
             offset: Offset(0, 4),
           ),
@@ -1481,10 +1481,10 @@ class _EducationQualificationsStepState
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFFEAF6F2),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFFE6F4F0),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.school_rounded, color: Color(0xFF078F83), size: 20),
+            child: const Icon(Icons.school_rounded, color: Color(0xFF0B7A70), size: 20),
           ),
           const SizedBox(width: 11),
           Expanded(
@@ -1494,7 +1494,7 @@ class _EducationQualificationsStepState
                 Text(
                   qualification.degree,
                   style: const TextStyle(
-                    color: Color(0xFF173F3B),
+                    color: Color(0xFF0E2B28),
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1504,7 +1504,7 @@ class _EducationQualificationsStepState
                   Text(
                     qualification.specialization,
                     style: const TextStyle(
-                      color: Color(0xFF078F83),
+                      color: Color(0xFF0B7A70),
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                     ),
@@ -1530,8 +1530,8 @@ class _EducationQualificationsStepState
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2F7F5),
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFF3F8F6),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
                     'PASSED ${qualification.passingYear}',
@@ -1581,11 +1581,11 @@ class _EducationQualificationsStepState
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE3ECE8)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x07173F3B),
+            color: Color(0x070E2B28),
             blurRadius: 14,
             offset: Offset(0, 4),
           ),
@@ -1599,7 +1599,7 @@ class _EducationQualificationsStepState
             height: 40,
             decoration: BoxDecoration(
               color: const Color(0xFFFFF6E9),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD89A3E), size: 20),
           ),
@@ -1611,7 +1611,7 @@ class _EducationQualificationsStepState
                 Text(
                   certification.certificateName,
                   style: const TextStyle(
-                    color: Color(0xFF173F3B),
+                    color: Color(0xFF0E2B28),
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1631,8 +1631,8 @@ class _EducationQualificationsStepState
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2F7F5),
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFF3F8F6),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
                     'COMPLETED ${certification.completionYear}',
@@ -1681,26 +1681,26 @@ class _EducationQualificationsStepState
   }) {
     return Material(
       color: const Color(0xFFEDF7F4),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 13),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFCFE6DE)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: const Color(0xFF078F83)),
+              Icon(icon, size: 18, color: const Color(0xFF0B7A70)),
               const SizedBox(width: 7),
               Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF078F83),
+                  color: Color(0xFF0B7A70),
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
                 ),
@@ -1721,7 +1721,7 @@ class _EducationQualificationsStepState
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF9EF),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF3E5C9)),
       ),
       child: const Row(
@@ -1768,7 +1768,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w800,
             color:
-                Color(0xFF304E4A),
+                Color(0xFF2B4F4A),
           ),
         ),
 
@@ -1782,7 +1782,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w600,
             color:
-                Color(0xFF153D3A),
+                Color(0xFF0E2B28),
           ),
 
           decoration: InputDecoration(
@@ -1791,14 +1791,14 @@ class _EducationQualificationsStepState
             hintStyle: const TextStyle(
               fontSize: 10.5,
               color:
-                  Color(0xFF9BB0AC),
+                  Color(0xFF5F7B76),
             ),
 
             prefixIcon: Icon(
               icon,
               size: 20,
               color:
-                  const Color(0xFF078F83),
+                  const Color(0xFF0B7A70),
             ),
 
             filled: true,
@@ -1813,36 +1813,36 @@ class _EducationQualificationsStepState
 
             border: OutlineInputBorder(
               borderRadius:
-                  BorderRadius.circular(16),
+                  BorderRadius.circular(20),
 
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFFE3EFEC),
+                    Color(0xFFE3EBE8),
               ),
             ),
 
             enabledBorder:
                 OutlineInputBorder(
               borderRadius:
-                  BorderRadius.circular(16),
+                  BorderRadius.circular(20),
 
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFFE3EFEC),
+                    Color(0xFFE3EBE8),
               ),
             ),
 
             focusedBorder:
                 OutlineInputBorder(
               borderRadius:
-                  BorderRadius.circular(16),
+                  BorderRadius.circular(20),
 
               borderSide:
                   const BorderSide(
                 color:
-                    Color(0xFF078F83),
+                    Color(0xFF0B7A70),
                 width: 1.4,
               ),
             ),
@@ -1876,7 +1876,7 @@ class _EducationQualificationsStepState
             fontWeight:
                 FontWeight.w800,
             color:
-                Color(0xFF304E4A),
+                Color(0xFF2B4F4A),
           ),
         ),
 
@@ -1892,11 +1892,11 @@ class _EducationQualificationsStepState
             color: Colors.white,
 
             borderRadius:
-                BorderRadius.circular(16),
+                BorderRadius.circular(20),
 
             border: Border.all(
               color:
-                  const Color(0xFFE3EFEC),
+                  const Color(0xFFE3EBE8),
             ),
           ),
 
@@ -1913,14 +1913,14 @@ class _EducationQualificationsStepState
                 style: const TextStyle(
                   fontSize: 10.5,
                   color:
-                      Color(0xFF9BB0AC),
+                      Color(0xFF5F7B76),
                 ),
               ),
 
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color:
-                    Color(0xFF078F83),
+                    Color(0xFF0B7A70),
               ),
 
               items:
@@ -1937,7 +1937,7 @@ class _EducationQualificationsStepState
                       fontWeight:
                           FontWeight.w600,
                       color:
-                          Color(0xFF153D3A),
+                          Color(0xFF0E2B28),
                     ),
                   ),
                 );

@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import '../../models/physiotherapist_model.dart';
 import '../../services/physiotherapist_service.dart';
 import '../physio_onboarding/physio_onboarding_screen.dart';
+import 'auth_visuals.dart';
 import 'physio_login_screen.dart';
-import 'physio_partner_hub_screen.dart';
+import 'physio_home_screen.dart';
 
 class PhysioAuthGate extends StatelessWidget {
   const PhysioAuthGate({
@@ -104,8 +105,16 @@ class PhysioAuthGate extends StatelessWidget {
             // ========================================================
 
             if (status == 'pending' || status == 'under_review') {
-              return PhysioPartnerHubScreen(
-                physiotherapist: physiotherapist,
+              return PhysioHomeScreen(
+                name: _displayPhysioName(physiotherapist.fullName),
+                isPending: true,
+                onNotifications: () => _showDemoMessage(context, 'Notifications'),
+                onNavigate: () => _showDemoMessage(context, 'Navigation'),
+                onStartSession: () => _showDemoMessage(context, 'Sessions'),
+                onTabChanged: (tab) => _showDemoMessage(
+                  context,
+                  const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
+                ),
               );
             }
 
@@ -126,8 +135,15 @@ class PhysioAuthGate extends StatelessWidget {
             if (status == 'approved' &&
                 physiotherapist.isVerified &&
                 physiotherapist.isActive) {
-              return _PhysioDashboardScreen(
-                physiotherapist: physiotherapist,
+              return PhysioHomeScreen(
+                name: _displayPhysioName(physiotherapist.fullName),
+                onNotifications: () => _showDemoMessage(context, 'Notifications'),
+                onNavigate: () => _showDemoMessage(context, 'Navigation'),
+                onStartSession: () => _showDemoMessage(context, 'Sessions'),
+                onTabChanged: (tab) => _showDemoMessage(
+                  context,
+                  const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
+                ),
               );
             }
 
@@ -135,7 +151,17 @@ class PhysioAuthGate extends StatelessWidget {
             // FALLBACK
             // ========================================================
 
-            return const _VerificationPendingScreen();
+            return PhysioHomeScreen(
+              name: _displayPhysioName(physiotherapist.fullName),
+              isPending: true,
+              onNotifications: () => _showDemoMessage(context, 'Notifications'),
+              onNavigate: () => _showDemoMessage(context, 'Navigation'),
+              onStartSession: () => _showDemoMessage(context, 'Sessions'),
+              onTabChanged: (tab) => _showDemoMessage(
+                context,
+                const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
+              ),
+            );
           },
         );
       },
@@ -143,135 +169,137 @@ class PhysioAuthGate extends StatelessWidget {
   }
 }
 
+String _displayPhysioName(String fullName) {
+  final cleaned = fullName.trim();
+  if (cleaned.isEmpty) return 'Dr. Physiotherapist';
+  return cleaned.toLowerCase().startsWith('dr.') ? cleaned : 'Dr. $cleaned';
+}
+
+void _showDemoMessage(BuildContext context, String feature) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('$feature will be connected after the demo phase.')),
+  );
+}
+
 // ===================================================================
-// LOADING SCREEN
+// STATUS SCREENS (shared premium layout)
 // ===================================================================
+
+class _StatusScreen extends StatelessWidget {
+  final IconData icon;
+  final Color tint;
+  final String title;
+  final String? message;
+  final String? primaryLabel;
+  final VoidCallback? onPrimary;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+
+  const _StatusScreen({
+    required this.icon,
+    required this.tint,
+    required this.title,
+    this.message,
+    this.primaryLabel,
+    this.onPrimary,
+    this.secondaryLabel,
+    this.onSecondary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AX.bg,
+      body: Column(
+        children: [
+          AXPanel(
+            height: 340,
+            child: Column(
+              children: [
+                const AXBrandRow(),
+                Expanded(child: Center(child: AXOrb(icon: icon, color: tint))),
+              ],
+            ),
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 30, 24, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AXReveal(
+                      delayMs: 100,
+                      child: Text(title,
+                          textAlign: TextAlign.center, style: AX.display(30)),
+                    ),
+                    if (message != null) ...[
+                      const SizedBox(height: 12),
+                      AXReveal(
+                        delayMs: 200,
+                        child: Text(
+                          message!,
+                          textAlign: TextAlign.center,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 14.5, height: 1.5, color: AX.muted),
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    if (primaryLabel != null)
+                      AXReveal(
+                        delayMs: 300,
+                        child: AXPill(label: primaryLabel!, onPressed: onPrimary),
+                      ),
+                    if (secondaryLabel != null)
+                      AXReveal(
+                        delayMs: 380,
+                        child: TextButton(
+                          onPressed: onSecondary,
+                          child: Text(
+                            secondaryLabel!,
+                            style: const TextStyle(
+                              color: AX.muted,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _PhysioLoadingScreen extends StatelessWidget {
   const _PhysioLoadingScreen();
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF5F7FC),
-
-      body: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 3,
-          color: Color(0xFF2457F5),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const AXLoadingScreen();
 }
-
-// ===================================================================
-// VERIFICATION PENDING SCREEN
-// ===================================================================
 
 class _VerificationPendingScreen extends StatelessWidget {
   const _VerificationPendingScreen();
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FC),
-
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFF3E0),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Icon(
-                    Icons.hourglass_top_rounded,
-                    size: 42,
-                    color: Color(0xFFFFA726),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Profile Under Review',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111A3D),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Our team is reviewing your professional details and documents. '
-                  'We will notify you once your profile has been reviewed.',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: Color(0xFF7B849C),
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                    },
-
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Color(0xFFE1E6EF),
-                      ),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-
-                    child: const Text(
-                      'Sign out',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF111A3D),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _StatusScreen(
+        icon: Icons.hourglass_top_rounded,
+        tint: const Color(0xFFFFC857),
+        title: 'Under review',
+        message: 'We’ll notify you once your profile is approved.',
+        secondaryLabel: 'Sign out',
+        onSecondary: () async => FirebaseAuth.instance.signOut(),
+      );
 }
-
-// ===================================================================
-// VERIFICATION REJECTED SCREEN
-// ===================================================================
 
 class _VerificationRejectedScreen extends StatelessWidget {
   final PhysiotherapistModel physiotherapist;
@@ -281,241 +309,21 @@ class _VerificationRejectedScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FC),
-
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFEBEE),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Icon(
-                    Icons.error_outline_rounded,
-                    size: 44,
-                    color: Colors.redAccent,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Verification Needs Changes',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111A3D),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Some details in your profile need to be updated before '
-                  'your profile can be approved.',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: Color(0xFF7B849C),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const PhysioOnboardingScreen(),
-                        ),
-                      );
-                    },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2457F5),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-
-                    child: const Text(
-                      'Update Profile',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-
-                  child: TextButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                    },
-
-                    child: const Text(
-                      'Sign out',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF7B849C),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _StatusScreen(
+        icon: Icons.edit_note_rounded,
+        tint: const Color(0xFFFF8A80),
+        title: 'Needs changes',
+        message: 'Update a few details so we can approve your profile.',
+        primaryLabel: 'Update profile',
+        onPrimary: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PhysioOnboardingScreen()),
+          );
+        },
+        secondaryLabel: 'Sign out',
+        onSecondary: () async => FirebaseAuth.instance.signOut(),
+      );
 }
-
-// ===================================================================
-// PHYSIOTHERAPIST DASHBOARD PLACEHOLDER
-// ===================================================================
-
-class _PhysioDashboardScreen extends StatelessWidget {
-  final PhysiotherapistModel physiotherapist;
-
-  const _PhysioDashboardScreen({
-    required this.physiotherapist,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final name = physiotherapist.fullName.trim().isEmpty
-        ? 'Physiotherapist'
-        : physiotherapist.fullName;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FC),
-
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEAF0FF),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Icon(
-                    Icons.dashboard_rounded,
-                    size: 42,
-                    color: Color(0xFF2457F5),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                Text(
-                  'Welcome, $name',
-                  textAlign: TextAlign.center,
-
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111A3D),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  'Your physiotherapist account has been approved.',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF7B849C),
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                    },
-
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Color(0xFFE1E6EF),
-                      ),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-
-                    child: const Text(
-                      'Sign out',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF111A3D),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ===================================================================
-// ERROR SCREEN
-// ===================================================================
 
 class _PhysioErrorScreen extends StatelessWidget {
   final String message;
@@ -525,89 +333,17 @@ class _PhysioErrorScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FC),
-
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFEBEE),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Icon(
-                    Icons.cloud_off_rounded,
-                    size: 42,
-                    color: Colors.redAccent,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Something went wrong',
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111A3D),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  maxLines: 6,
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 13,
-                    height: 1.5,
-                    color: Color(0xFF7B849C),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                SizedBox(
-                  height: 52,
-
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const PhysioAuthGate(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-
-                    child: const Text(
-                      'Try Again',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _StatusScreen(
+        icon: Icons.cloud_off_rounded,
+        tint: const Color(0xFFFF8A80),
+        title: 'Something went wrong',
+        message: message,
+        primaryLabel: 'Try again',
+        onPrimary: () {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const PhysioAuthGate()),
+            (route) => false,
+          );
+        },
+      );
 }

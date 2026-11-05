@@ -35,10 +35,10 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
   late final TextEditingController _organizationController;
   late final TextEditingController _bioController;
 
-  static const Color _ink = Color(0xFF173E39);
+  static const Color _ink = Color(0xFF0E2B28);
   static const Color _muted = Color(0xFF7B8E89);
-  static const Color _teal = Color(0xFF087F73);
-  static const Color _line = Color(0xFFE5EEEA);
+  static const Color _teal = Color(0xFF0B7A70);
+  static const Color _line = Color(0xFFE3EBE8);
   static const Color _canvas = Color(0xFFF6FAF8);
 
   final List<int> _experienceOptions = List.generate(31, (index) => index);
@@ -149,7 +149,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: _teal.withOpacity(.18),
@@ -191,7 +191,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
             color: _canvas,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _line),
           ),
           child: Row(
@@ -227,7 +227,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(color: _line),
           ),
           child: Column(
@@ -248,7 +248,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F6F1),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                       child: Text(
                         _experienceLabel(widget.totalExperienceYears),
@@ -344,8 +344,8 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
         Container(
           padding: const EdgeInsets.fromLTRB(14, 13, 14, 10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFBFDFC),
-            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFFF3F8F6),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(color: _line),
           ),
           child: Column(
@@ -416,7 +416,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(color: _line),
           ),
           child: Column(
@@ -460,7 +460,7 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: const Color(0xFFFFFAEF),
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFF1E6CD)),
           ),
           child: const Row(
@@ -495,18 +495,18 @@ class _ExperienceWorkStepState extends State<ExperienceWorkStep> {
       hintStyle: const TextStyle(color: Color(0xFFA1B1AC), fontSize: 12),
       prefixIcon: Icon(prefix, color: const Color(0xFF82958F), size: 19),
       filled: true,
-      fillColor: const Color(0xFFFBFDFC),
+      fillColor: const Color(0xFFF3F8F6),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: _line),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: _line),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: _teal, width: 1.4),
       ),
     );
@@ -549,7 +549,7 @@ class _SnapshotMetric extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Color(0xFF173E39),
+                  color: Color(0xFF0E2B28),
                   fontSize: 10.5,
                   fontWeight: FontWeight.w800,
                 ),
@@ -585,13 +585,13 @@ class _SectionHeading extends StatelessWidget {
           height: 29,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5F1),
+            color: const Color(0xFFE6F4F0),
             borderRadius: BorderRadius.circular(9),
           ),
           child: Text(
             number,
             style: const TextStyle(
-              color: Color(0xFF087F73),
+              color: Color(0xFF0B7A70),
               fontSize: 10,
               fontWeight: FontWeight.w900,
             ),
@@ -608,7 +608,7 @@ class _SectionHeading extends StatelessWidget {
                     child: Text(
                       title,
                       style: const TextStyle(
-                        color: Color(0xFF173E39),
+                        color: Color(0xFF0E2B28),
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
@@ -660,17 +660,17 @@ class _EmploymentTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
           height: 91,
           padding: const EdgeInsets.all(11),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFEAF7F3) : Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            color: selected ? const Color(0xFFE6F4F0) : Colors.white,
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? const Color(0xFF169889) : const Color(0xFFE5EEEA),
+              color: selected ? const Color(0xFF169889) : const Color(0xFFE3EBE8),
               width: selected ? 1.4 : 1,
             ),
           ),
@@ -682,7 +682,7 @@ class _EmploymentTile extends StatelessWidget {
                   Icon(
                     icon,
                     size: 19,
-                    color: selected ? const Color(0xFF087F73) : const Color(0xFF82958F),
+                    color: selected ? const Color(0xFF0B7A70) : const Color(0xFF82958F),
                   ),
                   const Spacer(),
                   AnimatedContainer(
@@ -690,10 +690,10 @@ class _EmploymentTile extends StatelessWidget {
                     width: 17,
                     height: 17,
                     decoration: BoxDecoration(
-                      color: selected ? const Color(0xFF087F73) : Colors.transparent,
+                      color: selected ? const Color(0xFF0B7A70) : Colors.transparent,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: selected ? const Color(0xFF087F73) : const Color(0xFFD5E0DC),
+                        color: selected ? const Color(0xFF0B7A70) : const Color(0xFFD5E0DC),
                       ),
                     ),
                     child: selected
@@ -708,7 +708,7 @@ class _EmploymentTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: selected ? const Color(0xFF087F73) : const Color(0xFF435B55),
+                  color: selected ? const Color(0xFF0B7A70) : const Color(0xFF435B55),
                   fontSize: 10.5,
                   height: 1.2,
                   fontWeight: FontWeight.w800,
@@ -744,10 +744,10 @@ class _LanguagePill extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF087F73) : const Color(0xFFF7FAF8),
+            color: selected ? const Color(0xFF0B7A70) : const Color(0xFFF7FAF8),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: selected ? const Color(0xFF087F73) : const Color(0xFFE5EEEA),
+              color: selected ? const Color(0xFF0B7A70) : const Color(0xFFE3EBE8),
             ),
           ),
           child: Row(

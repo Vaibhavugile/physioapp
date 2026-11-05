@@ -298,7 +298,7 @@ class _ReviewSubmitStepState
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF17363A),
+                        color: Color(0xFF0E2B28),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -308,7 +308,7 @@ class _ReviewSubmitStepState
                           : widget.professionalTitle,
                       style: const TextStyle(
                         fontSize: 11.5,
-                        color: Color(0xFF71858A),
+                        color: Color(0xFF55706B),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -523,7 +523,7 @@ class _ReviewSubmitStepState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF5F3),
+                color: const Color(0xFFE6F4F0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -531,7 +531,7 @@ class _ReviewSubmitStepState
                 style: const TextStyle(
                   fontSize: 9.5,
                   letterSpacing: .45,
-                  color: Color(0xFF087F78),
+                  color: Color(0xFF0B7A70),
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -615,7 +615,7 @@ class _ReviewSubmitStepState
           padding: const EdgeInsets.fromLTRB(19, 20, 19, 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFEAF6F4), Color(0xFFF7FAFA)],
+              colors: [Color(0xFFE6F4F0), Color(0xFFF7FAFA)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -630,7 +630,7 @@ class _ReviewSubmitStepState
                 child: Icon(
                   Icons.fact_check_rounded,
                   size: 100,
-                  color: const Color(0xFF087F78).withOpacity(.065),
+                  color: const Color(0xFF0B7A70).withOpacity(.065),
                 ),
               ),
               Column(
@@ -647,12 +647,12 @@ class _ReviewSubmitStepState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.auto_awesome_rounded,
-                            color: Color(0xFF087F78), size: 13),
+                            color: Color(0xFF0B7A70), size: 13),
                         SizedBox(width: 5),
                         Text(
                           'FINAL PROFILE CHECK',
                           style: TextStyle(
-                            color: Color(0xFF087F78),
+                            color: Color(0xFF0B7A70),
                             fontSize: 9,
                             letterSpacing: .9,
                             fontWeight: FontWeight.w900,
@@ -665,7 +665,7 @@ class _ReviewSubmitStepState
                   const Text(
                     'Your profile,\none final look.',
                     style: TextStyle(
-                      color: Color(0xFF17363A),
+                      color: Color(0xFF0E2B28),
                       fontSize: 26,
                       height: 1.1,
                       fontWeight: FontWeight.w900,
@@ -676,7 +676,7 @@ class _ReviewSubmitStepState
                   const Text(
                     'Review every detail, make any final edits, and confirm your information before sending it for verification.',
                     style: TextStyle(
-                      color: Color(0xFF71858A),
+                      color: Color(0xFF55706B),
                       fontSize: 12,
                       height: 1.5,
                       fontWeight: FontWeight.w500,
@@ -720,14 +720,14 @@ class _ReviewSubmitStepState
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFFEFF7F5),
-            borderRadius: BorderRadius.circular(19),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(color: const Color(0xFFD8EAE6)),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.info_outline_rounded,
-                  color: Color(0xFF087F78), size: 19),
+                  color: Color(0xFF0B7A70), size: 19),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -748,9 +748,9 @@ class _ReviewSubmitStepState
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: widget.termsAccepted
-                ? const Color(0xFFF0FAF5)
+                ? const Color(0xFFE6F4F0)
                 : Colors.white,
-            borderRadius: BorderRadius.circular(19),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: widget.termsAccepted
                   ? const Color(0xFFBFE6D0)
@@ -758,21 +758,21 @@ class _ReviewSubmitStepState
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF17363A).withOpacity(.035),
+                color: const Color(0xFF0E2B28).withOpacity(.035),
                 blurRadius: 18,
                 offset: const Offset(0, 7),
               ),
             ],
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(18),
             onTap: () => widget.onTermsChanged(!widget.termsAccepted),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Checkbox(
                   value: widget.termsAccepted,
-                  activeColor: const Color(0xFF087F78),
+                  activeColor: const Color(0xFF0B7A70),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
@@ -850,7 +850,7 @@ class _ProfileCompletionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(23),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF087F78).withOpacity(.17),
+            color: const Color(0xFF0B7A70).withOpacity(.17),
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),
@@ -908,7 +908,7 @@ class _ProfileCompletionCard extends StatelessWidget {
           ),
           const SizedBox(height: 17),
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: progress),
               duration: const Duration(milliseconds: 650),
@@ -984,7 +984,7 @@ class _HeaderMetric extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(.78),
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFDCEBE7)),
       ),
       child: Column(
@@ -993,7 +993,7 @@ class _HeaderMetric extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              color: Color(0xFF17363A),
+              color: Color(0xFF0E2B28),
               fontSize: 15,
               fontWeight: FontWeight.w900,
             ),
@@ -1002,7 +1002,7 @@ class _HeaderMetric extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Color(0xFF71858A),
+              color: Color(0xFF55706B),
               fontSize: 8,
               letterSpacing: .65,
               fontWeight: FontWeight.w900,
@@ -1034,7 +1034,7 @@ class _ReviewGroupHeading extends StatelessWidget {
           Text(
             eyebrow,
             style: const TextStyle(
-              color: Color(0xFF087F78),
+              color: Color(0xFF0B7A70),
               fontSize: 9,
               letterSpacing: 1.1,
               fontWeight: FontWeight.w900,
@@ -1044,7 +1044,7 @@ class _ReviewGroupHeading extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF17363A),
+              color: Color(0xFF0E2B28),
               fontSize: 19,
               letterSpacing: -.45,
               fontWeight: FontWeight.w900,
@@ -1107,11 +1107,11 @@ class _ReviewSection extends StatelessWidget {
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFE5ECEE)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF17363A).withOpacity(.04),
+            color: const Color(0xFF0E2B28).withOpacity(.04),
             blurRadius: 22,
             offset: const Offset(0, 8),
           ),
@@ -1127,14 +1127,14 @@ class _ReviewSection extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF5F3),
+                  color: const Color(0xFFE6F4F0),
                   borderRadius:
-                      BorderRadius.circular(13),
+                      BorderRadius.circular(16),
                 ),
                 child: Icon(
                   icon,
                   color:
-                      const Color(0xFF078F83),
+                      const Color(0xFF0B7A70),
                 ),
               ),
 
@@ -1148,7 +1148,7 @@ class _ReviewSection extends StatelessWidget {
                     fontWeight:
                         FontWeight.w800,
                     color:
-                        Color(0xFF244743),
+                        Color(0xFF2B4F4A),
                   ),
                 ),
               ),
@@ -1159,8 +1159,8 @@ class _ReviewSection extends StatelessWidget {
                   icon: const Icon(Icons.edit_rounded, size: 13),
                   label: const Text('Edit'),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF087F78),
-                    backgroundColor: const Color(0xFFEAF5F3),
+                    foregroundColor: const Color(0xFF0B7A70),
+                    backgroundColor: const Color(0xFFE6F4F0),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1215,7 +1215,7 @@ class _ProfileAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: 29,
       backgroundColor:
-          const Color(0xFFE5F6F2),
+          const Color(0xFFE6F4F0),
       backgroundImage:
           profileImageUrl != null &&
                   profileImageUrl!.isNotEmpty
@@ -1230,7 +1230,7 @@ class _ProfileAvatar extends StatelessWidget {
                       : initials,
                   style: const TextStyle(
                     color:
-                        Color(0xFF078F83),
+                        Color(0xFF0B7A70),
                     fontWeight:
                         FontWeight.w900,
                   ),
@@ -1265,7 +1265,7 @@ class _InfoRow extends StatelessWidget {
           icon,
           size: 18,
           color:
-              const Color(0xFF718D89),
+              const Color(0xFF55706B),
         ),
 
         const SizedBox(width: 10),
@@ -1292,7 +1292,7 @@ class _InfoRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12.5,
                   color:
-                      Color(0xFF244743),
+                      Color(0xFF2B4F4A),
                   fontWeight:
                       FontWeight.w700,
                 ),
@@ -1325,7 +1325,7 @@ class _TagList extends StatelessWidget {
         emptyText,
         style: const TextStyle(
           fontSize: 12,
-          color: Color(0xFF9BB0AC),
+          color: Color(0xFF5F7B76),
         ),
       );
     }
@@ -1344,7 +1344,7 @@ class _TagList extends StatelessWidget {
             color:
                 const Color(0xFFF3F6FB),
             borderRadius:
-                BorderRadius.circular(20),
+                BorderRadius.circular(24),
           ),
           child: Text(
             item,
@@ -1399,7 +1399,7 @@ class _PriceRow extends StatelessWidget {
             fontSize: 13,
             color:
                 valueColor ??
-                    const Color(0xFF244743),
+                    const Color(0xFF2B4F4A),
             fontWeight:
                 FontWeight.w800,
           ),
@@ -1457,7 +1457,7 @@ class _DocumentStatusRow
             style: const TextStyle(
               fontSize: 12.5,
               color:
-                  Color(0xFF244743),
+                  Color(0xFF2B4F4A),
               fontWeight:
                   FontWeight.w700,
             ),
@@ -1501,7 +1501,7 @@ class _WarningCard extends StatelessWidget {
         color:
             const Color(0xFFFFF7E8),
         borderRadius:
-            BorderRadius.circular(15),
+            BorderRadius.circular(18),
         border: Border.all(
           color:
               const Color(0xFFF5D99D),

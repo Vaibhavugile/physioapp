@@ -10,7 +10,7 @@ class SpecializationsStep extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const Color _ink = Color(0xFF173F3A);
+  static const Color _ink = Color(0xFF0E2B28);
   static const Color _muted = Color(0xFF7A8E89);
   static const Color _teal = Color(0xFF078879);
 
@@ -67,7 +67,7 @@ class SpecializationsStep extends StatelessWidget {
       fullTitle: 'Post-Surgery Rehabilitation',
       subtitle: 'Recovery after surgery',
       icon: Icons.medical_services_rounded,
-      tint: Color(0xFFE5F6F2),
+      tint: Color(0xFFE6F4F0),
       accent: Color(0xFF168A79),
     ),
     _SpecializationItem(
@@ -137,7 +137,7 @@ class SpecializationsStep extends StatelessWidget {
               height: 43,
               decoration: BoxDecoration(
                 color: const Color(0xFFE6F5F0),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(Icons.grid_view_rounded, color: _teal, size: 22),
             ),
@@ -177,7 +177,7 @@ class SpecializationsStep extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: const Color(0xFFF5FAF8),
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFE4EFEB)),
           ),
           child: Row(
@@ -245,8 +245,8 @@ class SpecializationsStep extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 17),
                   padding: const EdgeInsets.fromLTRB(13, 12, 13, 13),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FBFA),
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFFF3F8F6),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFE5EFEB)),
                   ),
                   child: Column(
@@ -286,7 +286,7 @@ class SpecializationsStep extends StatelessWidget {
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5F1),
+                              color: const Color(0xFFE6F4F0),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -309,7 +309,7 @@ class SpecializationsStep extends StatelessWidget {
           padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             color: const Color(0xFFFFFAEF),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFF1E5C9)),
           ),
           child: const Row(
@@ -357,7 +357,7 @@ class _SpecialtyTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(20),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 210),
             curve: Curves.easeOutCubic,
@@ -365,14 +365,14 @@ class _SpecialtyTile extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 12, 11, 11),
             decoration: BoxDecoration(
               color: selected ? const Color(0xFFF0FAF6) : Colors.white,
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: selected ? item.accent.withOpacity(.75) : const Color(0xFFE7EEEB),
                 width: selected ? 1.4 : 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF173F3A).withOpacity(selected ? .075 : .035),
+                  color: const Color(0xFF0E2B28).withOpacity(selected ? .075 : .035),
                   blurRadius: selected ? 14 : 10,
                   offset: const Offset(0, 4),
                 ),
@@ -389,7 +389,7 @@ class _SpecialtyTile extends StatelessWidget {
                       height: 39,
                       decoration: BoxDecoration(
                         color: selected ? item.accent : item.tint,
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
                         item.icon,
@@ -422,7 +422,7 @@ class _SpecialtyTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: selected ? _SpecializationsStepColors.ink : const Color(0xFF294B46),
+                    color: selected ? _SpecializationsStepColors.ink : const Color(0xFF2B4F4A),
                     fontSize: 12.5,
                     height: 1.18,
                     fontWeight: FontWeight.w800,
@@ -449,7 +449,7 @@ class _SpecialtyTile extends StatelessWidget {
 }
 
 class _SpecializationsStepColors {
-  static const Color ink = Color(0xFF173F3A);
+  static const Color ink = Color(0xFF0E2B28);
 }
 
 class _SpecializationItem {

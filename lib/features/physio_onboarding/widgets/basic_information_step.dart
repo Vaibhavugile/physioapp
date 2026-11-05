@@ -47,10 +47,10 @@ class _BasicInformationStepState extends State<BasicInformationStep>
   DateTime? _dob;
   late final AnimationController _animation;
 
-  static const _ink = Color(0xFF183D39);
-  static const _green = Color(0xFF078F83);
+  static const _ink = Color(0xFF0E2B28);
+  static const _green = Color(0xFF0B7A70);
   static const _muted = Color(0xFF7A918C);
-  static const _line = Color(0xFFE3ECE9);
+  static const _line = Color(0xFFE3EBE8);
   static const _pale = Color(0xFFF4F9F7);
 
   @override
@@ -95,7 +95,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
       hintText: hint,
       prefixIcon: Icon(icon, size: 19, color: const Color(0xFF829A94)),
       filled: true,
-      fillColor: const Color(0xFFFAFCFB),
+      fillColor: const Color(0xFFF3F8F6),
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
       hintStyle: const TextStyle(
         color: Color(0xFFA0B1AD),
@@ -103,23 +103,23 @@ class _BasicInformationStepState extends State<BasicInformationStep>
         fontWeight: FontWeight.w500,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _line),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: _green, width: 1.4),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: Color(0xFFE07878)),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: Color(0xFFE07878), width: 1.4),
       ),
     );
@@ -173,7 +173,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF5F2),
+            color: const Color(0xFFE6F4F0),
             borderRadius: BorderRadius.circular(11),
           ),
           child: Icon(icon, size: 17, color: _green),
@@ -233,7 +233,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
           ),
           dialogTheme: DialogThemeData(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(26),
             ),
           ),
         ),
@@ -250,7 +250,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
     final selected = _gender == value;
     return Expanded(
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: () {
           setState(() => _gender = value);
           _emit();
@@ -259,8 +259,8 @@ class _BasicInformationStepState extends State<BasicInformationStep>
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFE8F5F1) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: selected ? const Color(0xFFE6F4F0) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected ? _green : _line,
               width: selected ? 1.3 : 1,
@@ -326,7 +326,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
         Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             onTap: _selectDate,
             child: InputDecorator(
               decoration: _inputDecoration(
@@ -365,7 +365,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: const Color(0xFFF0F8F5),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFDDECE6)),
       ),
       child: Row(
@@ -480,7 +480,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
                   padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
                   decoration: BoxDecoration(
                     color: _pale,
-                    borderRadius: BorderRadius.circular(17),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFE5EFEB)),
                   ),
                   child: Row(
@@ -492,7 +492,7 @@ class _BasicInformationStepState extends State<BasicInformationStep>
                           gradient: const LinearGradient(
                             colors: [Color(0xFF0EA896), Color(0xFF08776F)],
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
                       ),
