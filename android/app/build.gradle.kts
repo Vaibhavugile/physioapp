@@ -1,24 +1,20 @@
+
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     id("com.android.application")
 
-    // START: FlutterFire Configuration
+    // Firebase Google Services
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
 
     id("kotlin-android")
 
-    // The Flutter Gradle Plugin must be applied after
-    // the Android and Kotlin Gradle plugins.
+    // Flutter Gradle plugin
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-////////////////////////////////////////////////////////////
-/// LOAD KEY.PROPERTIES
-////////////////////////////////////////////////////////////
-
+// Load signing configuration
 val keystoreProperties = Properties()
 
 val keystorePropertiesFile =
@@ -32,60 +28,65 @@ if (keystorePropertiesFile.exists()) {
 
 android {
 
-    ////////////////////////////////////////////////////////////
-    /// APP PACKAGE
-    ////////////////////////////////////////////////////////////
-
+    // Keep the existing namespace unchanged.
     namespace = "com.physiohomey.app"
 
     compileSdk = flutter.compileSdkVersion
-
     ndkVersion = flutter.ndkVersion
-
-    ////////////////////////////////////////////////////////////
-    /// JAVA CONFIGURATION
-    ////////////////////////////////////////////////////////////
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    ////////////////////////////////////////////////////////////
-    /// KOTLIN CONFIGURATION
-    ////////////////////////////////////////////////////////////
-
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    ////////////////////////////////////////////////////////////
-    /// DEFAULT CONFIG
-    ////////////////////////////////////////////////////////////
-
     defaultConfig {
-
+        // Retain the existing patient application ID as default.
         applicationId = "com.physiohomey.app"
 
         minSdk = flutter.minSdkVersion
-
         targetSdk = flutter.targetSdkVersion
-
         versionCode = flutter.versionCode
-
         versionName = flutter.versionName
     }
 
-    ////////////////////////////////////////////////////////////
-    /// RELEASE SIGNING CONFIGURATION
-    ////////////////////////////////////////////////////////////
+    // TWO SEPARATE ANDROID APPLICATIONS
+    flavorDimensions += "app"
 
+    productFlavors {
+
+        create("patient") {
+            dimension = "app"
+
+            applicationId = "com.physiohomey.app"
+
+            resValue(
+                "string",
+                "app_name",
+                "PhysioAtHome"
+            )
+        }
+
+        create("physio") {
+            dimension = "app"
+
+            applicationId = "com.physiohomey.partner"
+
+            resValue(
+                "string",
+                "app_name",
+                "PhysioAtHome Partner"
+            )
+        }
+    }
+
+    // Release signing
     signingConfigs {
-
         create("release") {
-
             if (keystorePropertiesFile.exists()) {
-
                 keyAlias =
                     keystoreProperties["keyAlias"] as String?
 
@@ -102,35 +103,16 @@ android {
         }
     }
 
-    ////////////////////////////////////////////////////////////
-    /// BUILD TYPES
-    ////////////////////////////////////////////////////////////
-
     buildTypes {
-
         release {
-
-            //////////////////////////////////////////////////////
-            /// USE YOUR RELEASE KEYSTORE
-            //////////////////////////////////////////////////////
-
             signingConfig =
                 signingConfigs.getByName("release")
 
-            //////////////////////////////////////////////////////
-            /// RELEASE SETTINGS
-            //////////////////////////////////////////////////////
-
             isMinifyEnabled = false
-
             isShrinkResources = false
         }
     }
 }
-
-////////////////////////////////////////////////////////////
-/// FLUTTER
-////////////////////////////////////////////////////////////
 
 flutter {
     source = "../.."
