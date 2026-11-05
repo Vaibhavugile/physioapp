@@ -255,7 +255,7 @@ class _BestMatchCardState
               const EdgeInsets.all(15),
 
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFFFFFFF),
 
             borderRadius:
                 BorderRadius.circular(26),
@@ -770,7 +770,7 @@ class _BestMatchCardState
                               Text(
                                 _tierName,
                                 style: const TextStyle(
-                                  fontSize: 8,
+                                  fontSize: 8.5,
                                   color: Color(0xFF5146D9),
                                   fontWeight: FontWeight.w900,
                                 ),
@@ -1028,7 +1028,7 @@ class _BestMatchCardState
                             'SESSION FROM',
 
                             style: TextStyle(
-                              fontSize: 7,
+                              fontSize: 8,
 
                               color:
                                   Color(0xFF9299AB),
@@ -1322,7 +1322,7 @@ class _MiniBadge extends StatelessWidget {
 
             style:
                 const TextStyle(
-              fontSize: 7,
+              fontSize: 8,
 
               color:
                   Color(0xFF5E6780),

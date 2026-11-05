@@ -234,11 +234,25 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                         child: Column(
                           children: [
                             for (int i = 0; i < items.length; i++) ...[
-                              _BookingCard(
-                                booking: items[i],
-                                onTap: () => _showBookingDetails(
-                                  context,
-                                  items[i],
+                              TweenAnimationBuilder<double>(
+                                tween: Tween<double>(begin: 0, end: 1),
+                                duration: Duration(milliseconds: 260 + (i % 5) * 55),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, child) {
+                                  return Opacity(
+                                    opacity: value,
+                                    child: Transform.translate(
+                                      offset: Offset(0, 14 * (1 - value)),
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: _BookingCard(
+                                  booking: items[i],
+                                  onTap: () => _showBookingDetails(
+                                    context,
+                                    items[i],
+                                  ),
                                 ),
                               ),
                               if (i != items.length - 1)

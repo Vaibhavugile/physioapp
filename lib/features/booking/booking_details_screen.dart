@@ -123,7 +123,11 @@ class _BookingDetailsScreenState
   // BOOKING STATE
   // ===============================================================
 
-  bool _homeVisit = true;
+  String _selectedCareMode = PricingConfig.home;
+
+  bool get _homeVisit => _selectedCareMode == PricingConfig.home;
+  bool get _onlineVisit => _selectedCareMode == PricingConfig.online;
+  String get _careLabel => _homeVisit ? 'Home Visit' : (_onlineVisit ? 'Online Consultation' : 'Clinic Visit');
 
   int _selectedPackage = 1;
 
@@ -144,6 +148,7 @@ class _BookingDetailsScreenState
 
   List<String> _unavailableSlots = <String>[];
   bool _isLoadingAvailability = false;
+  bool _availabilityLoadFailed = false;
 
   // ===============================================================
   // PHYSIOTHERAPIST WORKING DAYS
@@ -179,65 +184,218 @@ class _BookingDetailsScreenState
   static const int _totalSteps = 5;
 
   // ===============================================================
-  // PACKAGE DATA
+  // PHYSIOTHERAPIST-ASSIGNED PRICING SNAPSHOT
   // ===============================================================
-  //
-  // Package pricing is completely controlled by PricingConfig.
-  // No individual physiotherapist price is used.
-  //
-  // Experience → Tier → Care Mode → Session Price → Package Discount
-  //
+  // The onboarding flow saves the assigned rate card directly on the
+  // physiotherapist document. Booking reads those saved values; it does
+  // NOT recalculate a generic rate from experience years on the patient app.
   // ===============================================================
 
-  String get _careMode {
-    return _homeVisit
-        ? PricingConfig.home
-        : PricingConfig.clinic;
-  }
+  double? _homeVisitPrice;
+  double? _clinicVisitPrice;
+  double? _onlineConsultationPrice;
+  double? _followUpPrice;
+  String _currency = 'INR';
+  String _pricingTierLabel = '';
+  String _pricingConfigVersion = '';
+  String _pricingCity = '';
+  String _pricingLocality = '';
+  bool _discountAvailable = false;
+  double _discountPercentage = 0;
+  bool _travelChargesEnabled = false;
+  double _travelCharges = 0;
+  bool _homeVisitEnabled = true;
+  bool _clinicVisitEnabled = true;
+  bool _onlineConsultationEnabled = false;
+  bool _pricingReady = false;
+  String? _pricingError;
+  Map<String, dynamic> _serviceSchedules = <String, dynamic>{};
+  List<String> _legacyWorkingDays = <String>[];
 
-  String get _tier {
-    return PricingConfig.getTierFromExperience(
-      widget.experienceYears < 0
-          ? 0
-          : widget.experienceYears,
-    );
-  }
+  String get _careMode => _selectedCareMode;
 
-  String get _tierName {
-    return PricingConfig.getTierName(_tier);
+  String get _tierName => _pricingTierLabel.isNotEmpty
+      ? _pricingTierLabel
+      : 'Assigned physiotherapist rate';
+
+  String get _currencyPrefix => _currency.toUpperCase() == 'INR'
+      ? '₹'
+      : '$_currency ';
+
+  String get _pricingLocationContext {
+    final location = [_pricingLocality, _pricingCity]
+        .where((value) => value.trim().isNotEmpty)
+        .join(', ');
+    return location.isEmpty ? '' : ' in $location';
   }
 
   double get _sessionPrice {
-    return PricingConfig.getSessionPrice(
-      experienceYears: widget.experienceYears < 0
-          ? 0
-          : widget.experienceYears,
-      careMode: _careMode,
-    );
+    switch (_selectedCareMode) {
+      case PricingConfig.home:
+        return _homeVisitPrice ?? 0;
+      case PricingConfig.clinic:
+        return _clinicVisitPrice ?? 0;
+      case PricingConfig.online:
+        return _onlineConsultationPrice ?? 0;
+      default:
+        return 0;
+    }
+  }
+
+  bool get _selectedCareModeEnabled {
+    switch (_selectedCareMode) {
+      case PricingConfig.home:
+        return _homeVisitEnabled && (_homeVisitPrice ?? 0) > 0;
+      case PricingConfig.clinic:
+        return _clinicVisitEnabled && (_clinicVisitPrice ?? 0) > 0;
+      case PricingConfig.online:
+        return _onlineConsultationEnabled &&
+            (_onlineConsultationPrice ?? 0) > 0;
+      default:
+        return false;
+    }
+  }
+
+  double _priceForMode(String mode) {
+    switch (mode) {
+      case PricingConfig.home:
+        return _homeVisitPrice ?? 0;
+      case PricingConfig.clinic:
+        return _clinicVisitPrice ?? 0;
+      case PricingConfig.online:
+        return _onlineConsultationPrice ?? 0;
+      default:
+        return 0;
+    }
+  }
+
+  double? _readStoredPrice(dynamic value) {
+    if (value is num && value >= 0) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return null;
+  }
+
+  void _applyPhysiotherapistSnapshot(Map<String, dynamic> data) {
+    _homeVisitPrice = _readStoredPrice(data['homeVisitPrice']);
+    _clinicVisitPrice = _readStoredPrice(data['clinicVisitPrice']);
+    _onlineConsultationPrice =
+        _readStoredPrice(data['onlineConsultationPrice']);
+    _followUpPrice = _readStoredPrice(data['followUpPrice']);
+    _currency = (data['currency'] ?? 'INR').toString();
+    _pricingTierLabel = (data['pricingTierLabel'] ?? '').toString().trim();
+    _pricingConfigVersion =
+        (data['pricingConfigVersion'] ?? '').toString().trim();
+    _pricingCity = (data['pricingCity'] ?? data['city'] ?? '').toString();
+    _pricingLocality =
+        (data['pricingLocality'] ?? data['locality'] ?? '').toString();
+    _discountAvailable = data['discountAvailable'] == true;
+    _discountPercentage = _readStoredPrice(data['discountPercentage']) ?? 0;
+    _travelChargesEnabled = data['travelChargesEnabled'] == true;
+    _travelCharges = _readStoredPrice(data['travelCharges']) ?? 0;
+
+    _homeVisitEnabled = data['homeVisitEnabled'] is bool
+        ? data['homeVisitEnabled'] as bool
+        : true;
+    _clinicVisitEnabled = data['clinicVisitEnabled'] is bool
+        ? data['clinicVisitEnabled'] as bool
+        : true;
+    _onlineConsultationEnabled =
+        data['onlineConsultationEnabled'] is bool
+            ? data['onlineConsultationEnabled'] as bool
+            : false;
+
+    final schedules = data['serviceSchedules'];
+    _serviceSchedules = schedules is Map
+        ? Map<String, dynamic>.from(schedules)
+        : <String, dynamic>{};
+
+    final homeSchedule = _serviceSchedules['home'];
+    final clinicSchedule = _serviceSchedules['clinic'];
+    final onlineSchedule = _serviceSchedules['online'];
+    if (homeSchedule is Map && homeSchedule['enabled'] is bool) {
+      _homeVisitEnabled = _homeVisitEnabled && homeSchedule['enabled'] == true;
+    }
+    if (clinicSchedule is Map && clinicSchedule['enabled'] is bool) {
+      _clinicVisitEnabled = _clinicVisitEnabled && clinicSchedule['enabled'] == true;
+    }
+    if (onlineSchedule is Map && onlineSchedule['enabled'] is bool) {
+      _onlineConsultationEnabled =
+          _onlineConsultationEnabled && onlineSchedule['enabled'] == true;
+    }
+
+    _pricingReady =
+        (_homeVisitEnabled && (_homeVisitPrice ?? 0) > 0) ||
+        (_clinicVisitEnabled && (_clinicVisitPrice ?? 0) > 0) ||
+        (_onlineConsultationEnabled &&
+            (_onlineConsultationPrice ?? 0) > 0);
+
+    _pricingError = _pricingReady
+        ? null
+        : 'This physiotherapist does not have a complete active price list. Please contact support.';
+
+    if (!_selectedCareModeEnabled) {
+      if (_homeVisitEnabled && (_homeVisitPrice ?? 0) > 0) {
+        _selectedCareMode = PricingConfig.home;
+      } else if (_clinicVisitEnabled && (_clinicVisitPrice ?? 0) > 0) {
+        _selectedCareMode = PricingConfig.clinic;
+      } else if (_onlineConsultationEnabled &&
+          (_onlineConsultationPrice ?? 0) > 0) {
+        _selectedCareMode = PricingConfig.online;
+      }
+    }
+
+    final legacyDays = data['workingDays'];
+    _legacyWorkingDays = legacyDays is List
+        ? legacyDays.map((e) => e.toString()).toList()
+        : <String>[];
+    _applyWorkingDaysForSelectedMode(_legacyWorkingDays);
+  }
+
+  void _applyWorkingDaysForSelectedMode(dynamic legacyWorkingDays) {
+    final serviceKey = _selectedCareMode == PricingConfig.home
+        ? 'home'
+        : _selectedCareMode == PricingConfig.clinic
+            ? 'clinic'
+            : 'online';
+    final schedule = _serviceSchedules[serviceKey];
+    dynamic rawDays;
+    if (schedule is Map && schedule['days'] is List) {
+      rawDays = schedule['days'];
+    } else {
+      rawDays = legacyWorkingDays;
+    }
+    if (rawDays == null || rawDays is! List || rawDays.isEmpty) {
+      rawDays = legacyWorkingDays ?? _legacyWorkingDays;
+    }
+    if (rawDays is List) {
+      final days = rawDays
+          .map((day) => _normalizeWorkingDay(day.toString()))
+          .where((day) => day.isNotEmpty)
+          .toSet()
+          .toList();
+      if (days.isNotEmpty) _workingDays = days;
+    }
   }
 
   List<_PackageOption> get _packages {
     return PricingConfig.packages.map((config) {
-      final pricing =
-          PricingConfig.calculatePackagePricing(
-        experienceYears:
-            widget.experienceYears < 0
-                ? 0
-                : widget.experienceYears,
-        careMode: _careMode,
-        package: config,
-      );
-
+      final safeSessionPrice = _selectedCareModeEnabled ? _sessionPrice : 0.0;
+      final original = safeSessionPrice * config.visits;
+      final discountPercent = _discountAvailable
+          ? _discountPercentage.clamp(0, 100).toDouble()
+          : 0.0;
+      final savings = original * discountPercent / 100;
+      final finalPrice = original - savings;
       return _PackageOption(
         id: config.id,
         visits: config.visits,
         title: config.title,
         description: config.description,
-        price: pricing.finalPrice.round(),
-        savings: pricing.discountAmount.round(),
-        originalPrice: pricing.originalPrice.round(),
-        sessionPrice: pricing.sessionPrice,
-        discountPercent: pricing.discountPercent,
+        price: finalPrice.round(),
+        savings: savings.round(),
+        originalPrice: original.round(),
+        sessionPrice: safeSessionPrice,
+        discountPercent: discountPercent,
         popular: config.popular,
         bestValue: config.bestValue,
       );
@@ -285,9 +443,12 @@ if (_workingDays.isEmpty) {
             .trim()
             .toLowerCase();
 
-    _homeVisit =
-        mode != 'clinic' &&
-        mode != 'clinicvisit';
+    _selectedCareMode = mode == PricingConfig.online ||
+            mode == 'onlineconsultation' || mode == 'online_consultation'
+        ? PricingConfig.online
+        : mode == PricingConfig.clinic || mode == 'clinicvisit'
+            ? PricingConfig.clinic
+            : PricingConfig.home;
 
     // -------------------------------------------------------------
     // INITIAL TIME
@@ -311,6 +472,12 @@ if (_workingDays.isEmpty) {
 
   Future<void> _loadPhysiotherapistAvailability() async {
     if (widget.physiotherapistId.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _pricingReady = false;
+          _pricingError = 'Physiotherapist details are missing, so the assigned price cannot be verified.';
+        });
+      }
       _loadUnavailableSlots();
       return;
     }
@@ -329,20 +496,14 @@ if (_workingDays.isEmpty) {
 
       final data = document.data();
 
-      if (data != null) {
-        final rawWorkingDays = data['workingDays'];
+      if (data == null) {
+        throw StateError('Physiotherapist profile was not found.');
+      }
 
-        if (rawWorkingDays is List) {
-          final normalizedDays = rawWorkingDays
-              .map((day) => _normalizeWorkingDay(day.toString()))
-              .where((day) => day.isNotEmpty)
-              .toSet()
-              .toList();
-
-          if (normalizedDays.isNotEmpty) {
-            _workingDays = normalizedDays;
-          }
-        }
+      if (mounted) {
+        setState(() {
+          _applyPhysiotherapistSnapshot(data);
+        });
       }
 
       final firstValidDate =
@@ -376,6 +537,8 @@ if (_workingDays.isEmpty) {
       // fallback so the booking screen remains usable.
       setState(() {
         _isLoadingWorkingDays = false;
+        _pricingReady = false;
+        _pricingError = 'Unable to load this physiotherapist’s saved pricing. Please try again.';
       });
 
       await _loadUnavailableSlots();
@@ -467,6 +630,7 @@ if (_workingDays.isEmpty) {
     if (mounted) {
       setState(() {
         _isLoadingAvailability = true;
+        _availabilityLoadFailed = false;
       });
     }
 
@@ -546,6 +710,7 @@ if (_workingDays.isEmpty) {
       setState(() {
         _unavailableSlots = bookedSlots.toList();
         _isLoadingAvailability = false;
+        _availabilityLoadFailed = false;
 
         // If the currently selected time became unavailable after a
         // date change or refresh, remove the selection.
@@ -584,6 +749,7 @@ if (_workingDays.isEmpty) {
       setState(() {
         _unavailableSlots = <String>[];
         _isLoadingAvailability = false;
+        _availabilityLoadFailed = true;
       });
 
       _showMessage(
@@ -622,6 +788,54 @@ if (_workingDays.isEmpty) {
 
   String _normalizeAppointmentTime(String value) {
     return value.trim().toUpperCase();
+  }
+
+  String _priceFieldForMode(String mode) {
+    switch (mode) {
+      case PricingConfig.home:
+        return 'homeVisitPrice';
+      case PricingConfig.clinic:
+        return 'clinicVisitPrice';
+      case PricingConfig.online:
+        return 'onlineConsultationPrice';
+      default:
+        return '';
+    }
+  }
+
+  String _enabledFieldForMode(String mode) {
+    switch (mode) {
+      case PricingConfig.home:
+        return 'homeVisitEnabled';
+      case PricingConfig.clinic:
+        return 'clinicVisitEnabled';
+      case PricingConfig.online:
+        return 'onlineConsultationEnabled';
+      default:
+        return '';
+    }
+  }
+
+  bool _isModeEnabledInSnapshot(Map<String, dynamic> data, String mode) {
+    final value = data[_enabledFieldForMode(mode)];
+    var enabled = value is bool
+        ? value
+        // Backward compatibility for older provider records: home and clinic
+        // were the legacy default services; online must be explicitly enabled.
+        : mode == PricingConfig.home || mode == PricingConfig.clinic;
+    final schedules = data['serviceSchedules'];
+    final scheduleKey = mode == PricingConfig.home
+        ? 'home'
+        : mode == PricingConfig.clinic
+            ? 'clinic'
+            : 'online';
+    if (schedules is Map) {
+      final schedule = schedules[scheduleKey];
+      if (schedule is Map && schedule['enabled'] is bool) {
+        enabled = enabled && schedule['enabled'] == true;
+      }
+    }
+    return enabled;
   }
 
   // ===============================================================
@@ -685,7 +899,7 @@ if (_workingDays.isEmpty) {
         return 'How would you like to receive your session?';
 
       case 1:
-        return 'Save more with multiple sessions';
+        return 'Choose the number of sessions that suits your recovery plan';
 
       case 2:
         return 'Choose a convenient date and time';
@@ -869,6 +1083,8 @@ if (_workingDays.isEmpty) {
               package:
                   package,
 
+              currencyPrefix: _currencyPrefix,
+
               onBack:
                   _handleBack,
 
@@ -959,31 +1175,43 @@ if (_workingDays.isEmpty) {
 
         const SizedBox(height: 20),
 
+        if (!_pricingReady && _pricingError != null)
+          _PremiumInfoCard(
+            icon: Icons.info_outline_rounded,
+            title: 'Pricing unavailable',
+            description: _pricingError!,
+          ),
         _CareTypeSelector(
-          homeVisit:
-              _homeVisit,
-
+          careMode: _selectedCareMode,
+          homeEnabled: _homeVisitEnabled && (_homeVisitPrice ?? 0) > 0,
+          clinicEnabled: _clinicVisitEnabled && (_clinicVisitPrice ?? 0) > 0,
+          onlineEnabled: _onlineConsultationEnabled &&
+              (_onlineConsultationPrice ?? 0) > 0,
+          priceLabel: (mode) =>
+              '$_currencyPrefix${_priceForMode(mode).toStringAsFixed(0)} / session',
           onChanged: (value) {
             setState(() {
-              _homeVisit = value;
+              _selectedCareMode = value;
+              _selectedTime = null;
+              _applyWorkingDaysForSelectedMode(null);
+              _selectedDate = _findNextWorkingDate(DateTime.now());
             });
+            _loadUnavailableSlots();
           },
         ),
 
         const SizedBox(height: 18),
 
         _PremiumInfoCard(
-          icon: _homeVisit
-              ? Icons.home_rounded
-              : Icons.local_hospital_rounded,
-
-          title: _homeVisit
-              ? 'Care at your doorstep'
-              : 'Visit a trusted clinic',
-
+          icon: _homeVisit ? Icons.home_rounded :
+              (_onlineVisit ? Icons.videocam_rounded : Icons.local_hospital_rounded),
+          title: _homeVisit ? 'Care at your doorstep' :
+              (_onlineVisit ? 'Consult from anywhere' : 'Visit a trusted clinic'),
           description: _homeVisit
-              ? 'A verified physiotherapist will visit you at your preferred address.'
-              : 'Choose a convenient clinic and meet your physiotherapist there.',
+              ? 'A physiotherapist visits your address for hands-on treatment.'
+              : _onlineVisit
+                  ? 'A remote assessment and guidance session. Hands-on treatment is not included; the joining link must be provided by the platform.'
+                  : 'Meet your physiotherapist at the clinic for in-person care.',
         ),
       ],
     );
@@ -1003,13 +1231,21 @@ if (_workingDays.isEmpty) {
         _PremiumInfoCard(
           icon: Icons.workspace_premium_rounded,
           title:
-              '$_tierName tier • ₹${_sessionPrice.toStringAsFixed(0)} / session',
+              '$_tierName • $_currencyPrefix${_sessionPrice.toStringAsFixed(0)} / session',
           description:
-              'Universal platform pricing. '
-              'All physiotherapists in the same experience tier '
-              'use the same price for this care mode.',
+              'This is the rate assigned to this physiotherapist during onboarding for ${_careLabel.toLowerCase()}$_pricingLocationContext.',
           compact: true,
         ),
+
+        if ((_followUpPrice ?? 0) > 0) ...[
+          const SizedBox(height: 10),
+          _PremiumInfoCard(
+            icon: Icons.replay_rounded,
+            title: 'Follow-up session rate: $_currencyPrefix${(_followUpPrice ?? 0).toStringAsFixed(0)}',
+            description: 'This is the follow-up rate saved in the physiotherapist’s onboarding pricing. It is separate from the selected initial-session package.',
+            compact: true,
+          ),
+        ],
 
         const SizedBox(height: 14),
 
@@ -1067,8 +1303,8 @@ if (_workingDays.isEmpty) {
         const SizedBox(height: 5),
 
         _PremiumSavingsCard(
-          package:
-              selectedPackage,
+          package: selectedPackage,
+          currencyPrefix: _currencyPrefix,
         ),
       ],
     );
@@ -1240,9 +1476,7 @@ if (_workingDays.isEmpty) {
               widget.doctorImage,
 
           visitType:
-              _homeVisit
-                  ? 'Home Visit'
-                  : 'Clinic Visit',
+              _careLabel,
 
           date:
               _formatDate(
@@ -1261,6 +1495,18 @@ if (_workingDays.isEmpty) {
 
           price:
               selectedPackage.price,
+
+          originalPrice:
+              selectedPackage.originalPrice,
+
+          savings:
+              selectedPackage.savings,
+
+          discountPercent:
+              selectedPackage.discountPercent,
+
+          sessionPrice:
+              selectedPackage.sessionPrice,
         ),
 
         const SizedBox(height: 18),
@@ -1269,8 +1515,10 @@ if (_workingDays.isEmpty) {
           package:
               selectedPackage,
 
-          homeVisit:
-              _homeVisit,
+          currencyPrefix: _currencyPrefix,
+
+          careMode:
+              _selectedCareMode,
 
           date:
               _formatDate(
@@ -1282,16 +1530,25 @@ if (_workingDays.isEmpty) {
                   'Not selected',
         ),
 
+        if (_onlineVisit) ...[
+          const SizedBox(height: 12),
+          const _PremiumInfoCard(
+            icon: Icons.videocam_rounded,
+            title: 'Online consultation details',
+            description: 'Your consultation is remote. No home address is required. A secure video joining link is not automatically generated by this booking screen; the platform must provide it before the appointment.',
+          ),
+        ],
+
         const SizedBox(height: 12),
 
         _PremiumInfoCard(
           icon: Icons.payments_rounded,
           title:
-              '$_tierName tier • ₹${selectedPackage.price}',
+              '$_tierName • $_currencyPrefix${selectedPackage.price}',
           description:
               '${selectedPackage.visits} sessions • '
               '${selectedPackage.discountPercent.toStringAsFixed(0)}% package discount • '
-              'You save ₹${selectedPackage.savings}.',
+              'You save $_currencyPrefix${selectedPackage.savings}.',
           compact: true,
         ),
       ],
@@ -1350,12 +1607,24 @@ if (_workingDays.isEmpty) {
   bool _validateCurrentStep() {
     switch (_currentStep) {
       case 0:
+        if (!_pricingReady || !_selectedCareModeEnabled) {
+          _showMessage(_pricingError ?? 'This care option is not available for this physiotherapist.');
+          return false;
+        }
         return true;
 
       case 1:
+        if (!_selectedCareModeEnabled || _sessionPrice <= 0) {
+          _showMessage('The selected physiotherapist rate is unavailable. Please choose another care option.');
+          return false;
+        }
         return true;
 
       case 2:
+        if (_isLoadingAvailability || _isLoadingWorkingDays || _availabilityLoadFailed) {
+          _showMessage('Availability is not verified yet. Please retry before booking.');
+          return false;
+        }
         if (!_isWorkingDay(_selectedDate)) {
           _showMessage(
             'Please select a working day for this physiotherapist.',
@@ -1470,54 +1739,78 @@ if (_workingDays.isEmpty) {
     //
     // =============================================================
 
-    final packageConfig =
-        PricingConfig.getPackageById(package.id);
-
-    if (packageConfig == null) {
+    if (!_pricingReady || !_selectedCareModeEnabled || _sessionPrice <= 0) {
       _showMessage(
-        'Selected package is no longer available.',
+        _pricingError ?? 'This care option is not currently available for this physiotherapist.',
       );
       return;
     }
 
-    final packagePricing =
-        PricingConfig.calculatePackagePricing(
-      experienceYears:
-          widget.experienceYears < 0
-              ? 0
-              : widget.experienceYears,
-      careMode:
-          _careMode,
-      package:
-          packageConfig,
-    );
+    // Re-read the provider's saved onboarding rate card immediately before
+    // creating the booking. This prevents a stale screen price from being
+    // written if the provider's assigned rate was updated while the patient
+    // was booking.
+    try {
+      final latestProvider = await FirebaseFirestore.instance
+          .collection('physiotherapists')
+          .doc(widget.physiotherapistId)
+          .get();
+      final latestData = latestProvider.data();
+      if (latestData == null ||
+          !_isModeEnabledInSnapshot(latestData, _selectedCareMode)) {
+        _showMessage('This care option is no longer available. Please choose another option.');
+        return;
+      }
+      final latestRate = _readStoredPrice(latestData[_priceFieldForMode(_selectedCareMode)]);
+      if (latestRate == null || latestRate <= 0) {
+        _showMessage('The physiotherapist’s saved price is unavailable. Please contact support.');
+        return;
+      }
+      final latestDiscountEnabled = latestData['discountAvailable'] == true;
+      final latestDiscountPercent = latestDiscountEnabled
+          ? (_readStoredPrice(latestData['discountPercentage']) ?? 0).clamp(0, 100).toDouble()
+          : 0.0;
+      final latestPackageSubtotal = latestRate * package.visits;
+      final latestPackageSavings = latestPackageSubtotal * latestDiscountPercent / 100;
+      final latestPackageTotal = latestPackageSubtotal - latestPackageSavings;
+      final pricingChanged =
+          (latestRate - _sessionPrice).abs() > 0.01 ||
+          (latestPackageTotal - package.price).abs() > 0.01 ||
+          ((_readStoredPrice(latestData['travelCharges']) ?? 0) - _travelCharges).abs() > 0.01 ||
+          (latestData['travelChargesEnabled'] == true) != _travelChargesEnabled ||
+          (latestData['pricingConfigVersion'] ?? '').toString() != _pricingConfigVersion ||
+          (latestData['currency'] ?? 'INR').toString() != _currency ||
+          (latestData['pricingTierLabel'] ?? '').toString() != _pricingTierLabel;
+      if (pricingChanged) {
+        if (mounted) {
+          setState(() {
+            _applyPhysiotherapistSnapshot(latestData);
+          });
+        }
+        _showMessage('The physiotherapist’s assigned price has changed. Please review the updated price before confirming.');
+        return;
+      }
+    } catch (error) {
+      _showMessage('Unable to verify the latest physiotherapist price. Please try again.');
+      return;
+    }
 
-    final basePrice =
-        packagePricing.sessionPrice;
-
-    final totalSessions =
-        packagePricing.visits;
-
-    final subtotal =
-        packagePricing.originalPrice;
-
-    final discountAmount =
-        packagePricing.discountAmount;
-
-    final discountPercent =
-        packagePricing.discountPercent;
-
-    final packageFinalPrice =
-        packagePricing.finalPrice;
+    final basePrice = _sessionPrice;
+    final totalSessions = package.visits;
+    final subtotal = basePrice * totalSessions;
+    final discountPercent = _discountAvailable
+        ? _discountPercentage.clamp(0, 100).toDouble()
+        : 0.0;
+    final discountAmount = subtotal * discountPercent / 100;
+    final packageFinalPrice = subtotal - discountAmount;
 
     // -------------------------------------------------------------
     // SERVICE TYPE
     // -------------------------------------------------------------
 
-    final serviceType =
-        _homeVisit
-            ? 'homeVisit'
-            : 'clinicVisit';
+    final serviceType = _homeVisit
+        ? 'homeVisit'
+        : (_onlineVisit ? 'onlineConsultation' : 'clinicVisit');
 
     // -------------------------------------------------------------
     // BOOKING TYPE
@@ -1557,7 +1850,9 @@ if (_workingDays.isEmpty) {
     // TOTAL
     // -------------------------------------------------------------
 
-    final travelCharge = 0.0;
+    final travelCharge = _homeVisit && _travelChargesEnabled
+        ? _travelCharges
+        : 0.0;
     final platformFee = 0.0;
     final taxAmount = 0.0;
 
@@ -1764,7 +2059,7 @@ if (_workingDays.isEmpty) {
       );
 
       debugPrint(
-        'Amount: ₹${createdBooking.totalAmount}',
+        'Amount: $_currencyPrefix${createdBooking.totalAmount.toStringAsFixed(0)}',
       );
 
       debugPrint(
@@ -1932,6 +2227,11 @@ if (_workingDays.isEmpty) {
       return false;
     }
 
+    if (_isLoadingAvailability || _isLoadingWorkingDays || _availabilityLoadFailed) {
+      _showMessage('Availability is not verified. Please retry.');
+      return false;
+    }
+
     if (!_isWorkingDay(_selectedDate)) {
       _showMessage(
         'Please select a working day for this physiotherapist.',
@@ -2083,47 +2383,30 @@ if (_workingDays.isEmpty) {
           ),
 
           content: Text(
-            'Your appointment has been created successfully. '
-            'Booking ID: ${booking.id}\n\n'
-            'Total payable: ₹${booking.totalAmount.toStringAsFixed(0)}',
+            'Your appointment request has been created. '
+            'Payment status: Pending.\n\n'
+            'Booking ID: ${booking.id}\n'
+            'Booking total: $_currencyPrefix${booking.totalAmount.toStringAsFixed(0)}\n\n'
+            'You can view the booking in My Bookings.'
+            '${booking.serviceType == 'onlineConsultation' ? '\n\nFor online consultation, the platform must provide a video link before your session.' : ''}',
           ),
 
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
-
-                Navigator.pop(
-                  context,
-                );
-              },
-
-              child:
-                  const Text('Done'),
-            ),
-
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
-
-                // =================================================
-                // NEXT:
-                // NAVIGATE TO PAYMENT SCREEN HERE
-                // =================================================
-
-                _showMessage(
-                  'Payment screen will open next.',
-                );
+                Navigator.pop(dialogContext);
+                Navigator.pop(context);
               },
-
-              child:
-                  const Text(
-                'Continue to payment',
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5146D9),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
               ),
+              child: const Text('View my bookings'),
             ),
           ],
         );
@@ -2211,10 +2494,10 @@ class _PackageOption {
   // Original price before package discount.
   final int originalPrice;
 
-  // Universal session price for this tier/care mode.
+  // Session price saved on the selected physiotherapist profile.
   final double sessionPrice;
 
-  // Universal package discount.
+  // Discount saved on the selected physiotherapist profile.
   final double discountPercent;
 
   final bool popular;
@@ -2239,8 +2522,7 @@ class _PackageOption {
 // PREMIUM STEP INDICATOR
 // ==================================================================
 
-class _PremiumStepIndicator
-    extends StatelessWidget {
+class _PremiumStepIndicator extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
 
@@ -2249,164 +2531,124 @@ class _PremiumStepIndicator
     required this.totalSteps,
   });
 
+  static const _labels = ['Care', 'Plan', 'Time', 'Details', 'Review'];
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: List.generate(
-            totalSteps,
-            (index) {
-              final completed =
-                  index <= currentStep;
-
+    final progress = (currentStep + 1) / totalSteps;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: const Color(0xFFE6EAF2)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1D2A54).withOpacity(.035),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.route_rounded, color: Color(0xFF5146D9), size: 16),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  'YOUR BOOKING JOURNEY',
+                  style: const TextStyle(
+                    color: Color(0xFF737C94),
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              Text(
+                '${currentStep + 1} / $totalSteps',
+                style: const TextStyle(
+                  color: Color(0xFF5146D9),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 11),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 420),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 5,
+                backgroundColor: const Color(0xFFEEF0F6),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF5A4DE0)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 11),
+          Row(
+            children: List.generate(totalSteps, (index) {
+              final complete = index < currentStep;
+              final active = index == currentStep;
+              final label = index < _labels.length ? _labels[index] : 'Step';
               return Expanded(
                 child: Row(
                   children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration:
-                          BoxDecoration(
-                        gradient:
-                            completed
-                                ? const LinearGradient(
-                                    begin:
-                                        Alignment.topLeft,
-                                    end:
-                                        Alignment.bottomRight,
-                                    colors: [
-                                      Color(
-                                        0xFF6B58E8,
-                                      ),
-                                      Color(
-                                        0xFF5146D9,
-                                      ),
-                                    ],
-                                  )
-                                : null,
-                        color:
-                            completed
-                                ? null
-                                : const Color(
-                                    0xFFE9EBF2,
-                                  ),
-                        shape:
-                            BoxShape.circle,
-                        boxShadow:
-                            completed
-                                ? [
-                                    BoxShadow(
-                                      color:
-                                          const Color(
-                                        0xFF5146D9,
-                                      ).withOpacity(
-                                        .16,
-                                      ),
-                                      blurRadius:
-                                          10,
-                                      offset:
-                                          const Offset(
-                                        0,
-                                        4,
-                                      ),
-                                    ),
-                                  ]
-                                : null,
-                      ),
-                      child: Center(
-                        child: completed
-                            ? index <
-                                    currentStep
-                                ? const Icon(
-                                    Icons
-                                        .check_rounded,
-                                    size: 16,
-                                    color:
-                                        Colors.white,
-                                  )
-                                : Text(
-                                    '${index + 1}',
-                                    style:
-                                        const TextStyle(
-                                      fontSize:
-                                          11,
-                                      color:
-                                          Colors.white,
-                                      fontWeight:
-                                          FontWeight.w900,
-                                    ),
-                                  )
-                            : Text(
-                                '${index + 1}',
-                                style:
-                                    const TextStyle(
-                                  fontSize:
-                                      11,
-                                  color:
-                                      Color(
-                                    0xFF8991A7,
-                                  ),
-                                  fontWeight:
-                                      FontWeight.w800,
-                                ),
-                              ),
-                      ),
-                    ),
-                    if (index <
-                        totalSteps - 1)
-                      Expanded(
-                        child: Container(
-                          height: 2,
-                          margin:
-                              const EdgeInsets
-                                  .symmetric(
-                            horizontal: 5,
-                          ),
-                          decoration:
-                              BoxDecoration(
-                            color:
-                                index <
-                                        currentStep
-                                    ? const Color(
-                                        0xFF5A4DE0,
-                                      )
-                                    : const Color(
-                                        0xFFE1E4EC,
-                                      ),
-                            borderRadius:
-                                BorderRadius
-                                    .circular(
-                              20,
-                            ),
-                          ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      width: active ? 24 : 19,
+                      height: active ? 24 : 19,
+                      decoration: BoxDecoration(
+                        color: complete || active
+                            ? const Color(0xFF5146D9)
+                            : const Color(0xFFF0F2F7),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: complete || active
+                              ? const Color(0xFF5146D9)
+                              : const Color(0xFFE3E7EF),
                         ),
                       ),
+                      child: Icon(
+                        complete ? Icons.check_rounded : Icons.circle,
+                        size: complete ? 13 : 5,
+                        color: complete || active
+                            ? Colors.white
+                            : const Color(0xFFB5BBC8),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.clip,
+                        style: TextStyle(
+                          color: active
+                              ? const Color(0xFF5146D9)
+                              : complete
+                                  ? const Color(0xFF3F4965)
+                                  : const Color(0xFFA0A7B7),
+                          fontSize: 8,
+                          fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
-            },
+            }),
           ),
-        ),
-
-        const SizedBox(height: 9),
-
-        Align(
-          alignment:
-              Alignment.centerLeft,
-          child: Text(
-            'Step ${currentStep + 1} of $totalSteps',
-            style:
-                const TextStyle(
-              fontSize: 10,
-              color:
-                  Color(0xFF737C94),
-              fontWeight:
-                  FontWeight.w700,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -2415,8 +2657,7 @@ class _PremiumStepIndicator
 // STEP HEADING
 // ==================================================================
 
-class _StepHeading
-    extends StatelessWidget {
+class _StepHeading extends StatelessWidget {
   final int step;
   final String title;
   final String subtitle;
@@ -2430,34 +2671,43 @@ class _StepHeading
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style:
-              const TextStyle(
-            fontSize: 22,
-            color:
-                Color(0xFF111A3D),
-            fontWeight:
-                FontWeight.w900,
-            letterSpacing: -.55,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0EFFF),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Text(
+            'STEP ${step.toString().padLeft(2, '0')}',
+            style: const TextStyle(
+              color: Color(0xFF5146D9),
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
           ),
         ),
-
-        const SizedBox(height: 5),
-
+        const SizedBox(height: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 25,
+            height: 1.08,
+            color: Color(0xFF111A3D),
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.8,
+          ),
+        ),
+        const SizedBox(height: 7),
         Text(
           subtitle,
-          style:
-              const TextStyle(
-            fontSize: 12,
-            height: 1.4,
-            color:
-                Color(0xFF737C94),
-            fontWeight:
-                FontWeight.w600,
+          style: const TextStyle(
+            fontSize: 11.5,
+            height: 1.45,
+            color: Color(0xFF737C94),
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -2482,6 +2732,16 @@ class _DoctorMiniCard
     required this.specialty,
     required this.rating,
   });
+
+  ImageProvider<Object>? _doctorImageProvider() {
+    final value = doctorImage.trim();
+    if (value.isEmpty) return null;
+    final uri = Uri.tryParse(value);
+    if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+      return NetworkImage(value);
+    }
+    return AssetImage(value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2529,23 +2789,23 @@ class _DoctorMiniCard
             ),
             clipBehavior:
                 Clip.antiAlias,
-            child: Image.asset(
-              doctorImage,
-              fit: BoxFit.cover,
-              errorBuilder:
-                  (
-                context,
-                error,
-                stackTrace,
-              ) {
-                return const Icon(
-                  Icons.person_rounded,
-                  size: 34,
-                  color:
-                      Color(0xFF5146D9),
-                );
-              },
-            ),
+            child: _doctorImageProvider() == null
+                ? const Icon(
+                    Icons.person_rounded,
+                    size: 34,
+                    color: Color(0xFF5146D9),
+                  )
+                : Image(
+                    image: _doctorImageProvider()!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.person_rounded,
+                        size: 34,
+                        color: Color(0xFF5146D9),
+                      );
+                    },
+                  ),
           ),
 
           const SizedBox(width: 13),
@@ -2673,51 +2933,53 @@ class _DoctorMiniCard
 // CARE TYPE SELECTOR
 // ==================================================================
 
-class _CareTypeSelector
-    extends StatelessWidget {
-  final bool homeVisit;
-  final ValueChanged<bool> onChanged;
+class _CareTypeSelector extends StatelessWidget {
+  final String careMode;
+  final bool homeEnabled;
+  final bool clinicEnabled;
+  final bool onlineEnabled;
+  final String Function(String mode) priceLabel;
+  final ValueChanged<String> onChanged;
 
   const _CareTypeSelector({
-    required this.homeVisit,
+    required this.careMode,
+    required this.homeEnabled,
+    required this.clinicEnabled,
+    required this.onlineEnabled,
+    required this.priceLabel,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _CareTypeCard(
-          icon:
-              Icons.home_rounded,
-          title:
-              'Home Visit',
-          subtitle:
-              'Expert care at your doorstep',
-          selected:
-              homeVisit,
-          onTap: () {
-            onChanged(true);
-          },
-        ),
-
-        const SizedBox(height: 12),
-
-        _CareTypeCard(
-          icon:
-              Icons.local_hospital_rounded,
-          title:
-              'Clinic Visit',
-          subtitle:
-              'Visit a trusted clinic',
-          selected:
-              !homeVisit,
-          onTap: () {
-            onChanged(false);
-          },
-        ),
-      ],
-    );
+    return Column(children: [
+      _CareTypeCard(
+        icon: Icons.home_rounded,
+        title: 'Home Visit',
+        subtitle: homeEnabled ? priceLabel(PricingConfig.home) : 'Not offered by this physiotherapist',
+        selected: careMode == PricingConfig.home,
+        enabled: homeEnabled,
+        onTap: () => onChanged(PricingConfig.home),
+      ),
+      const SizedBox(height: 12),
+      _CareTypeCard(
+        icon: Icons.local_hospital_rounded,
+        title: 'Clinic Visit',
+        subtitle: clinicEnabled ? priceLabel(PricingConfig.clinic) : 'Not offered by this physiotherapist',
+        selected: careMode == PricingConfig.clinic,
+        enabled: clinicEnabled,
+        onTap: () => onChanged(PricingConfig.clinic),
+      ),
+      const SizedBox(height: 12),
+      _CareTypeCard(
+        icon: Icons.videocam_rounded,
+        title: 'Online Consultation',
+        subtitle: onlineEnabled ? priceLabel(PricingConfig.online) : 'Not offered by this physiotherapist',
+        selected: careMode == PricingConfig.online,
+        enabled: onlineEnabled,
+        onTap: () => onChanged(PricingConfig.online),
+      ),
+    ]);
   }
 }
 
@@ -2731,6 +2993,7 @@ class _CareTypeCard
   final String title;
   final String subtitle;
   final bool selected;
+  final bool enabled;
   final VoidCallback onTap;
 
   const _CareTypeCard({
@@ -2738,16 +3001,20 @@ class _CareTypeCard
     required this.title,
     required this.subtitle,
     required this.selected,
+    this.enabled = true,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       behavior:
           HitTestBehavior.opaque,
-      child: AnimatedContainer(
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: enabled ? 1 : .48,
+        child: AnimatedContainer(
         duration:
             const Duration(
           milliseconds: 220,
@@ -2917,6 +3184,7 @@ class _CareTypeCard
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -3060,9 +3328,11 @@ class _PremiumInfoCard
 class _PremiumSavingsCard
     extends StatelessWidget {
   final _PackageOption package;
+  final String currencyPrefix;
 
   const _PremiumSavingsCard({
     required this.package,
+    required this.currencyPrefix,
   });
 
   @override
@@ -3072,9 +3342,9 @@ class _PremiumSavingsCard
         icon:
             Icons.verified_rounded,
         title:
-            'Flexible single session',
+            'Transparent session pricing',
         description:
-            'Perfect if you want to try a session before choosing a recovery plan.',
+            'Each session uses this physiotherapist’s assigned onboarding rate. No package discount is currently applied.',
         compact: true,
       );
     }
@@ -3083,7 +3353,7 @@ class _PremiumSavingsCard
       icon:
           Icons.savings_rounded,
       title:
-          'You save ₹${package.savings}',
+          'You save $currencyPrefix${package.savings}',
       description:
           'Compared with booking ${package.visits} individual sessions.',
       compact: true,
@@ -3211,13 +3481,15 @@ class _SelectedAppointmentCard
 class _FinalConfirmationCard
     extends StatelessWidget {
   final _PackageOption package;
-  final bool homeVisit;
+  final String currencyPrefix;
+  final String careMode;
   final String date;
   final String time;
 
   const _FinalConfirmationCard({
     required this.package,
-    required this.homeVisit,
+    required this.currencyPrefix,
+    required this.careMode,
     required this.date,
     required this.time,
   });
@@ -3283,14 +3555,9 @@ class _FinalConfirmationCard
 
           _ReviewLine(
             icon:
-                homeVisit
-                    ? Icons.home_rounded
-                    : Icons
-                        .local_hospital_rounded,
+                careMode == PricingConfig.home ? Icons.home_rounded : (careMode == PricingConfig.online ? Icons.videocam_rounded : Icons.local_hospital_rounded),
             title:
-                homeVisit
-                    ? 'Home Visit'
-                    : 'Clinic Visit',
+                careMode == PricingConfig.home ? 'Home Visit' : (careMode == PricingConfig.online ? 'Online Consultation' : 'Clinic Visit'),
           ),
 
           const SizedBox(height: 8),
@@ -3316,7 +3583,7 @@ class _FinalConfirmationCard
                 Icons
                     .medical_services_rounded,
             title:
-                '${package.visits} visit${package.visits > 1 ? 's' : ''} • ₹${package.price}',
+                '${package.visits} visit${package.visits > 1 ? 's' : ''} • $currencyPrefix${package.price}',
           ),
         ],
       ),
@@ -3371,11 +3638,11 @@ class _ReviewLine
 // BOTTOM BAR
 // ==================================================================
 
-class _PremiumBottomBar
-    extends StatelessWidget {
+class _PremiumBottomBar extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
   final _PackageOption package;
+  final String currencyPrefix;
   final VoidCallback onBack;
   final VoidCallback onNext;
 
@@ -3383,45 +3650,24 @@ class _PremiumBottomBar
     required this.currentStep,
     required this.totalSteps,
     required this.package,
+    required this.currencyPrefix,
     required this.onBack,
     required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isLast =
-        currentStep ==
-            totalSteps - 1;
-
+    final isLast = currentStep == totalSteps - 1;
     return Container(
-      padding:
-          const EdgeInsets.fromLTRB(
-        18,
-        11,
-        18,
-        12,
-      ),
-      decoration:
-          BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: const Border(
-          top: BorderSide(
-            color:
-                Color(0xFFE5E8F0),
-          ),
-        ),
+        border: const Border(top: BorderSide(color: Color(0xFFE7EAF2))),
         boxShadow: [
           BoxShadow(
-            color:
-                const Color(
-              0xFF26345C,
-            ).withOpacity(.10),
+            color: const Color(0xFF1D2A54).withOpacity(.09),
             blurRadius: 24,
-            offset:
-                const Offset(
-              0,
-              -7,
-            ),
+            offset: const Offset(0, -7),
           ),
         ],
       ),
@@ -3429,188 +3675,114 @@ class _PremiumBottomBar
         top: false,
         child: Row(
           children: [
-            if (currentStep > 0)
-              GestureDetector(
-                onTap: onBack,
-                behavior:
-                    HitTestBehavior
-                        .opaque,
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        const Color(
-                      0xFFF4F5F9,
-                    ),
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                      15,
-                    ),
-                    border: Border.all(
-                      color:
-                          const Color(
-                        0xFFE2E5ED,
-                      ),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons
-                        .arrow_back_rounded,
-                    size: 20,
-                    color:
-                        Color(
-                      0xFF343D59,
+            if (currentStep > 0) ...[
+              Material(
+                color: const Color(0xFFF4F5FA),
+                borderRadius: BorderRadius.circular(15),
+                child: InkWell(
+                  onTap: onBack,
+                  borderRadius: BorderRadius.circular(15),
+                  child: const SizedBox(
+                    width: 48,
+                    height: 50,
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF34405E),
+                      size: 20,
                     ),
                   ),
                 ),
               ),
-
-            if (currentStep > 0)
-              const SizedBox(
-                width: 10,
-              ),
-
-            // -------------------------------------------------------
-            // PRICE
-            // -------------------------------------------------------
-
-            Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
-              children: [
-                Text(
-                  currentStep == 0
-                      ? 'STARTING FROM'
-                      : 'TOTAL',
-                  style:
-                      const TextStyle(
-                    fontSize: 8,
-                    color:
-                        Color(
-                      0xFF8C94A8,
-                    ),
-                    fontWeight:
-                        FontWeight.w900,
-                    letterSpacing:
-                        .45,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 2,
-                ),
-
-                Text(
-                  '₹${package.price}',
-                  style:
-                      const TextStyle(
-                    fontSize: 17,
-                    color:
-                        Color(
-                      0xFF079F87,
-                    ),
-                    fontWeight:
-                        FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(
-              width: 13,
-            ),
-
-            // -------------------------------------------------------
-            // NEXT BUTTON
-            // -------------------------------------------------------
-
+              const SizedBox(width: 10),
+            ],
             Expanded(
-              child:
-                  GestureDetector(
-                onTap: onNext,
-                child:
-                    Container(
-                  height: 50,
-                  decoration:
-                      BoxDecoration(
-                    gradient:
-                        const LinearGradient(
-                      begin:
-                          Alignment.topLeft,
-                      end:
-                          Alignment.bottomRight,
-                      colors: [
-                        Color(
-                          0xFF6B58E8,
-                        ),
-                        Color(
-                          0xFF5146D9,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    currentStep == 0 ? 'SELECTED PLAN' : 'PLAN TOTAL',
+                    style: const TextStyle(
+                      color: Color(0xFF8A92A7),
+                      fontSize: 7.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: .9,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '$currencyPrefix${package.price}',
+                    style: const TextStyle(
+                      color: Color(0xFF111A3D),
+                      fontSize: 19,
+                      height: 1,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -.6,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${package.visits} ${package.visits == 1 ? 'session' : 'sessions'}'
+                    '${package.savings > 0 ? ' • Save $currencyPrefix${package.savings}' : ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF159B7A),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onNext,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Ink(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF7165EC), Color(0xFF4F45D2)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF5146D9).withOpacity(.22),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                      16,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            isLast ? 'Create booking' : 'Continue',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Icon(
+                          isLast ? Icons.check_rounded : Icons.arrow_forward_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            const Color(
-                          0xFF5146D9,
-                        ).withOpacity(
-                          .22,
-                        ),
-                        blurRadius:
-                            15,
-                        offset:
-                            const Offset(
-                          0,
-                          6,
-                        ),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .center,
-                    children: [
-                      Text(
-                        isLast
-                            ? 'Pay & Confirm'
-                            : 'Continue',
-                        style:
-                            const TextStyle(
-                          fontSize:
-                              12.5,
-                          color:
-                              Colors.white,
-                          fontWeight:
-                              FontWeight
-                                  .w900,
-                        ),
-                      ),
-
-                      const SizedBox(
-                        width: 7,
-                      ),
-
-                      Icon(
-                        isLast
-                            ? Icons
-                                .lock_rounded
-                            : Icons
-                                .arrow_forward_rounded,
-                        size: 16,
-                        color:
-                            Colors.white,
-                      ),
-                    ],
                   ),
                 ),
               ),

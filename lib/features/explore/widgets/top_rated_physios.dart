@@ -135,9 +135,9 @@ class TopRatedPhysios extends StatelessWidget {
           gridDelegate:
     const SliverGridDelegateWithFixedCrossAxisCount(
   crossAxisCount: 2,
-  crossAxisSpacing: 11,
-  mainAxisSpacing: 13,
-  mainAxisExtent: 310,
+  crossAxisSpacing: 12,
+  mainAxisSpacing: 15,
+  mainAxisExtent: 326,
 ),
 
           itemBuilder: (context, index) {
@@ -445,7 +445,7 @@ class _PhysioCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
 
         splashColor: const Color(
           0xFF5146D9,
@@ -461,7 +461,7 @@ class _PhysioCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
 
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(24),
 
             border: Border.all(
               color: const Color(0xFFE3E6EF),

@@ -111,15 +111,15 @@ class PhysiotherapistCard extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(21),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: const Color(0xFFE6E9F1),
             ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF26345C).withOpacity(.055),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
+                blurRadius: 23,
+                offset: const Offset(0, 9),
               ),
             ],
           ),
@@ -150,7 +150,7 @@ class PhysiotherapistCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.5,
                                   color: Color(0xFF121A3A),
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -.25,
@@ -469,7 +469,7 @@ class _ProfileImage extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(17),
           child: SizedBox(
-            width: 82,
+            width: 88,
             height: 94,
             child: _image(),
           ),

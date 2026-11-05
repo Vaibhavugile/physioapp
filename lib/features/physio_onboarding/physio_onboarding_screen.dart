@@ -649,23 +649,21 @@ class _PhysioOnboardingScreenState
 
       if (_currentStep == 2 &&
           _educationQualifications != null) {
-        final qualifications =
-            _educationQualifications!
-                .qualifications
-                .map(
-                  (qualification) => {
-                    'degree':
-                        qualification.degree,
-                  },
-                )
-                .toList();
+        final qualifications = _educationQualifications!
+            .qualifications
+            .map((qualification) => qualification.toMap())
+            .toList();
 
-        await _physiotherapistService
-            .updateFields(
+        final certifications = _educationQualifications!
+            .certifications
+            .map((certification) => certification.toMap())
+            .toList();
+
+        await _physiotherapistService.updateFields(
           uid: uid,
           data: {
-            'qualifications':
-                qualifications,
+            'qualifications': qualifications,
+            'certifications': certifications,
           },
         );
       }

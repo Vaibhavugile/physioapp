@@ -108,13 +108,24 @@ class ClinicDetailsScreen extends StatelessWidget {
                   // CLINIC HERO
                   // =================================================
 
-                  _ClinicHero(
-                    clinicName:
-                        clinicName,
-                    imagePath:
-                        imagePath,
-                    rating:
-                        rating,
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0, end: 1),
+                    duration: const Duration(milliseconds: 520),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 16 * (1 - value)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: _ClinicHero(
+                      clinicName: clinicName,
+                      imagePath: imagePath,
+                      rating: rating,
+                    ),
                   ),
 
                   const SizedBox(height: 18),
@@ -296,7 +307,7 @@ class ClinicDetailsScreen extends StatelessWidget {
                                     children: [
                                       Icon(
                                         Icons
-                                            .directions_rounded,
+                                            .map_outlined,
                                         size: 14,
                                         color:
                                             Color(
@@ -306,7 +317,7 @@ class ClinicDetailsScreen extends StatelessWidget {
                                       SizedBox(
                                           width: 4),
                                       Text(
-                                        'Get directions',
+                                        'Map preview',
                                         style:
                                             TextStyle(
                                           fontSize:

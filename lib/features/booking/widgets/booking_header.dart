@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Reusable premium booking header.
+/// Keeps the existing constructor/API so the booking flow can drop it in.
 class BookingHeader extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -17,135 +19,122 @@ class BookingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.center,
       children: [
-        // =========================================================
-        // BACK BUTTON
-        // =========================================================
-
-        GestureDetector(
-          onTap: onBackTap ??
-              () {
-                Navigator.of(context).pop();
-              },
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: 43,
-            height: 43,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius:
-                  BorderRadius.circular(14),
-              border: Border.all(
-                color:
-                    const Color(0xFFE3E6EF),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color:
-                      const Color(0xFF26345C)
-                          .withOpacity(.055),
-                  blurRadius: 14,
-                  offset:
-                      const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.arrow_back_rounded,
-              size: 20,
-              color:
-                  Color(0xFF151D3D),
-            ),
-          ),
+        _HeaderAction(
+          icon: Icons.arrow_back_rounded,
+          onTap: onBackTap ?? () => Navigator.of(context).maybePop(),
         ),
-
-        const SizedBox(width: 12),
-
-        // =========================================================
-        // TITLE
-        // =========================================================
-
+        const SizedBox(width: 13),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
                 maxLines: 1,
-                overflow:
-                    TextOverflow.ellipsis,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
+                  color: Color(0xFF101A3A),
                   fontSize: 19,
-                  color:
-                      Color(0xFF111A3D),
-                  fontWeight:
-                      FontWeight.w900,
-                  letterSpacing: -.45,
+                  height: 1.1,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.55,
                 ),
               ),
-
-              const SizedBox(height: 3),
-
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow:
-                    TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  color:
-                      Color(0xFF737C99),
-                  fontWeight:
-                      FontWeight.w600,
-                ),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF18A889),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF78819A),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-
         const SizedBox(width: 10),
-
-        // =========================================================
-        // HELP BUTTON
-        // =========================================================
-
-        GestureDetector(
+        _HeaderAction(
+          icon: Icons.support_agent_rounded,
           onTap: onHelpTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: 43,
-            height: 43,
-            decoration: BoxDecoration(
-              gradient:
-                  const LinearGradient(
-                begin:
-                    Alignment.topLeft,
-                end:
-                    Alignment.bottomRight,
-                colors: [
-                  Color(0xFFF0EEFF),
-                  Color(0xFFEAF9F6),
-                ],
-              ),
-              borderRadius:
-                  BorderRadius.circular(14),
-              border: Border.all(
-                color:
-                    const Color(0xFFE0E2F0),
-              ),
-            ),
-            child: const Icon(
-              Icons.help_outline_rounded,
-              size: 20,
-              color:
-                  Color(0xFF5146D9),
-            ),
-          ),
+          highlighted: true,
         ),
       ],
+    );
+  }
+}
+
+class _HeaderAction extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool highlighted;
+
+  const _HeaderAction({
+    required this.icon,
+    this.onTap,
+    this.highlighted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            gradient: highlighted
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFEDEBFF), Color(0xFFE7F8F4)],
+                  )
+                : null,
+            color: highlighted ? null : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: highlighted
+                  ? const Color(0xFFDDE5F0)
+                  : const Color(0xFFE6EAF2),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1D2A54).withOpacity(.045),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: highlighted
+                ? const Color(0xFF5146D9)
+                : const Color(0xFF1D294B),
+          ),
+        ),
+      ),
     );
   }
 }

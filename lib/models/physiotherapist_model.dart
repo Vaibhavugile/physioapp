@@ -57,6 +57,8 @@ class PhysiotherapistModel {
 
   final List<Map<String, dynamic>> qualifications;
 
+  final List<Map<String, dynamic>> certifications;
+
   // Legacy/simple fields for easier searching/display
 
   final String qualification;
@@ -242,6 +244,7 @@ class PhysiotherapistModel {
 
     // Education
     required this.qualifications,
+    this.certifications = const [],
     required this.qualification,
     required this.university,
     required this.graduationYear,
@@ -351,6 +354,7 @@ class PhysiotherapistModel {
 
       // Education
       qualifications: const [],
+      certifications: const [],
       qualification: '',
       university: '',
       graduationYear: 0,
@@ -508,6 +512,11 @@ class PhysiotherapistModel {
       qualifications:
           _mapList(
         data['qualifications'],
+      ),
+
+      certifications:
+          _mapList(
+        data['certifications'],
       ),
 
       qualification:
@@ -852,6 +861,9 @@ class PhysiotherapistModel {
       'qualifications':
           qualifications,
 
+      'certifications':
+          certifications,
+
       'qualification':
           qualification,
 
@@ -1109,6 +1121,7 @@ class PhysiotherapistModel {
     String? primarySpecialization,
 
     List<Map<String, dynamic>>? qualifications,
+    List<Map<String, dynamic>>? certifications,
     String? qualification,
     String? university,
     int? graduationYear,
@@ -1218,6 +1231,10 @@ class PhysiotherapistModel {
       qualifications:
           qualifications ??
               this.qualifications,
+
+      certifications:
+          certifications ??
+              this.certifications,
 
       qualification:
           qualification ??

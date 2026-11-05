@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-
 import '../../../models/user_location_model.dart';
 
 class ExploreSearch extends StatelessWidget {
   final VoidCallback? onFilterTap;
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onLocationTap;
-
-  // =============================================================
-  // SELECTED LOCATION
-  // =============================================================
-
   final UserLocationModel? selectedLocation;
 
   const ExploreSearch({
@@ -21,31 +15,14 @@ class ExploreSearch extends StatelessWidget {
     this.selectedLocation,
   });
 
-  // =============================================================
-  // LOCATION DISPLAY HELPERS
-  // =============================================================
-
   String get _locationTitle {
-    if (selectedLocation == null) {
-      return 'Select your location';
-    }
-
-    if (selectedLocation!.isCurrentLocation) {
-      return 'Current location';
-    }
-
+    if (selectedLocation == null) return 'Choose your location';
+    if (selectedLocation!.isCurrentLocation) return 'Current location';
     return selectedLocation!.shortDisplayName;
   }
 
   String get _locationSubtitle {
-    if (selectedLocation == null) {
-      return 'Choose an area to find physiotherapists near you';
-    }
-
-    if (selectedLocation!.isCurrentLocation) {
-      return selectedLocation!.displayName;
-    }
-
+    if (selectedLocation == null) return 'Set your area to discover nearby care';
     return selectedLocation!.displayName;
   }
 
@@ -53,383 +30,176 @@ class ExploreSearch extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // =========================================================
-        // PREMIUM SEARCH BAR
-        // =========================================================
-
         Container(
-          width: double.infinity,
-          height: 60,
-
+          height: 59,
+          padding: const EdgeInsets.only(left: 13, right: 6),
           decoration: BoxDecoration(
             color: Colors.white,
-
-            borderRadius: BorderRadius.circular(20),
-
-            border: Border.all(
-              color: const Color(0xFFE4E7F0),
-            ),
-
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(color: const Color(0xFFE7E9F2)),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF202B50)
-                    .withOpacity(.055),
-                blurRadius: 22,
-                offset: const Offset(0, 8),
+                color: const Color(0xFF202B50).withOpacity(.055),
+                blurRadius: 20,
+                offset: const Offset(0, 7),
               ),
             ],
           ),
-
           child: Row(
             children: [
-              const SizedBox(width: 12),
-
-              // ===================================================
-              // SEARCH ICON
-              // ===================================================
-
               Container(
-                width: 38,
-                height: 38,
-
+                width: 37,
+                height: 37,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFF1EFFF),
-                      Color(0xFFF3F8FF),
-                    ],
+                    colors: [Color(0xFFF0EEFF), Color(0xFFEAF8F6)],
                   ),
-
                   borderRadius: BorderRadius.circular(12),
                 ),
-
-                child: const Icon(
-                  Icons.search_rounded,
-                  size: 21,
-                  color: Color(0xFF5146D9),
-                ),
+                child: const Icon(Icons.search_rounded, color: Color(0xFF5146D9), size: 21),
               ),
-
               const SizedBox(width: 10),
-
-              // ===================================================
-              // SEARCH FIELD
-              // ===================================================
-
               Expanded(
                 child: TextField(
                   onChanged: onSearchChanged,
-
                   textInputAction: TextInputAction.search,
-
-                  textCapitalization:
-                      TextCapitalization.sentences,
-
+                  textCapitalization: TextCapitalization.sentences,
                   cursorColor: const Color(0xFF5146D9),
-
                   decoration: const InputDecoration(
                     border: InputBorder.none,
-
                     enabledBorder: InputBorder.none,
-
                     focusedBorder: InputBorder.none,
-
                     isDense: true,
-
                     contentPadding: EdgeInsets.zero,
-
-                    hintText:
-                        'Search physios, conditions...',
-
+                    hintText: 'Search physios, conditions...',
                     hintStyle: TextStyle(
+                      color: Color(0xFF969DB0),
                       fontSize: 11.5,
-                      color: Color(0xFF9299AE),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   style: const TextStyle(
-                    fontSize: 11.5,
                     color: Color(0xFF151D3D),
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-
-              // ===================================================
-              // DIVIDER
-              // ===================================================
-
-              Container(
-                width: 1,
-                height: 28,
-                color: const Color(0xFFE8EAF1),
-              ),
-
               const SizedBox(width: 7),
-
-              // ===================================================
-              // FILTER BUTTON
-              // ===================================================
-
-              GestureDetector(
-                onTap: onFilterTap,
-
-                behavior: HitTestBehavior.opaque,
-
-                child: Container(
-                  width: 44,
-                  height: 44,
-
-                  margin: const EdgeInsets.only(
-                    right: 6,
-                  ),
-
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF6D58EA),
-                        Color(0xFF5146D9),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onFilterTap,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Ink(
+                    width: 43,
+                    height: 43,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF7064E8), Color(0xFF5146D9)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF5146D9).withOpacity(.22),
+                          blurRadius: 12,
+                          offset: const Offset(0, 5),
+                        ),
                       ],
                     ),
-
-                    borderRadius: BorderRadius.circular(14),
-
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF5146D9)
-                            .withOpacity(.22),
-                        blurRadius: 12,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-
-                  child: const Icon(
-                    Icons.tune_rounded,
-                    size: 20,
-                    color: Colors.white,
+                    child: const Icon(Icons.tune_rounded, color: Colors.white, size: 19),
                   ),
                 ),
               ),
             ],
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // =========================================================
-        // LOCATION CARD
-        // =========================================================
-
-        GestureDetector(
-          onTap: onLocationTap,
-
-          behavior: HitTestBehavior.opaque,
-
-          child: Container(
-            width: double.infinity,
-
-            padding: const EdgeInsets.fromLTRB(
-              12,
-              11,
-              12,
-              11,
-            ),
-
-            decoration: BoxDecoration(
-              color: Colors.white,
-
-              borderRadius: BorderRadius.circular(18),
-
-              border: Border.all(
-                color: selectedLocation == null
-                    ? const Color(0xFFE5E8F0)
-                    : const Color(0xFFDCD8FF),
+        const SizedBox(height: 10),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onLocationTap,
+            borderRadius: BorderRadius.circular(18),
+            child: Ink(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFFFFF), Color(0xFFF7FAFF)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE5EAF2)),
               ),
-
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF202B50)
-                      .withOpacity(.04),
-                  blurRadius: 17,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-
-            child: Row(
-              children: [
-                // =================================================
-                // LOCATION ICON
-                // =================================================
-
-                Container(
-                  width: 42,
-                  height: 42,
-
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: selectedLocation == null
-                          ? const [
-                              Color(0xFFF3F4F8),
-                              Color(0xFFE9ECF3),
-                            ]
-                          : const [
-                              Color(0xFFF0EDFF),
-                              Color(0xFFE6F0FF),
-                            ],
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF8F5),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-
-                    borderRadius: BorderRadius.circular(13),
+                    child: const Icon(Icons.location_on_rounded, color: Color(0xFF079F87), size: 19),
                   ),
-
-                  child: Icon(
-                    selectedLocation?.isCurrentLocation == true
-                        ? Icons.my_location_rounded
-                        : Icons.location_on_rounded,
-
-                    size: 21,
-
-                    color: selectedLocation == null
-                        ? const Color(0xFF7E879C)
-                        : const Color(0xFF5146D9),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // =================================================
-                // LOCATION TEXT
-                // =================================================
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            selectedLocation?.isCurrentLocation ==
-                                    true
-                                ? 'YOUR CURRENT LOCATION'
-                                : selectedLocation == null
-                                    ? 'LOCATION'
-                                    : 'SELECTED LOCATION',
-
-                            style: const TextStyle(
-                              fontSize: 9.5,
-                              letterSpacing: .7,
-                              color: Color(0xFF9299AE),
-                              fontWeight: FontWeight.w800,
-                            ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'YOUR AREA',
+                          style: TextStyle(
+                            color: Color(0xFF9AA1B2),
+                            fontSize: 8,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.w900,
                           ),
-
-                          if (selectedLocation
-                                  ?.isCurrentLocation ==
-                              true) ...[
-                            const SizedBox(width: 6),
-
-                            Container(
-                              width: 6,
-                              height: 6,
-
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF1DBF73),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-
-                      const SizedBox(height: 3),
-
-                      Text(
-                        _locationTitle,
-
-                        maxLines: 1,
-
-                        overflow: TextOverflow.ellipsis,
-
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          color: Color(0xFF151D3D),
-                          fontWeight: FontWeight.w800,
                         ),
-                      ),
-
-                      const SizedBox(height: 2),
-
-                      Text(
-                        _locationSubtitle,
-
-                        maxLines: 1,
-
-                        overflow: TextOverflow.ellipsis,
-
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          color: Color(0xFF7C8498),
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(height: 3),
+                        Text(
+                          _locationTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFF17203E),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // =================================================
-                // CHANGE BUTTON
-                // =================================================
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 11,
-                    vertical: 8,
-                  ),
-
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1EFFF),
-
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        selectedLocation == null
-                            ? 'Choose'
-                            : 'Change',
-
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          color: Color(0xFF5146D9),
-                          fontWeight: FontWeight.w800,
+                        const SizedBox(height: 2),
+                        Text(
+                          _locationSubtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFF8790A6),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(width: 3),
-
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 16,
-                        color: Color(0xFF5146D9),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0EEFF),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Change', style: TextStyle(color: Color(0xFF5146D9), fontSize: 9, fontWeight: FontWeight.w900)),
+                        SizedBox(width: 3),
+                        Icon(Icons.chevron_right_rounded, color: Color(0xFF5146D9), size: 14),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

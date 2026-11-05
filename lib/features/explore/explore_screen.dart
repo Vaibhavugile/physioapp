@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_location_model.dart';
 import '../../models/physiotherapist_model.dart';
+import '../../services/user_location_service.dart';
 
 import 'models/physio_match_model.dart';
 import 'services/explore_physio_service.dart';
@@ -16,8 +17,13 @@ import 'widgets/explore_trust_stats.dart';
 import 'widgets/location_selection_sheet.dart';
 
 class ExploreScreen extends StatefulWidget {
+  final UserLocationModel? initialLocation;
+  final String? initialCondition;
+
   const ExploreScreen({
     super.key,
+    this.initialLocation,
+    this.initialCondition,
   });
 
   @override
@@ -33,6 +39,9 @@ class _ExploreScreenState
 
   final ExplorePhysioService _physioService =
       const ExplorePhysioService();
+
+  final UserLocationService _locationService =
+      const UserLocationService();
 
   final PhysioMatchingService _matchingService =
       const PhysioMatchingService();
@@ -87,7 +96,32 @@ class _ExploreScreenState
   void initState() {
     super.initState();
 
-    _loadPhysiotherapists();
+    // HomeScreen can pass its already-detected location and selected body area.
+    // When Explore is opened independently, reuse the device's current location.
+    _selectedLocation = widget.initialLocation;
+    _selectedCondition = widget.initialCondition;
+
+    _initializeExplore();
+  }
+
+  Future<void> _initializeExplore() async {
+    if (_selectedLocation == null) {
+      try {
+        final location = await _locationService.getCurrentLocation();
+        if (!mounted) return;
+
+        setState(() {
+          _selectedLocation = location;
+        });
+      } catch (error) {
+        // Keep Explore usable when location permission is unavailable.
+        // The location-required state offers manual selection.
+        debugPrint('Explore automatic location detection failed: $error');
+      }
+    }
+
+    if (!mounted) return;
+    await _loadPhysiotherapists();
   }
 
   // ==============================================================
@@ -248,8 +282,7 @@ class _ExploreScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F7FC),
+      backgroundColor: const Color(0xFFF6F7FC),
 
       body: SafeArea(
         bottom: false,
@@ -264,13 +297,7 @@ class _ExploreScreenState
                   BouncingScrollPhysics(),
             ),
 
-            padding:
-                const EdgeInsets.fromLTRB(
-              22,
-              18,
-              22,
-              30,
-            ),
+            padding: const EdgeInsets.fromLTRB(18, 14, 18, 34),
 
             child: Column(
               crossAxisAlignment:
@@ -295,7 +322,7 @@ class _ExploreScreenState
                   },
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
                 // ==================================================
                 // SEARCH + LOCATION
@@ -315,7 +342,20 @@ class _ExploreScreenState
                       _openLocationSelection,
                 ),
 
-                const SizedBox(height: 26),
+                const SizedBox(height: 20),
+
+                if (_selectedCondition != null) ...[
+                  _SelectedConditionBanner(
+                    condition: _formatConditionLabel(_selectedCondition!),
+                    onClear: () {
+                      setState(() {
+                        _selectedCondition = null;
+                      });
+                      _calculateMatches();
+                    },
+                  ),
+                  const SizedBox(height: 22),
+                ],
 
                 // ==================================================
                 // POPULAR CONDITIONS
@@ -336,25 +376,33 @@ class _ExploreScreenState
                 // ==================================================
 
                 const Text(
+                  'CURATED FOR YOUR RECOVERY',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: Color(0xFF7771D9),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
                   'Recommended for you',
                   style: TextStyle(
-                    fontSize: 19,
-                    color:
-                        Color(0xFF111A3D),
-                    fontWeight:
-                        FontWeight.w900,
-                    letterSpacing: -0.4,
+                    fontSize: 21,
+                    height: 1.1,
+                    color: Color(0xFF111A3D),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.7,
                   ),
                 ),
 
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
 
                 Text(
                   _getRecommendationSubtitle(),
                   style: const TextStyle(
-                    fontSize: 13,
-                    color:
-                        Color(0xFF7B849C),
+                    fontSize: 11,
+                    color: Color(0xFF7B849C),
                     fontWeight:
                         FontWeight.w600,
                     height: 1.4,
@@ -369,7 +417,7 @@ class _ExploreScreenState
 
                 _buildPhysioContent(),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
                 // ==================================================
                 // TRUST STATS
@@ -805,6 +853,15 @@ class _ExploreScreenState
     );
   }
 
+  String _formatConditionLabel(String value) {
+    return value
+        .replaceAll('_', ' ')
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+        .join(' ');
+  }
+
   // ==============================================================
   // RECOMMENDATION SUBTITLE
   // ==============================================================
@@ -813,12 +870,12 @@ class _ExploreScreenState
     if (_selectedCondition != null &&
         _selectedLocation != null) {
       return 'Best physiotherapists near you for '
-          '$_selectedCondition';
+          '${_formatConditionLabel(_selectedCondition!)}';
     }
 
     if (_selectedCondition != null) {
       return 'Physiotherapists recommended for '
-          '$_selectedCondition';
+          '${_formatConditionLabel(_selectedCondition!)}';
     }
 
     if (_selectedLocation != null) {
@@ -878,6 +935,91 @@ class _ExploreScreenState
         content: Text(
           '$feature will be available soon.',
         ),
+      ),
+    );
+  }
+}
+
+class _SelectedConditionBanner extends StatelessWidget {
+  const _SelectedConditionBanner({
+    required this.condition,
+    required this.onClear,
+  });
+
+  final String condition;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(15, 13, 10, 13),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0EFFF), Color(0xFFEEF8FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: const Color(0xFFE2E4FA)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.health_and_safety_rounded,
+              color: Color(0xFF5146D9),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'CARE FOCUS',
+                  style: TextStyle(
+                    color: Color(0xFF7771C9),
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$condition care',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF182044),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: onClear,
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF5146D9),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Clear',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
       ),
     );
   }

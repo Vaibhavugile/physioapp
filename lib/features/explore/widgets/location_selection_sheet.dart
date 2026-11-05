@@ -214,7 +214,7 @@ class _LocationSelectionSheetState
           bottom: bottomInset,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFFCFCFF),
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(28),
           ),
@@ -237,7 +237,7 @@ class _LocationSelectionSheetState
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 18),
 
             // ====================================================
             // HEADER
@@ -257,7 +257,7 @@ class _LocationSelectionSheetState
                         Text(
                           'Choose your location',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 22,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF111A3D),
                             letterSpacing: -0.4,
@@ -267,7 +267,7 @@ class _LocationSelectionSheetState
                         Text(
                           'Find the best physiotherapists near you',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF7B849C),
                           ),
@@ -320,13 +320,12 @@ class _LocationSelectionSheetState
 
                   prefixIcon: const Icon(
                     Icons.search_rounded,
-                    color: Color(0xFF2457F5),
+                    color: Color(0xFF5146D9),
                   ),
 
                   filled: true,
 
-                  fillColor:
-                      const Color(0xFFF5F7FC),
+                  fillColor: const Color(0xFFF4F5FB),
 
                   contentPadding:
                       const EdgeInsets.symmetric(
@@ -359,8 +358,8 @@ class _LocationSelectionSheetState
 
                     borderSide:
                         const BorderSide(
-                      color: Color(0xFF2457F5),
-                      width: 1.5,
+                      color: Color(0xFF5146D9),
+                      width: 1.6,
                     ),
                   ),
                 ),
@@ -581,7 +580,7 @@ class _LocationSelectionSheetState
                         Icons
                             .arrow_forward_ios_rounded,
                         size: 16,
-                        color: Color(0xFF2457F5),
+                        color: Color(0xFF5146D9),
                       ),
                     ],
                   ),

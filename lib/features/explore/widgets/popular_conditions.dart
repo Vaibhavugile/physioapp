@@ -120,7 +120,7 @@ class PopularConditions extends StatelessWidget {
         // =========================================================
 
         SizedBox(
-          height: 172,
+          height: 184,
 
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
@@ -224,7 +224,7 @@ class _ConditionCardState
             const Duration(milliseconds: 120),
 
         child: Container(
-          width: 124,
+          width: 132,
 
           padding: const EdgeInsets.fromLTRB(
             6,
@@ -237,7 +237,7 @@ class _ConditionCardState
             color: Colors.white,
 
             borderRadius:
-                BorderRadius.circular(21),
+                BorderRadius.circular(23),
 
             border: Border.all(
               color:
@@ -250,7 +250,7 @@ class _ConditionCardState
                     const Color(0xFF202B50)
                         .withOpacity(.065),
 
-                blurRadius: 18,
+                blurRadius: 22,
 
                 offset:
                     const Offset(0, 7),

@@ -43,7 +43,7 @@ dependencies:
 
   # User authentication
   firebase_auth: ^6.6.0
-
+  url_launcher: ^6.3.2  
 
   # Database
   cloud_firestore: ^6.9.0
