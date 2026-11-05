@@ -839,7 +839,7 @@ class _PhysioCard extends StatelessWidget {
 
                               children: [
                                 const Text(
-                                  'PLATFORM PRICE',
+                                  'PROVIDER RATE',
 
                                   style: TextStyle(
                                     fontSize: 6,
@@ -1113,9 +1113,9 @@ class _PhysioCard extends StatelessWidget {
     final requested = careMode.trim().toLowerCase();
     bool enabled(String mode) {
       try {
-        if (mode == PricingConfig.home) return physio.homeVisitEnabled == true;
-        if (mode == PricingConfig.clinic) return physio.clinicVisitEnabled == true;
-        if (mode == PricingConfig.online) return physio.onlineConsultationEnabled == true;
+        if (mode == PricingConfig.home) return physio.homeVisitEnabled == true && physio.homeVisitPrice > 0;
+        if (mode == PricingConfig.clinic) return physio.clinicVisitEnabled == true && physio.clinicVisitPrice > 0;
+        if (mode == PricingConfig.online) return physio.onlineConsultationEnabled == true && physio.onlineConsultationPrice > 0;
       } catch (_) {}
       return false;
     }
@@ -1127,15 +1127,29 @@ class _PhysioCard extends StatelessWidget {
   }
 
   String _getTierName(dynamic physio) {
-    return PricingConfig.getTierName(PricingConfig.getTierFromExperience(_getExperience(physio)));
+    try {
+      final saved = physio.pricingTierLabel?.toString().trim() ?? '';
+      if (saved.isNotEmpty) return saved;
+    } catch (_) {}
+    return 'Pricing tier unavailable';
   }
 
   String _getPrice(dynamic physio, String resolvedCareMode) {
-    final price = PricingConfig.getSessionPrice(
-      experienceYears: _getExperience(physio),
-      careMode: resolvedCareMode,
-    );
-    return price > 0 ? '₹${price.toStringAsFixed(0)}' : '₹--';
+    double price = 0;
+    String currency = 'INR';
+    try {
+      currency = physio.currency?.toString() ?? 'INR';
+      if (resolvedCareMode == PricingConfig.clinic) {
+        price = (physio.clinicVisitPrice as num).toDouble();
+      } else if (resolvedCareMode == PricingConfig.online) {
+        price = (physio.onlineConsultationPrice as num).toDouble();
+      } else {
+        price = (physio.homeVisitPrice as num).toDouble();
+      }
+    } catch (_) {}
+    if (price <= 0) return 'Price unavailable';
+    final symbol = currency.toUpperCase() == 'INR' ? '₹' : currency.toUpperCase() == 'USD' ? '\$' : currency.toUpperCase() == 'EUR' ? '€' : currency.toUpperCase() == 'GBP' ? '£' : '$currency ';
+    return '$symbol${price.toStringAsFixed(0)}';
   }
 
   IconData _careModeIcon(String mode) {

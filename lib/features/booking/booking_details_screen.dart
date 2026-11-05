@@ -48,6 +48,7 @@ class BookingDetailsScreen extends StatefulWidget {
   // ==============================================================
 
   final String initialCareMode;
+  final int initialPackageVisits;
   final String? initialTime;
 final List<String> workingDays;
   const BookingDetailsScreen({
@@ -68,6 +69,7 @@ final List<String> workingDays;
     required this.experienceYears,
 
     this.initialCareMode = PricingConfig.home,
+    this.initialPackageVisits = 1,
 
     this.initialTime,
     this.workingDays = const [
@@ -433,6 +435,8 @@ if (_workingDays.isEmpty) {
       now.month,
       now.day,
     );
+
+    _selectedPackage = widget.initialPackageVisits;
 
     // -------------------------------------------------------------
     // INITIAL CARE MODE

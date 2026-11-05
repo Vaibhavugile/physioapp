@@ -141,59 +141,37 @@ class _BestMatchCardState
   }
 
   // ==============================================================
-  // UNIVERSAL PLATFORM PRICING
+  // ONBOARDING PRICING SNAPSHOT
   // ==============================================================
 
-  String get _tier {
-    return PricingConfig.getTierFromExperience(
-      _physio.experienceYears,
-    );
-  }
-
   String get _tierName {
-    return PricingConfig.getTierName(_tier);
+    final saved = (_physio.pricingTierLabel ?? '').toString().trim();
+    return saved.isNotEmpty ? saved : 'Pricing tier unavailable';
   }
 
   String get _tierDescription {
-    return PricingConfig.getTierDescription(_tier);
+    final experience = _physio.experienceYears;
+    final location = [
+      (_physio.pricingLocality ?? '').toString().trim(),
+      (_physio.pricingCity ?? '').toString().trim(),
+    ].where((value) => value.isNotEmpty).join(', ');
+    return '$experience years of experience${location.isEmpty ? '' : ' • $location'}';
   }
 
   String get _careMode {
-    // Best Match prioritizes Home because this card is intended to
-    // recommend the most convenient physiotherapist for the patient.
-    if (_physio.homeVisitEnabled) {
+    if (_physio.homeVisitEnabled && _physio.homeVisitPrice > 0) {
       return PricingConfig.home;
     }
-
-    if (_physio.clinicVisitEnabled) {
+    if (_physio.clinicVisitEnabled && _physio.clinicVisitPrice > 0) {
       return PricingConfig.clinic;
     }
-
-    if (_physio.onlineConsultationEnabled) {
+    if (_physio.onlineConsultationEnabled && _physio.onlineConsultationPrice > 0) {
       return PricingConfig.online;
     }
-
     return PricingConfig.home;
   }
 
-  String get _careModeName {
-    return PricingConfig.getCareModeName(_careMode);
-  }
-
-  double get _sessionPrice {
-    return PricingConfig.getSessionPrice(
-      experienceYears: _physio.experienceYears,
-      careMode: _careMode,
-    );
-  }
-
-  String get _priceText {
-    if (_sessionPrice <= 0) {
-      return 'Price on request';
-    }
-
-    return '₹${_sessionPrice.toStringAsFixed(0)}';
-  }
+  String get _careModeName => PricingConfig.getCareModeName(_careMode);
 
   IconData get _careModeIcon {
     switch (_careMode) {
@@ -205,6 +183,32 @@ class _BestMatchCardState
       default:
         return Icons.home_rounded;
     }
+  }
+
+  double get _sessionPrice {
+    switch (_careMode) {
+      case PricingConfig.clinic:
+        return _physio.clinicVisitPrice;
+      case PricingConfig.online:
+        return _physio.onlineConsultationPrice;
+      default:
+        return _physio.homeVisitPrice;
+    }
+  }
+
+  String get _currencySymbol {
+    switch (_physio.currency.toString().toUpperCase()) {
+      case 'INR': return '₹';
+      case 'USD': return '\$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      default: return '${_physio.currency} ';
+    }
+  }
+
+  String get _priceText {
+    if (_sessionPrice <= 0) return 'Price unavailable';
+    return '$_currencySymbol${_sessionPrice.toStringAsFixed(0)}';
   }
 
   // ==============================================================

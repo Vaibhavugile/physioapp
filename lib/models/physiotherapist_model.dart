@@ -145,6 +145,14 @@ class PhysiotherapistModel {
 
   final String currency;
 
+  /// Platform pricing snapshot assigned during physiotherapist onboarding.
+  final String pricingTier;
+  final String pricingTierLabel;
+  final int pricingExperienceBasis;
+  final String pricingCity;
+  final String pricingLocality;
+  final String pricingConfigVersion;
+
   final double homeVisitPrice;
 
   final double clinicVisitPrice;
@@ -287,6 +295,12 @@ class PhysiotherapistModel {
 
     // Pricing
     required this.currency,
+    this.pricingTier = '',
+    this.pricingTierLabel = '',
+    this.pricingExperienceBasis = 0,
+    this.pricingCity = '',
+    this.pricingLocality = '',
+    this.pricingConfigVersion = '',
     required this.homeVisitPrice,
     required this.clinicVisitPrice,
     required this.onlineConsultationPrice,
@@ -662,6 +676,13 @@ class PhysiotherapistModel {
       currency:
           data['currency'] ?? 'INR',
 
+      pricingTier: (data['pricingTier'] ?? '').toString(),
+      pricingTierLabel: (data['pricingTierLabel'] ?? '').toString(),
+      pricingExperienceBasis: _toInt(data['pricingExperienceBasis']),
+      pricingCity: (data['pricingCity'] ?? '').toString(),
+      pricingLocality: (data['pricingLocality'] ?? '').toString(),
+      pricingConfigVersion: (data['pricingConfigVersion'] ?? '').toString(),
+
       homeVisitPrice:
           _toDouble(
         data['homeVisitPrice'],
@@ -981,6 +1002,13 @@ class PhysiotherapistModel {
       'currency':
           currency,
 
+      'pricingTier': pricingTier,
+      'pricingTierLabel': pricingTierLabel,
+      'pricingExperienceBasis': pricingExperienceBasis,
+      'pricingCity': pricingCity,
+      'pricingLocality': pricingLocality,
+      'pricingConfigVersion': pricingConfigVersion,
+
       'homeVisitPrice':
           homeVisitPrice,
 
@@ -1158,6 +1186,12 @@ class PhysiotherapistModel {
     int? maxAppointmentsPerDay,
 
     String? currency,
+    String? pricingTier,
+    String? pricingTierLabel,
+    int? pricingExperienceBasis,
+    String? pricingCity,
+    String? pricingLocality,
+    String? pricingConfigVersion,
     double? homeVisitPrice,
     double? clinicVisitPrice,
     double? onlineConsultationPrice,
@@ -1361,6 +1395,13 @@ class PhysiotherapistModel {
       currency:
           currency ??
               this.currency,
+
+      pricingTier: pricingTier ?? this.pricingTier,
+      pricingTierLabel: pricingTierLabel ?? this.pricingTierLabel,
+      pricingExperienceBasis: pricingExperienceBasis ?? this.pricingExperienceBasis,
+      pricingCity: pricingCity ?? this.pricingCity,
+      pricingLocality: pricingLocality ?? this.pricingLocality,
+      pricingConfigVersion: pricingConfigVersion ?? this.pricingConfigVersion,
 
       homeVisitPrice:
           homeVisitPrice ??
