@@ -4,69 +4,38 @@ import 'package:flutter/material.dart';
 import '../../models/physiotherapist_model.dart';
 import '../../services/physiotherapist_service.dart';
 import '../physio_onboarding/physio_onboarding_screen.dart';
+import '../doctor/home/doctor_home_screen.dart';
 import 'auth_visuals.dart';
 import 'physio_login_screen.dart';
-import 'physio_home_screen.dart';
 
+/// Routes the signed-in physiotherapist to onboarding, verification handling,
+/// or the new DoctorHomeScreen.
+///
+/// This gate intentionally does not import or use PhysioHomeScreen.
 class PhysioAuthGate extends StatelessWidget {
-  const PhysioAuthGate({
-    super.key,
-  });
+  const PhysioAuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
-
-      builder: (
-        context,
-        authSnapshot,
-      ) {
-        // ============================================================
-        // AUTH LOADING
-        // ============================================================
-
-        if (authSnapshot.connectionState ==
-            ConnectionState.waiting) {
+      builder: (context, authSnapshot) {
+        if (authSnapshot.connectionState == ConnectionState.waiting) {
           return const _PhysioLoadingScreen();
         }
 
-        // ============================================================
-        // NOT LOGGED IN
-        // ============================================================
-
         final firebaseUser = authSnapshot.data;
-
         if (firebaseUser == null) {
           return const PhysioLoginScreen();
         }
 
-        // ============================================================
-        // LOGGED IN → LOAD PHYSIOTHERAPIST PROFILE
-        // ============================================================
-
         return StreamBuilder<PhysiotherapistModel?>(
           stream: PhysiotherapistService()
-              .streamPhysiotherapist(
-            firebaseUser.uid,
-          ),
-
-          builder: (
-            context,
-            profileSnapshot,
-          ) {
-            // ========================================================
-            // PROFILE LOADING
-            // ========================================================
-
-            if (profileSnapshot.connectionState ==
-                ConnectionState.waiting) {
+              .streamPhysiotherapist(firebaseUser.uid),
+          builder: (context, profileSnapshot) {
+            if (profileSnapshot.connectionState == ConnectionState.waiting) {
               return const _PhysioLoadingScreen();
             }
-
-            // ========================================================
-            // PROFILE ERROR
-            // ========================================================
 
             if (profileSnapshot.hasError) {
               return _PhysioErrorScreen(
@@ -76,92 +45,30 @@ class PhysioAuthGate extends StatelessWidget {
 
             final physiotherapist = profileSnapshot.data;
 
-            // ========================================================
-            // NO PROFILE → START ONBOARDING
-            // ========================================================
-
             if (physiotherapist == null) {
               return const PhysioOnboardingScreen();
             }
 
-            final status = physiotherapist
-                .verificationStatus
-                .trim()
-                .toLowerCase();
+            final status =
+                physiotherapist.verificationStatus.trim().toLowerCase();
 
-            // ========================================================
-            // DRAFT → CONTINUE ONBOARDING
-            // ========================================================
-
-            // Your current PhysioOnboardingScreen does not yet support
-            // an initialStep parameter, so we open onboarding normally.
-
+            // New or draft profile: continue the existing onboarding flow.
             if (status.isEmpty || status == 'draft') {
               return const PhysioOnboardingScreen();
             }
 
-            // ========================================================
-            // PENDING
-            // ========================================================
-
-            if (status == 'pending' || status == 'under_review') {
-              return PhysioHomeScreen(
-                name: _displayPhysioName(physiotherapist.fullName),
-                isPending: true,
-                onNotifications: () => _showDemoMessage(context, 'Notifications'),
-                onNavigate: () => _showDemoMessage(context, 'Navigation'),
-                onStartSession: () => _showDemoMessage(context, 'Sessions'),
-                onTabChanged: (tab) => _showDemoMessage(
-                  context,
-                  const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
-                ),
-              );
-            }
-
-            // ========================================================
-            // REJECTED
-            // ========================================================
-
+            // Rejected profile: allow the physiotherapist to edit and resubmit.
             if (status == 'rejected') {
               return _VerificationRejectedScreen(
                 physiotherapist: physiotherapist,
               );
             }
 
-            // ========================================================
-            // APPROVED
-            // ========================================================
-
-            if (status == 'approved' &&
-                physiotherapist.isVerified &&
-                physiotherapist.isActive) {
-              return PhysioHomeScreen(
-                name: _displayPhysioName(physiotherapist.fullName),
-                onNotifications: () => _showDemoMessage(context, 'Notifications'),
-                onNavigate: () => _showDemoMessage(context, 'Navigation'),
-                onStartSession: () => _showDemoMessage(context, 'Sessions'),
-                onTabChanged: (tab) => _showDemoMessage(
-                  context,
-                  const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
-                ),
-              );
-            }
-
-            // ========================================================
-            // FALLBACK
-            // ========================================================
-
-            return PhysioHomeScreen(
-              name: _displayPhysioName(physiotherapist.fullName),
-              isPending: true,
-              onNotifications: () => _showDemoMessage(context, 'Notifications'),
-              onNavigate: () => _showDemoMessage(context, 'Navigation'),
-              onStartSession: () => _showDemoMessage(context, 'Sessions'),
-              onTabChanged: (tab) => _showDemoMessage(
-                context,
-                const ['Home', 'Schedule', 'Patients', 'Profile'][tab],
-              ),
-            );
+            // Pending, under review, approved, and other non-draft states
+            // all enter the new doctor dashboard. The dashboard itself shows
+            // verification/availability state and prevents unverified doctors
+            // from switching online.
+            return const DoctorHomeScreen();
           },
         );
       },
@@ -169,21 +76,9 @@ class PhysioAuthGate extends StatelessWidget {
   }
 }
 
-String _displayPhysioName(String fullName) {
-  final cleaned = fullName.trim();
-  if (cleaned.isEmpty) return 'Dr. Physiotherapist';
-  return cleaned.toLowerCase().startsWith('dr.') ? cleaned : 'Dr. $cleaned';
-}
-
-void _showDemoMessage(BuildContext context, String feature) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('$feature will be connected after the demo phase.')),
-  );
-}
-
-// ===================================================================
-// STATUS SCREENS (shared premium layout)
-// ===================================================================
+// ===========================================================================
+// SHARED STATUS SCREENS
+// ===========================================================================
 
 class _StatusScreen extends StatelessWidget {
   final IconData icon;
@@ -217,7 +112,11 @@ class _StatusScreen extends StatelessWidget {
             child: Column(
               children: [
                 const AXBrandRow(),
-                Expanded(child: Center(child: AXOrb(icon: icon, color: tint))),
+                Expanded(
+                  child: Center(
+                    child: AXOrb(icon: icon, color: tint),
+                  ),
+                ),
               ],
             ),
           ),
@@ -231,8 +130,11 @@ class _StatusScreen extends StatelessWidget {
                   children: [
                     AXReveal(
                       delayMs: 100,
-                      child: Text(title,
-                          textAlign: TextAlign.center, style: AX.display(30)),
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: AX.display(30),
+                      ),
                     ),
                     if (message != null) ...[
                       const SizedBox(height: 12),
@@ -244,7 +146,10 @@ class _StatusScreen extends StatelessWidget {
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              fontSize: 14.5, height: 1.5, color: AX.muted),
+                            fontSize: 14.5,
+                            height: 1.5,
+                            color: AX.muted,
+                          ),
                         ),
                       ),
                     ],
@@ -252,7 +157,10 @@ class _StatusScreen extends StatelessWidget {
                     if (primaryLabel != null)
                       AXReveal(
                         delayMs: 300,
-                        child: AXPill(label: primaryLabel!, onPressed: onPrimary),
+                        child: AXPill(
+                          label: primaryLabel!,
+                          onPressed: onPrimary,
+                        ),
                       ),
                     if (secondaryLabel != null)
                       AXReveal(
@@ -287,20 +195,6 @@ class _PhysioLoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) => const AXLoadingScreen();
 }
 
-class _VerificationPendingScreen extends StatelessWidget {
-  const _VerificationPendingScreen();
-
-  @override
-  Widget build(BuildContext context) => _StatusScreen(
-        icon: Icons.hourglass_top_rounded,
-        tint: const Color(0xFFFFC857),
-        title: 'Under review',
-        message: 'We’ll notify you once your profile is approved.',
-        secondaryLabel: 'Sign out',
-        onSecondary: () async => FirebaseAuth.instance.signOut(),
-      );
-}
-
 class _VerificationRejectedScreen extends StatelessWidget {
   final PhysiotherapistModel physiotherapist;
 
@@ -313,11 +207,15 @@ class _VerificationRejectedScreen extends StatelessWidget {
         icon: Icons.edit_note_rounded,
         tint: const Color(0xFFFF8A80),
         title: 'Needs changes',
-        message: 'Update a few details so we can approve your profile.',
+        message: physiotherapist.rejectionReason.trim().isNotEmpty
+            ? physiotherapist.rejectionReason
+            : 'Update a few details so we can approve your profile.',
         primaryLabel: 'Update profile',
         onPrimary: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const PhysioOnboardingScreen()),
+            MaterialPageRoute(
+              builder: (_) => const PhysioOnboardingScreen(),
+            ),
           );
         },
         secondaryLabel: 'Sign out',
@@ -328,9 +226,7 @@ class _VerificationRejectedScreen extends StatelessWidget {
 class _PhysioErrorScreen extends StatelessWidget {
   final String message;
 
-  const _PhysioErrorScreen({
-    required this.message,
-  });
+  const _PhysioErrorScreen({required this.message});
 
   @override
   Widget build(BuildContext context) => _StatusScreen(
@@ -341,7 +237,9 @@ class _PhysioErrorScreen extends StatelessWidget {
         primaryLabel: 'Try again',
         onPrimary: () {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const PhysioAuthGate()),
+            MaterialPageRoute(
+              builder: (_) => const PhysioAuthGate(),
+            ),
             (route) => false,
           );
         },
