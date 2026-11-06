@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +26,7 @@ class PhysioAuthGate extends StatelessWidget {
         }
 
         final firebaseUser = authSnapshot.data;
+
         if (firebaseUser == null) {
           return const PhysioLoginScreen();
         }
@@ -33,7 +35,8 @@ class PhysioAuthGate extends StatelessWidget {
           stream: PhysiotherapistService()
               .streamPhysiotherapist(firebaseUser.uid),
           builder: (context, profileSnapshot) {
-            if (profileSnapshot.connectionState == ConnectionState.waiting) {
+            if (profileSnapshot.connectionState ==
+                ConnectionState.waiting) {
               return const _PhysioLoadingScreen();
             }
 
@@ -114,7 +117,10 @@ class _StatusScreen extends StatelessWidget {
                 const AXBrandRow(),
                 Expanded(
                   child: Center(
-                    child: AXOrb(icon: icon, color: tint),
+                    child: AXOrb(
+                      icon: icon,
+                      color: tint,
+                    ),
                   ),
                 ),
               ],
@@ -188,12 +194,22 @@ class _StatusScreen extends StatelessWidget {
   }
 }
 
+// ===========================================================================
+// LOADING SCREEN
+// ===========================================================================
+
 class _PhysioLoadingScreen extends StatelessWidget {
   const _PhysioLoadingScreen();
 
   @override
-  Widget build(BuildContext context) => const AXLoadingScreen();
+  Widget build(BuildContext context) {
+    return const AXLoadingScreen();
+  }
 }
+
+// ===========================================================================
+// REJECTED VERIFICATION SCREEN
+// ===========================================================================
 
 class _VerificationRejectedScreen extends StatelessWidget {
   final PhysiotherapistModel physiotherapist;
@@ -203,45 +219,60 @@ class _VerificationRejectedScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => _StatusScreen(
-        icon: Icons.edit_note_rounded,
-        tint: const Color(0xFFFF8A80),
-        title: 'Needs changes',
-        message: physiotherapist.rejectionReason.trim().isNotEmpty
-            ? physiotherapist.rejectionReason
-            : 'Update a few details so we can approve your profile.',
-        primaryLabel: 'Update profile',
-        onPrimary: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const PhysioOnboardingScreen(),
-            ),
-          );
-        },
-        secondaryLabel: 'Sign out',
-        onSecondary: () async => FirebaseAuth.instance.signOut(),
-      );
+  Widget build(BuildContext context) {
+    final rejectionReason =
+        (physiotherapist.rejectionReason ?? '').trim();
+
+    return _StatusScreen(
+      icon: Icons.edit_note_rounded,
+      tint: const Color(0xFFFF8A80),
+      title: 'Needs changes',
+      message: rejectionReason.isNotEmpty
+          ? rejectionReason
+          : 'Update a few details so we can approve your profile.',
+      primaryLabel: 'Update profile',
+      onPrimary: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const PhysioOnboardingScreen(),
+          ),
+        );
+      },
+      secondaryLabel: 'Sign out',
+      onSecondary: () async {
+        await FirebaseAuth.instance.signOut();
+      },
+    );
+  }
 }
+
+// ===========================================================================
+// ERROR SCREEN
+// ===========================================================================
 
 class _PhysioErrorScreen extends StatelessWidget {
   final String message;
 
-  const _PhysioErrorScreen({required this.message});
+  const _PhysioErrorScreen({
+    required this.message,
+  });
 
   @override
-  Widget build(BuildContext context) => _StatusScreen(
-        icon: Icons.cloud_off_rounded,
-        tint: const Color(0xFFFF8A80),
-        title: 'Something went wrong',
-        message: message,
-        primaryLabel: 'Try again',
-        onPrimary: () {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const PhysioAuthGate(),
-            ),
-            (route) => false,
-          );
-        },
-      );
+  Widget build(BuildContext context) {
+    return _StatusScreen(
+      icon: Icons.cloud_off_rounded,
+      tint: const Color(0xFFFF8A80),
+      title: 'Something went wrong',
+      message: message,
+      primaryLabel: 'Try again',
+      onPrimary: () {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const PhysioAuthGate(),
+          ),
+          (route) => false,
+        );
+      },
+    );
+  }
 }
