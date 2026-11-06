@@ -9,7 +9,7 @@
     <string>$(DEVELOPMENT_LANGUAGE)</string>
 
     <key>CFBundleDisplayName</key>
-    <string>PhysioHomey</string>
+    <string>$(APP_DISPLAY_NAME)</string>
 
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
@@ -21,7 +21,7 @@
     <string>6.0</string>
 
     <key>CFBundleName</key>
-    <string>physio_at_home</string>
+    <string>$(APP_DISPLAY_NAME)</string>
 
     <key>CFBundlePackageType</key>
     <string>APPL</string>

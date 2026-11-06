@@ -7,12 +7,16 @@ project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
+
+  'Partner-Debug' => :debug,
+  'Partner-Profile' => :release,
+  'Partner-Release' => :release,
 }
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(
-    File.join('..', 'Flutter', 'Generated.xcconfig'),
-    __FILE__
+    'Flutter/Generated.xcconfig',
+    __dir__
   )
 
   unless File.exist?(generated_xcode_build_settings_path)
