@@ -5,7 +5,18 @@ import '../home/home_screen.dart' hide HomeBottomNav;
 import '../home/widgets/home_bottom_nav.dart';
 import '../explore/explore_screen.dart';
 import '../booking/my_bookings_screen.dart';
+import '../profile/profile_screen.dart';
 
+/// Main navigation for the PhysioHomey customer app.
+///
+/// Tab order is kept in sync with HomeBottomNav:
+/// 0 - Home
+/// 1 - Explore
+/// 2 - Bookings
+/// 3 - Recovery
+/// 4 - Profile
+///
+/// IndexedStack keeps each tab alive when the user switches tabs.
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -21,7 +32,8 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
-    _screens = [
+
+    _screens = <Widget>[
       HomeScreen(onExploreRequested: _openExploreFromHome),
       const ExploreScreen(),
       const MyBookingsScreen(),
@@ -29,10 +41,7 @@ class _MainNavigationState extends State<MainNavigation> {
         title: 'Recovery',
         icon: Icons.favorite_rounded,
       ),
-      const _ComingSoonScreen(
-        title: 'Profile',
-        icon: Icons.person_rounded,
-      ),
+      const ProfileScreen(),
     ];
   }
 
@@ -57,6 +66,7 @@ class _MainNavigationState extends State<MainNavigation> {
     if (index < 0 || index >= _screens.length || _currentIndex == index) {
       return;
     }
+
     setState(() => _currentIndex = index);
   }
 
@@ -64,7 +74,10 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FC),
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: HomeBottomNav(
         currentIndex: _currentIndex,
         onChanged: _changeTab,
@@ -73,11 +86,16 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 }
 
+/// Temporary destination retained for the Recovery tab until its real screen
+/// is connected. Profile is now handled by ProfileScreen above.
 class _ComingSoonScreen extends StatelessWidget {
   final String title;
   final IconData icon;
 
-  const _ComingSoonScreen({required this.title, required this.icon});
+  const _ComingSoonScreen({
+    required this.title,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
