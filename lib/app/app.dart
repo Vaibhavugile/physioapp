@@ -10,7 +10,7 @@ class PhysioAtHomeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Physio At Home',
+      title: 'PhysioHomey',
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
     );

@@ -66,7 +66,7 @@ android {
             resValue(
                 "string",
                 "app_name",
-                "PhysioAtHome"
+                "PhysioHomey"
             )
         }
 
@@ -78,7 +78,7 @@ android {
             resValue(
                 "string",
                 "app_name",
-                "PhysioAtHome Partner"
+                "PhysioHomey Partner"
             )
         }
     }

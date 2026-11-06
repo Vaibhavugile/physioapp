@@ -1,9 +1,10 @@
+
 name: physio_at_home
 description: "Physiotherapy booking and healthcare application."
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 2.0.0+2
 
 
 # ================================================================
@@ -22,7 +23,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-
   # --------------------------------------------------------------
   # UI
   # --------------------------------------------------------------
@@ -32,32 +32,20 @@ dependencies:
   geocoding: ^4.0.0
   google_places_flutter: ^2.1.1
 
-
   # ==============================================================
   # FIREBASE
   # ==============================================================
 
-  # Firebase initialization
   firebase_core: ^4.14.0
-
-
-  # User authentication
   firebase_auth: ^6.6.0
-  url_launcher: ^6.3.2  
-
-  # Database
+  url_launcher: ^6.3.2
   cloud_firestore: ^6.9.0
-
-
-  # Images / files / profile pictures
   firebase_storage: ^13.0.6
-
 
   # --------------------------------------------------------------
   # LOCAL STORAGE
   # --------------------------------------------------------------
 
-  # Small local preferences and cached values
   shared_preferences: ^2.5.5
 
 
@@ -71,22 +59,40 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
 
+  # App launcher icons for Android and iOS
+  flutter_launcher_icons: ^0.14.4
+
+
+# ================================================================
+# APP LAUNCHER ICON CONFIGURATION
+# ================================================================
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: "assets/images/app_icon.png"
+
+  # Android adaptive icon
+  adaptive_icon_background: "#003B57"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+  # iOS icon
+  remove_alpha_ios: true
+
 
 # ================================================================
 # FLUTTER
 # ================================================================
 
 flutter:
-
   uses-material-design: true
-
 
   # ==============================================================
   # ASSETS
   # ==============================================================
 
   assets:
-
     # Main images
     - assets/images/
 
